@@ -1,0 +1,260 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body, html{
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: row; /* Cambia a fila para dividir los div */
+    justify-content: center;
+    align-items: flex-start;
+    background-image: 
+        linear-gradient(rgba(197, 197, 197, 0.322) 0%, rgb(0, 0, 0) 99%),
+        url('../../../acces/img/fondo_login02.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100vw;
+    height: 100%;
+    gap: 50px; /* Espacio entre los divs */
+}
+
+.main{
+padding: 0%;
+    
+}
+
+.container_cliente {
+    background: rgba(255,255,255,0.8);
+    padding: 15px 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    min-width: 300px;
+    max-width: 400px;
+    margin: 40px 0;
+    margin-top: 100px;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas */
+    gap: 15px;
+}
+
+.container_cliente h2,
+.container_cliente hr {
+    grid-column: 1 / 3; /* Ocupan ambas columnas */
+}
+
+.container_cliente label {
+    font-weight: bold;
+    margin-bottom: 0px;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.container_cliente input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-top: 0px;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+/* Estilos exclusivos para factura, no se modifican */
+.container_factura {
+    background: rgba(255,255,255,0.8);
+    padding: 15px 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    min-width: 300px;
+    max-width: 500px;
+    margin: 0px 0;
+    margin-top: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.container_factura h2 {
+    text-align: center;
+    margin-bottom: 0px;
+}
+
+.container_factura label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.container_factura input[type="text"] {
+    width: 100%;
+    padding:5px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+
+.button{
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    grid-column: 1 / 3; /* Ocupa ambas columnas */
+}
+
+/* Agrupa los campos de producto, cantidad y agregar en una fila */
+.producto-row {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 0px;
+}
+
+.producto-row label {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    margin-bottom: 0;
+}
+
+.producto-row select,
+.producto-row input[type="text"] {
+    width: 100%;
+    min-width: 0;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 12px;
+    box-sizing: border-box;
+    margin-top: 0px;
+    margin-bottom: 0;
+    height: 38px;
+}
+
+.producto-row .button {
+    flex: 1 1 0;
+    padding: 8px 0;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    height: 38px;
+    margin-bottom: 0;
+    min-width: 0;
+    font-size: 12px;
+    text-align: center;
+    align-self: flex-end;
+}
+
+.tabla-factura {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0px;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 13px;
+}
+
+.tabla-factura th, .tabla-factura td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+}
+
+.tabla-factura th {
+    background-color: #007bff;
+    color: #fff;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.tabla-factura tr:last-child td {
+    border-bottom: none;
+}
+
+.tabla-factura tr:hover {
+    background-color: #f2f6fc;
+    transition: background 0.2s;
+}
+
+.total {
+    text-align: right;
+    font-weight: bold;
+    margin-top: 15px;
+    font-size: 14px;
+    right: 0px;
+}
+
+.factura-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 14px;
+    margin-top: 10px;
+}
+
+.factura-actions .button {
+    flex: 1 1 0;
+    height: 38px;
+    font-size: 13px;
+    padding: 8px 0;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.factura-actions .procesar {
+    background-color: #28a745; /* verde */
+}
+
+.factura-actions .cuenta {
+    background-color: #17a2b8; /* azul claro */
+}
+
+.factura-actions .eliminar {
+    background-color: #dc3545; /* rojo */
+}
+
+.factura-actions .button:hover {
+    filter: brightness(0.9);
+}
+
+/* Botón eliminar en la tabla */
+.tabla-factura .eliminar-btn {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.tabla-factura .eliminar-btn:hover {
+    filter: brightness(0.9);
+    background-color: #c82333;
+}
