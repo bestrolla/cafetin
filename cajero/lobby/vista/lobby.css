@@ -3,258 +3,433 @@
   padding: 0;
   box-sizing: border-box;
 }
-body, html{
-    height: 100%;
-    font-family: Arial, sans-serif;
+
+body, html {
+  height: 100%;
+  font-family: Arial, sans-serif;
+}
+
+.main {
+  padding: 0;
 }
 
 .container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: row; /* Cambia a fila para dividir los div */
-    justify-content: center;
-    align-items: flex-start;
-    background-image: 
-        linear-gradient(rgba(197, 197, 197, 0.322) 0%, rgb(0, 0, 0) 99%),
-        url('../../../acces/img/fondo_login02.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    width: 100vw;
-    height: 100%;
-    gap: 50px; /* Espacio entre los divs */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  background-image:
+    linear-gradient(rgba(197, 197, 197, 0.322) 0%, rgb(0, 0, 0) 99%),
+    url('../../../acces/img/fondo_login02.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 100%;
+  padding: 0 16px;
+  gap: 50px;
 }
 
-.main{
-padding: 0%;
-    
-}
-
+/* 🔹 CLIENTE - MEJORADO CON 2 COLUMNAS */
 .container_cliente {
-    background: rgba(255,255,255,0.8);
-    padding: 15px 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    min-width: 300px;
-    max-width: 400px;
-    margin: 40px 0;
-    margin-top: 100px;
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Dos columnas */
-    gap: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+  margin-top: 50px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  align-content: start;
 }
 
-.container_cliente h2,
+.container_cliente h2 {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
 .container_cliente hr {
-    grid-column: 1 / 3; /* Ocupan ambas columnas */
+  grid-column: 1 / -1;
+  margin-bottom: 10px;
+  border: none;
+  border-top: 1px solid #ddd;
 }
 
 .container_cliente label {
-    font-weight: bold;
-    margin-bottom: 0px;
-    font-size: 12px;
-    display: flex;
-    flex-direction: column;
+  font-weight: bold;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Campos que ocupan ambas columnas */
+.container_cliente label:nth-last-child(2), /* Alias */
+.container_cliente label:nth-last-child(3) { /* Teléfono */
+  grid-column: 1 / -1;
 }
 
 .container_cliente input[type="text"] {
-    width: 100%;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin-top: 0px;
-    margin-bottom: 10px;
-    font-size: 12px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
 }
 
-/* Estilos exclusivos para factura, no se modifican */
+/* Botones del cliente - ocupan ambas columnas */
+.cliente-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.cliente-actions .button {
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.3s;
+}
+
+.container_cliente .registrar {
+  background-color: #28a745;
+}
+
+.container_cliente .siguiente {
+  background-color: #007bff;
+}
+
+.cliente-actions .button:hover {
+  filter: brightness(0.9);
+}
+
+/* 🔹 FACTURA - MÁS COMPACTA Y MEJOR DISTRIBUIDA */
 .container_factura {
-    background: rgba(255,255,255,0.8);
-    padding: 15px 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    min-width: 300px;
-    max-width: 500px;
-    margin: 0px 0;
-    margin-top: 100px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 950px;
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .container_factura h2 {
-    text-align: center;
-    margin-bottom: 0px;
+  text-align: center;
+  margin-bottom: 5px;
 }
 
-.container_factura label {
-    font-weight: bold;
-    margin-bottom: 5px;
-    font-size: 12px;
-    display: flex;
-    flex-direction: column;
+.container_factura hr {
+  margin-bottom: 11px;
+  border: none;
+  border-top: 1px solid #ddd;
 }
 
-.container_factura input[type="text"] {
-    width: 100%;
-    padding:5px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    font-size: 12px;
+/* Cliente resumen más compacto */
+.cliente-resumen {
+  background: #f8f9fa;
+  padding: 12px 15px;
+  
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+  margin-bottom: 5px;
 }
 
-.button{
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    grid-column: 1 / 3; /* Ocupa ambas columnas */
+.cliente-resumen h3 {
+  margin-bottom: 5px;
+  color: #333;
+  font-size: 14px;
 }
 
-/* Agrupa los campos de producto, cantidad y agregar en una fila */
-.producto-row {
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
-    align-items: flex-end;
-    margin-bottom: 0px;
+.cliente-resumen p {
+  font-size: 13px;
+  margin: 0;
 }
 
-.producto-row label {
-    flex: 1 1 0;
-    display: flex;
-    flex-direction: column;
-    font-size: 12px;
-    margin-bottom: 0;
+/* Contenido de factura - más espacio */
+.factura-content {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 25px;
+  align-items: start;
 }
 
-.producto-row select,
-.producto-row input[type="text"] {
-    width: 100%;
-    min-width: 0;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 12px;
-    box-sizing: border-box;
-    margin-top: 0px;
-    margin-bottom: 0;
-    height: 38px;
+.factura-panel, .agregar-panel {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: fit-content;
 }
 
-.producto-row .button {
-    flex: 1 1 0;
-    padding: 8px 0;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    height: 38px;
-    margin-bottom: 0;
-    min-width: 0;
-    font-size: 12px;
-    text-align: center;
-    align-self: flex-end;
+.agregar-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 650px;
 }
 
-.tabla-factura {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 0px;
-    background: rgba(255,255,255,0.95);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border-radius: 10px;
-    overflow: hidden;
-    font-size: 13px;
+/* Tablas más compactas */
+.tabla-factura, .tabla-productos {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-size: 12px;
 }
 
-.tabla-factura th, .tabla-factura td {
-    padding: 8px 10px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-    vertical-align: middle;
+.tabla-factura th, .tabla-factura td,
+.tabla-productos th, .tabla-productos td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.tabla-factura th {
-    background-color: #007bff;
-    color: #fff;
-    font-weight: bold;
-    letter-spacing: 1px;
+.tabla-factura th, .tabla-productos th {
+  background-color: #007bff;
+  color: #fff;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 10px;
 }
 
-.tabla-factura tr:last-child td {
-    border-bottom: none;
+.tabla-factura tr:hover, .tabla-productos tr:hover {
+  background-color: #f8f9fa;
 }
 
-.tabla-factura tr:hover {
-    background-color: #f2f6fc;
-    transition: background 0.2s;
+/* Tabla de productos más compacta */
+.tabla-productos {
+  font-size: 11px;
 }
 
-.total {
-    text-align: right;
-    font-weight: bold;
-    margin-top: 15px;
-    font-size: 14px;
-    right: 0px;
+.tabla-productos th, .tabla-productos td {
+  padding: 6px 8px;
+}
+
+/* Busqueda producto */
+#busqueda-producto {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.lista-productos {
+  overflow-y: auto;
+  flex: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 5px;
+}
+
+/* Botones */
+.button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  text-align: center;
+  font-size: 13px;
 }
 
 .factura-actions {
-    display: flex;
-    flex-direction: row;
-    gap: 14px;
-    margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
 }
 
 .factura-actions .button {
-    flex: 1 1 0;
-    height: 38px;
-    font-size: 13px;
-    padding: 8px 0;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    color: #fff;
-    text-align: center;
-    font-weight: bold;
-    transition: background 0.2s;
-}
-
-.factura-actions .procesar {
-    background-color: #28a745; /* verde */
+  flex: 1;
+  padding: 12px;
 }
 
 .factura-actions .cuenta {
-    background-color: #17a2b8; /* azul claro */
+  background-color: #17a2b8;
+  color: white;
 }
 
-.factura-actions .eliminar {
-    background-color: #dc3545; /* rojo */
+.factura-actions .procesar {
+  background-color: #28a745;
+  color: white;
 }
 
-.factura-actions .button:hover {
-    filter: brightness(0.9);
+.agregar-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
-/* Botón eliminar en la tabla */
-.tabla-factura .eliminar-btn {
-    background-color: #dc3545;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 6px 14px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: bold;
-    transition: background 0.2s;
+.eliminar-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
-.tabla-factura .eliminar-btn:hover {
-    filter: brightness(0.9);
-    background-color: #c82333;
+.agregar-btn:hover, .eliminar-btn:hover {
+  filter: brightness(0.9);
+}
+
+/* Total más compacto */
+.total {
+  text-align: right;
+  font-weight: bold;
+  margin-top: 12px;
+  padding: 12px 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+/* Paginación */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  gap: 5px;
+}
+
+.page-btn {
+  background-color: #2c3e50;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 11px;
+}
+
+.page-btn:hover {
+  background-color: #34495e;
+}
+
+.page-btn.active {
+  background-color: #1abc9c;
+  font-weight: bold;
+}
+
+/* Utilidades */
+.hidden {
+  display: none !important;
+}
+
+.tabla-factura tr.selected {
+  background-color: #ffe8e8;
+}
+
+/* 🔹 RESPONSIVE */
+@media (max-width: 1200px) {
+  .container {
+    gap: 30px;
+    padding: 20px;
+  }
+  
+  .container_factura {
+    max-width: 900px;
+  }
+  
+  .factura-content {
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+  
+  .container_cliente, .container_factura {
+    margin-top: 20px;
+    max-width: 100%;
+  }
+  
+  .factura-content {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .agregar-panel {
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    gap: 20px;
+    padding: 15px;
+  }
+  
+  .container_cliente {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
+  
+  .container_cliente label {
+    grid-column: 1 / -1;
+  }
+  
+  .cliente-actions, .factura-actions {
+    flex-direction: column;
+  }
+  
+  .tabla-factura, .tabla-productos {
+    font-size: 11px;
+  }
+  
+  .tabla-factura th, .tabla-factura td,
+  .tabla-productos th, .tabla-productos td {
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+    gap: 15px;
+  }
+  
+  .container_cliente, .container_factura {
+    padding: 15px;
+    margin-top: 15px;
+  }
+  
+  .factura-content {
+    gap: 12px;
+  }
+  
+  .factura-panel, .agregar-panel {
+    padding: 12px;
+  }
 }

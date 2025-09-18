@@ -3,3 +3,49 @@
     padding: 0;
     box-sizing: border-box;
   }
+
+
+  .main {
+  min-height: 100vh;
+    display: flex;
+    flex-direction: row; /* Cambia a fila para dividir los div */
+    justify-content: center;
+    align-items: flex-start;
+    background-image: 
+        linear-gradient(rgba(197, 197, 197, 0.322) 0%, rgb(0, 0, 0) 99%),
+        url('../../../acces/img/fondo_login02.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100vw;
+    height: 100%;
+    gap: 50px; /* Espacio entre los divs */
+  }
+
+  .container {
+    /* background: rgba(255, 255, 255, 0.9); */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas */
+    gap: 15px;
+
+  }
+
+
+  .container_crud {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 15px 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    min-width: 300px;
+    max-width: 400px;
+    margin: 40px 0;
+    margin-top: 100px;
+    display: grid;
+    
+    gap: 15px;
+  }
