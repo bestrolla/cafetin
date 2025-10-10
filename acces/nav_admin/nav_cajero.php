@@ -78,9 +78,11 @@ section header .logo img {
     <h2>Bienvenido admin</h2>
     <nav>
       <ul>
-        <li><a href="#">Inicio</a></li>
-        <li><a href="#">Perfil</a></li>
-        <li><a href="#">Cerrar Sesión</a></li>
+        <li><a href="/cafetin/admin/inventario/vista/inventario.php">Inventario</a></li>
+        <li><a href="/cafetin/admin/caja/vista/caja.php">Caja</a></li>
+        <li><a href="/cafetin/admin/deudas/vista/deudas.php">Deudas</a></li>
+        <li><a href="/cafetin/admin/agregar_cajero/vista/agregar_cajero.php">Agregar Cajero</a></li>
+        <li><a href="/cafetin/login/inicio/vista/inicio.php">Cerrar Sesión</a></li>
       </ul>
     </nav>
     <div class="logo">
