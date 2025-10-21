@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <?php require_once '../../../acces/nav_admin/nav_admin.php'; ?>
     <div class="container">
         <div class="debts-container">
             <h1>Gestión de Deudas</h1>
