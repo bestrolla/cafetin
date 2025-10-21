@@ -12,10 +12,9 @@
     // require_once '../../../acces/nav_admin/nav_admin.php'; 
     ?>
     <div class="container">
-        <h1>Agregar Nuevo Cajero</h1>
-        <p>Complete el formulario para registrar un nuevo cajero en el sistema.</p>
-
         <form id="form-agregar-cajero" method="POST">
+            <h1>Agregar Nuevo Cajero</h1>
+            <p>Complete el formulario para registrar un nuevo cajero en el sistema.</p>
             <div class="form-grid">
                 <!-- Columna 1: Datos Personales -->
                 <div class="form-column">

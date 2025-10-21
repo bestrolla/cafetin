@@ -1,0 +1,46 @@
+<?php
+require_once '../../../BBDD/BBDD.php';
+
+header('Content-Type: application/json');
+
+$response = ['success' => false, 'message' => 'Error desconocido.'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id = $_POST['id_producto'] ?? null;
+    $nombre = $_POST['nombre_produc'] ?? null;
+    $cajas = $_POST['caja_produc'] ?? 0;
+    $unidades_caja = $_POST['cantidad_caja'] ?? 0;
+    $precio_caja = $_POST['precio_caja'] ?? 0;
+    $precio_unidad = $_POST['precio_produc'] ?? null;
+
+    if (!$id || !$nombre || !$precio_unidad) {
+        $response['message'] = 'ID, nombre y precio por unidad son obligatorios.';
+        echo json_encode($response);
+        exit;
+    }
+
+    try {
+        $sql = "UPDATE inventario SET nombre_produc = :nombre, caja_produc = :cajas, cantidad_caja = :unidades_caja, precio_caja = :precio_caja, precio_produc = :precio_unidad WHERE id_producto = :id";
+        $stmt = $conexion->prepare($sql);
+        $stmt->execute([
+            ':id' => $id,
+            ':nombre' => $nombre,
+            ':cajas' => $cajas,
+            ':unidades_caja' => $unidades_caja,
+            ':precio_caja' => $precio_caja,
+            ':precio_unidad' => $precio_unidad
+        ]);
+
+        $response['success'] = true;
+        $response['message'] = 'Producto actualizado con éxito.';
+
+    } catch (PDOException $e) {
+        $response['message'] = 'Error de base de datos: ' . $e->getMessage();
+    }
+
+} else {
+    $response['message'] = 'Método de solicitud no válido.';
+}
+
+echo json_encode($response);
+?>

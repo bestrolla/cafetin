@@ -1,44 +1,68 @@
-<html lang="en">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>inventario | admin</title>
-  <link rel="stylesheet" href="inventario.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Inventario</title>
+    <link rel="stylesheet" href="inventario.css">
 </head>
 <body>
-<?php include '../../../acces/nav_admin/nav_cajero.php'; ?>
-<section class="main">
-  <div class="container">
-    <div class="container_crud">
-    <h2>Gestión de Productos</h2>
+    <div class="container">
+        <div class="inventory-container">
+            <h1>Gestión de Inventario</h1>
 
-<form action="producto_crud.php" method="post">
-  <input type="hidden" name="id" value="">
-  <label for="nombre">Nombre:</label>
-  <input type="text" id="nombre" name="nombre" required><br>
+            <div class="form-container">
+                <h2>Agregar o Editar Producto</h2>
+                <form id="form-producto" class="form-grid">
+                    <input type="hidden" id="id_producto" name="id_producto">
+                    <div>
+                        <label for="nombre_produc">Nombre:</label>
+                        <input type="text" id="nombre_produc" name="nombre_produc" required>
+                    </div>
+                    <div>
+                        <label for="caja_produc">Cajas:</label>
+                        <input type="number" id="caja_produc" name="caja_produc" min="0">
+                    </div>
+                    <div>
+                        <label for="cantidad_caja">Unidades por Caja:</label>
+                        <input type="number" id="cantidad_caja" name="cantidad_caja" min="0">
+                    </div>
+                    <div>
+                        <label for="precio_caja">Precio por Caja:</label>
+                        <input type="number" id="precio_caja" name="precio_caja" min="0" step="0.01">
+                    </div>
+                    <div>
+                        <label for="precio_produc">Precio por Unidad:</label>
+                        <input type="number" id="precio_produc" name="precio_produc" min="0" step="0.01" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Guardar Producto</button>
+                </form>
+            </div>
 
-  <label for="descripcion">Descripción:</label>
-  <input type="text" id="descripcion" name="descripcion"><br>
+            <div class="table-container">
+                <h2>Lista de Productos</h2>
+                <input type="text" id="search-input" placeholder="Buscar productos..." onkeyup="filterTable()">
+                <table id="tabla-inventario">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Cajas</th>
+                            <th>Unidades/Caja</th>
+                            <th>Precio/Caja</th>
+                            <th>Precio/Unidad</th>
+                            <th>Activo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Filas de productos se insertarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-  <label for="precio">Precio:</label>
-  <input type="number" id="precio" name="precio" step="0.01" required><br>
-
-  <label for="cantidad">Cantidad:</label>
-  <input type="number" id="cantidad" name="cantidad" required><br>
-
-  <button type="submit" name="accion" value="crear">Crear</button>
-  <button type="submit" name="accion" value="actualizar">Actualizar</button>
-  <button type="submit" name="accion" value="eliminar">Eliminar</button>
-</form>
-</div>
-
-<!-- Aquí puedes mostrar la lista de productos -->
-<?php
-// ...aquí iría el código para mostrar la tabla de productos...
-?>
-</div>
-</section>
-<?php include '../../../acces/footer/footer.php'; ?>
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

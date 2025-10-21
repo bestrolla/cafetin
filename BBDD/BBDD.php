@@ -6,7 +6,7 @@
 
 // Parámetros de conexión
 $host = 'localhost';
-$dbname = 'gestion_inventario'; // cambia al nombre de tu base de datos
+$dbname = 'cafetin'; // cambia al nombre de tu base de datos
 $username = 'root';
 $password = ''; // cambia si tu MySQL tiene contraseña
 

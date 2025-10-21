@@ -1,94 +1,73 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
-    margin: 0;
-    padding-top: 100px;
-    padding-bottom: 60px;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background-image:
+    linear-gradient(rgba(197, 197, 197, 0.322) 0%, rgb(0, 0, 0) 99%),
+    url('../../../acces/img/fondo_login02.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 1400px;
 }
 
-h1, h2 {
-    color: #333;
-    border-bottom: 2px solid #007bff;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+.debts-container {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
-.deudas-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 30px;
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-/* Estilos de la tabla de deudas */
-.deudas-list table {
-    width: 100%;
-    border-collapse: collapse;
+.table-container {
+  overflow-x: auto;
 }
 
-.deudas-list th, .deudas-list td {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
 
-.deudas-list th {
-    background-color: #f2f2f2;
+thead {
+  background-color: #007bff;
+  color: white;
 }
 
-.deudas-list .deuda {
-    color: #dc3545;
-    font-weight: bold;
+th, td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
-.btn-ver {
-    background-color: #17a2b8;
+tbody tr:hover {
+  background-color: #f2f2f2;
+}
+
+.pay-btn {
+    background-color: #28a745;
     color: white;
     border: none;
     padding: 8px 12px;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
 }
 
-/* Formulario para agregar deuda */
-.deudas-form {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-}
-
-.deudas-form label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-}
-
-.deudas-form input, .deudas-form textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-.submit-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    font-size: 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
+.pay-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
