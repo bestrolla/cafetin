@@ -3,45 +3,76 @@ require_once '../../../BBDD/BBDD.php';
 
 header('Content-Type: application/json');
 
-$response = ['success' => false, 'message' => 'Error desconocido.'];
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $cedula = $_POST['cedula'] ?? null;
-    $nombre = $_POST['nombre'] ?? null;
-    $apellido = $_POST['apellido'] ?? null;
-    $telefono = $_POST['telefono'] ?? null;
-    $alias = $_POST['alias'] ?? null;
-
-    if ($cedula && $nombre && $apellido) {
-        try {
-            $sql = "INSERT INTO clientes (cedula, nombre, apellido, telefono, alias) VALUES (:cedula, :nombre, :apellido, :telefono, :alias)";
-            $stmt = $conexion->prepare($sql);
-
-            $stmt->bindParam(':cedula', $cedula, PDO::PARAM_STR);
-            $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
-            $stmt->bindParam(':apellido', $apellido, PDO::PARAM_STR);
-            $stmt->bindParam(':telefono', $telefono, PDO::PARAM_STR);
-            $stmt->bindParam(':alias', $alias, PDO::PARAM_STR);
-
-            if ($stmt->execute()) {
-                $response['success'] = true;
-                $response['message'] = 'Cliente registrado con éxito.';
-            } else {
-                $response['message'] = 'Error al registrar el cliente.';
-            }
-        } catch (PDOException $e) {
-            if ($e->errorInfo[1] == 1062) { // Error de entrada duplicada
-                $response['message'] = 'La cédula ingresada ya existe.';
-            } else {
-                $response['message'] = 'Error de base de datos: ' . $e->getMessage();
-            }
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    $cedula = $data['cedula'] ?? '';
+    $nombre = $data['nombre'] ?? '';
+    $apellido = $data['apellido'] ?? '';
+    $telefono = $data['telefono'] ?? '';
+    $alias = $data['alias'] ?? '';
+    
+    try {
+        // Verificar si el cliente ya existe por cédula
+        $sqlCheck = "SELECT id_persona FROM persona WHERE telefono = ?";
+        $stmtCheck = $conexion->prepare($sqlCheck);
+        $stmtCheck->execute([$telefono]);
+        $personaExistente = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+        
+        if ($personaExistente) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Ya existe un cliente con este teléfono'
+            ]);
+            exit;
         }
-    } else {
-        $response['message'] = 'Todos los campos obligatorios deben ser completados.';
+        
+        // Insertar en tabla persona
+        $sqlPersona = "INSERT INTO persona (nombre, apellido, telefono) VALUES (?, ?, ?)";
+        $stmtPersona = $conexion->prepare($sqlPersona);
+        $stmtPersona->execute([$nombre, $apellido, $telefono]);
+        $id_persona = $conexion->lastInsertId();
+        
+        // Insertar en tabla usuario (cliente básico)
+        $sqlUsuario = "INSERT INTO usuario (id_persona, usuario, contrasena, id_rol) VALUES (?, ?, ?, ?)";
+        $stmtUsuario = $conexion->prepare($sqlUsuario);
+        $usuario = strtolower($nombre . $apellido);
+        $contrasena = password_hash($cedula, PASSWORD_DEFAULT);
+        $id_rol = 3; // Rol de cliente
+        $stmtUsuario->execute([$id_persona, $usuario, $contrasena, $id_rol]);
+        $id_usuario = $conexion->lastInsertId();
+        
+        // Insertar en tabla cliente
+        $sqlCliente = "INSERT INTO cliente (alias, descripcion, id_usuario) VALUES (?, ?, ?)";
+        $stmtCliente = $conexion->prepare($sqlCliente);
+        $descripcion = "Cliente: $nombre $apellido - Tel: $telefono";
+        $stmtCliente->execute([$alias, $descripcion, $id_usuario]);
+        $id_cliente = $conexion->lastInsertId();
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Cliente registrado exitosamente',
+            'id_cliente' => $id_cliente,
+            'cliente' => [
+                'id_cliente' => $id_cliente,
+                'cedula' => $cedula,
+                'nombre' => $nombre,
+                'apellido' => $apellido,
+                'telefono' => $telefono,
+                'alias' => $alias
+            ]
+        ]);
+        
+    } catch (PDOException $e) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error al registrar cliente: ' . $e->getMessage()
+        ]);
     }
 } else {
-    $response['message'] = 'Método de solicitud no válido.';
+    echo json_encode([
+        'success' => false,
+        'message' => 'Método no permitido'
+    ]);
 }
-
-echo json_encode($response);
 ?>
