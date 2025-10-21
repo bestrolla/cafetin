@@ -1,24 +1,6 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body, html {
-  height: 100%;
-  font-family: Arial, sans-serif;
-  background-image:
-    linear-gradient(rgba(197, 197, 197, 0.322) 0%, rgb(0, 0, 0) 99%),
-    url('../../../acces/img/fondo_login02.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
 .container {
-  padding: 20px;
-  margin: 0 auto;
-  max-width: 1200px;
+  padding-top: 100px; /* Space for the fixed nav */
+  padding-bottom: 80px; /* Space for the fixed footer */
 }
 
 .inventory-container {

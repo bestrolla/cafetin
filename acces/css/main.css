@@ -1,0 +1,88 @@
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background-image:
+    linear-gradient(rgba(197, 197, 197, 0.322) 0%, rgb(0, 0, 0) 99%),
+    url('../../acces/img/fondo_login02.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* Evita que el fondo se repita */
+}
+
+/* Navigation Styles */
+header {
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding-left: 25px; 
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    transition: transform 0.3s;
+}
+
+header h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-right: 32px;
+    letter-spacing: 2px;
+}
+
+header ul {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+    margin: 0;
+    padding: 0;
+}
+
+header ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.1rem;
+    padding: 8px 18px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+header ul li a:hover {
+    background: #007bff;
+    color: #fff;
+}
+
+header .logo img {
+    border-radius: 15px 0px 0px 15px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    margin-left: 40px;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+
+/* Footer Styles */
+footer {
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    text-align: center;
+    padding: 15px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.3);
+    font-size: 1rem;
+    letter-spacing: 1px;
+}

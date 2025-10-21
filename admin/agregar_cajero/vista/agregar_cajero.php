@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agregar Cajero</title>
+    <link rel="stylesheet" href="/cafetin/acces/css/main.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <?php 
-    // Suponiendo que tienes un nav para admin
-    // require_once '../../../acces/nav_admin/nav_admin.php'; 
-    ?>
-    <div class="container">
+    <?php require_once '../../../acces/nav_admin/nav_admin.php'; ?>
+
+    <main class="container">
         <form id="form-agregar-cajero" method="POST">
             <h1>Agregar Nuevo Cajero</h1>
             <p>Complete el formulario para registrar un nuevo cajero en el sistema.</p>
@@ -44,8 +43,9 @@
 
             <button type="submit" class="submit-btn">Registrar Cajero</button>
         </form>
-    </div>
+    </main>
 
+    <?php require_once '../../../acces/footer/footer.php'; ?>
     <script src="script.js"></script>
 </body>
 </html>

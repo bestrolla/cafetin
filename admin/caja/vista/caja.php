@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caja - Reporte de Ventas</title>
+    <link rel="stylesheet" href="/cafetin/acces/css/main.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <?php require_once '../../../acces/nav_admin/nav_admin.php'; ?>
+
+    <main class="container">
         <div class="cash-container">
             <h1>Reporte de Ventas</h1>
 
@@ -38,8 +41,9 @@
                 </table>
             </div>
         </div>
-    </div>
+    </main>
 
+    <?php require_once '../../../acces/footer/footer.php'; ?>
     <script src="script.js"></script>
 </body>
 </html>
