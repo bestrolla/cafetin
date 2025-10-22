@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Deudas</title>
+    <link rel="stylesheet" href="/cafetin/acces/css/main.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -33,7 +34,7 @@
             </div>
         </div>
     </div>
-
+<?php require_once '../../../acces/footer/footer.php'; ?>
     <script src="script.js"></script>
 </body>
 </html>

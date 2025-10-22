@@ -33,13 +33,13 @@ header {
     z-index: 1000;
     transition: transform 0.3s;
 }
-
+/* 
 header h2 {
     font-size: 2rem;
     font-weight: bold;
     margin-right: 32px;
     letter-spacing: 2px;
-}
+} */
 
 header ul {
     list-style: none;
