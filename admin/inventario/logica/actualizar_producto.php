@@ -12,15 +12,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $unidades_caja = $_POST['cantidad_caja'] ?? 0;
     $precio_caja = $_POST['precio_caja'] ?? 0;
     $precio_unidad = $_POST['precio_produc'] ?? null;
+    $precio_venta = $_POST['precio_venta'] ?? null; // Nuevo campo
 
-    if (!$id || !$nombre || !$precio_unidad) {
-        $response['message'] = 'ID, nombre y precio por unidad son obligatorios.';
+    // Actualizar validación
+    if (!$id || !$nombre || !$precio_unidad || $precio_venta === null) {
+        $response['message'] = 'ID, nombre, precio por unidad y precio de venta son obligatorios.';
         echo json_encode($response);
         exit;
     }
 
     try {
-        $sql = "UPDATE inventario SET nombre_produc = :nombre, caja_produc = :cajas, cantidad_caja = :unidades_caja, precio_caja = :precio_caja, precio_produc = :precio_unidad WHERE id_producto = :id";
+        $sql = "UPDATE inventario SET 
+                    nombre_produc = :nombre, 
+                    caja_produc = :cajas, 
+                    cantidad_caja = :unidades_caja, 
+                    precio_caja = :precio_caja, 
+                    precio_produc = :precio_unidad, 
+                    precio_venta = :precio_venta 
+                WHERE id_producto = :id";
         $stmt = $conexion->prepare($sql);
         $stmt->execute([
             ':id' => $id,
@@ -28,7 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':cajas' => $cajas,
             ':unidades_caja' => $unidades_caja,
             ':precio_caja' => $precio_caja,
-            ':precio_unidad' => $precio_unidad
+            ':precio_unidad' => $precio_unidad,
+            ':precio_venta' => $precio_venta // Nuevo campo
         ]);
 
         $response['success'] = true;

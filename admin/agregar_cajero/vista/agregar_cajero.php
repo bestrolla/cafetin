@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agregar Cajero</title>
+    <link rel="stylesheet" href="style.css?v=1.1">
     <link rel="stylesheet" href="/cafetin/acces/css/main.css">
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <?php require_once '../../../acces/nav_admin/nav_admin.php'; ?>

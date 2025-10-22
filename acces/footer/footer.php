@@ -1,3 +1,3 @@
 <footer>
-  <p>&copy; 2023 CDC. Todos los derechos reservados.</p>
+  <p>&copy; 2025 CDC. Todos los derechos reservados.</p>
 </footer>

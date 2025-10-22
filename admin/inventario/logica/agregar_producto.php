@@ -11,22 +11,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $unidades_caja = $_POST['cantidad_caja'] ?? 0;
     $precio_caja = $_POST['precio_caja'] ?? 0;
     $precio_unidad = $_POST['precio_produc'] ?? null;
+    $precio_venta = $_POST['precio_venta'] ?? null; // Nuevo campo
 
-    if (!$nombre || !$precio_unidad) {
-        $response['message'] = 'Nombre y precio por unidad son obligatorios.';
+    // Actualizar validación
+    if (!$nombre || !$precio_unidad || $precio_venta === null) {
+        $response['message'] = 'Nombre, precio por unidad y precio de venta son obligatorios.';
         echo json_encode($response);
         exit;
     }
 
     try {
-        $sql = "INSERT INTO inventario (nombre_produc, caja_produc, cantidad_caja, precio_caja, precio_produc) VALUES (:nombre, :cajas, :unidades_caja, :precio_caja, :precio_unidad)";
-        $stmt = $conexion->prepare($sql);
-        $stmt->execute([
+        // Verificar si el producto ya existe
+        $sql_check = "SELECT COUNT(*) FROM inventario WHERE nombre_produc = :nombre";
+        $stmt_check = $conexion->prepare($sql_check);
+        $stmt_check->execute(['nombre' => $nombre]);
+        $count = $stmt_check->fetchColumn();
+
+        if ($count > 0) {
+            $response['message'] = 'Este producto ya está registrado. Por favor, elige un nombre diferente.';
+            echo json_encode($response);
+            exit;
+        }
+
+        // Si no existe, proceder con la inserción
+        $sql_insert = "INSERT INTO inventario (nombre_produc, caja_produc, cantidad_caja, precio_caja, precio_produc, precio_venta) VALUES (:nombre, :cajas, :unidades_caja, :precio_caja, :precio_unidad, :precio_venta)";
+        $stmt_insert = $conexion->prepare($sql_insert);
+        $stmt_insert->execute([
             ':nombre' => $nombre,
             ':cajas' => $cajas,
             ':unidades_caja' => $unidades_caja,
             ':precio_caja' => $precio_caja,
-            ':precio_unidad' => $precio_unidad
+            ':precio_unidad' => $precio_unidad,
+            ':precio_venta' => $precio_venta // Nuevo campo
         ]);
 
         $response['success'] = true;
