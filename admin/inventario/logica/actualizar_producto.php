@@ -12,9 +12,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $unidades_caja = $_POST['cantidad_caja'] ?? 0;
     $precio_caja = $_POST['precio_caja'] ?? 0;
     $precio_unidad = $_POST['precio_produc'] ?? null;
-    $precio_venta = $_POST['precio_venta'] ?? null; // Nuevo campo
+    $precio_venta = $_POST['precio_venta'] ?? null;
+    $activo = isset($_POST['activo']) ? 1 : 0; // Manejar el estado desde el formulario
 
-    // Actualizar validación
     if (!$id || !$nombre || !$precio_unidad || $precio_venta === null) {
         $response['message'] = 'ID, nombre, precio por unidad y precio de venta son obligatorios.';
         echo json_encode($response);
@@ -28,7 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     cantidad_caja = :unidades_caja, 
                     precio_caja = :precio_caja, 
                     precio_produc = :precio_unidad, 
-                    precio_venta = :precio_venta 
+                    precio_venta = :precio_venta,
+                    activo = :activo
                 WHERE id_producto = :id";
         $stmt = $conexion->prepare($sql);
         $stmt->execute([
@@ -38,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':unidades_caja' => $unidades_caja,
             ':precio_caja' => $precio_caja,
             ':precio_unidad' => $precio_unidad,
-            ':precio_venta' => $precio_venta // Nuevo campo
+            ':precio_venta' => $precio_venta,
+            ':activo' => $activo
         ]);
 
         $response['success'] = true;

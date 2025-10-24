@@ -2,7 +2,7 @@
 
 ## Descripción
 
-CDC es una aplicación web desarrollada en PHP que permite la gestión de usuarios y el acceso mediante un sistema de login seguro. El proyecto utiliza HTML, CSS y JavaScript para la interfaz, y PHP para la lógica de servidor.
+CDC es una aplicación  desarrollada en PHP que permite la gestión de usuarios y el acceso mediante un sistema de login seguro. El proyecto utiliza HTML, CSS y JavaScript para la interfaz, y PHP para la lógica de servidor.
 
 ## Estructura del proyecto
 
@@ -30,7 +30,7 @@ CDC es una aplicación web desarrollada en PHP que permite la gestión de usuari
 
 ## Créditos
 
-Desarrollado por el equipo CDC.
+Desarrollado por angel manzano.
 
 ## Licencia
 
