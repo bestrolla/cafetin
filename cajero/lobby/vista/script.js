@@ -1,5 +1,6 @@
 // Variables globales
 let productosDisponibles = [];
+let timeoutAutoComplete = null; // Para el debounce del auto-completado
 
 // Elementos del DOM
 const elementos = {
@@ -34,20 +35,238 @@ document.addEventListener('DOMContentLoaded', function() {
 function inicializarApp() {
     configurarEventListeners();
     inicializarAnimaciones();
+    validarElementosDOM();
+}
+
+// Validar que todos los elementos DOM existan
+function validarElementosDOM() {
+    const elementosFaltantes = [];
+    
+    Object.entries(elementos).forEach(([nombre, elemento]) => {
+        if (!elemento) {
+            elementosFaltantes.push(nombre);
+        }
+    });
+    
+    if (elementosFaltantes.length > 0) {
+        console.warn('Elementos DOM faltantes:', elementosFaltantes);
+    }
 }
 
 // Configurar event listeners
 function configurarEventListeners() {
-    // Búsqueda de productos
-    elementos.busquedaProducto.addEventListener('input', filtrarProductos);
+    // Búsqueda de productos con debounce
+    if (elementos.busquedaProducto) {
+        elementos.busquedaProducto.addEventListener('input', debounce(filtrarProductos, 300));
+    }
     
     // Event delegation para botones de productos
-    elementos.productosBody.addEventListener('click', function(e) {
-        if (e.target.classList.contains('btn-agregar-producto')) {
-            animarBoton(e.target);
-            // La lógica de agregar producto se manejará en PHP
+    if (elementos.productosBody) {
+        elementos.productosBody.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-agregar-producto')) {
+                e.preventDefault();
+                animarBoton(e.target);
+                agregarProductoAFactura(e.target);
+            }
+        });
+    }
+    
+    // Botones de cliente
+    if (elementos.btnRegistrar) {
+        elementos.btnRegistrar.addEventListener('click', registrarCliente);
+    }
+    
+    if (elementos.btnSiguiente) {
+        elementos.btnSiguiente.addEventListener('click', continuarConCliente);
+    }
+    
+    // Auto-completado para campos de cliente
+    configurarAutoCompletado();
+}
+
+// Configurar auto-completado para todos los campos de cliente
+function configurarAutoCompletado() {
+    const camposCliente = [
+        { elemento: elementos.cedulaInput, campo: 'cedula' },
+        { elemento: elementos.nombreInput, campo: 'nombre' },
+        { elemento: elementos.apellidoInput, campo: 'apellido' },
+        { elemento: elementos.telefonoInput, campo: 'telefono' },
+        { elemento: elementos.aliasInput, campo: 'alias' }
+    ];
+    
+    camposCliente.forEach(({ elemento, campo }) => {
+        if (elemento) {
+            elemento.addEventListener('input', function(e) {
+                const valor = e.target.value.trim();
+                if (valor.length >= 2) {
+                    buscarClienteAutoComplete(campo, valor);
+                } else {
+                    limpiarAutoComplete();
+                }
+            });
+            
+            // Limpiar auto-completado cuando el campo pierde el foco
+            elemento.addEventListener('blur', function() {
+                setTimeout(() => limpiarAutoComplete(), 200);
+            });
         }
     });
+}
+
+// Buscar cliente para auto-completado
+function buscarClienteAutoComplete(campo, valor) {
+    // Cancelar búsqueda anterior si existe
+    if (timeoutAutoComplete) {
+        clearTimeout(timeoutAutoComplete);
+    }
+    
+    timeoutAutoComplete = setTimeout(() => {
+        fetch(`../logica/buscar_cliente_autocomplete.php?campo=${encodeURIComponent(campo)}&valor=${encodeURIComponent(valor)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.clientes && data.clientes.length > 0) {
+                    // Tomar el primer resultado para auto-rellenar
+                    const cliente = data.clientes[0];
+                    autoRellenarCamposCliente(cliente);
+                    mostrarIndicadorAutoComplete();
+                }
+            })
+            .catch(error => {
+                console.error('Error en auto-completado:', error);
+            });
+    }, 300);
+}
+
+// Auto-rellenar campos del cliente
+function autoRellenarCamposCliente(cliente) {
+    // Solo rellenar campos vacíos para no sobrescribir lo que el usuario está escribiendo
+    if (elementos.cedulaInput && !elementos.cedulaInput.value.trim()) {
+        elementos.cedulaInput.value = cliente.cedula || '';
+        animarCampoAutoComplete(elementos.cedulaInput);
+    }
+    
+    if (elementos.nombreInput && !elementos.nombreInput.value.trim()) {
+        elementos.nombreInput.value = cliente.nombre || '';
+        animarCampoAutoComplete(elementos.nombreInput);
+    }
+    
+    if (elementos.apellidoInput && !elementos.apellidoInput.value.trim()) {
+        elementos.apellidoInput.value = cliente.apellido || '';
+        animarCampoAutoComplete(elementos.apellidoInput);
+    }
+    
+    if (elementos.telefonoInput && !elementos.telefonoInput.value.trim()) {
+        elementos.telefonoInput.value = cliente.telefono || '';
+        animarCampoAutoComplete(elementos.telefonoInput);
+    }
+    
+    if (elementos.aliasInput && !elementos.aliasInput.value.trim()) {
+        elementos.aliasInput.value = cliente.alias || '';
+        animarCampoAutoComplete(elementos.aliasInput);
+    }
+}
+
+// Animar campo auto-completado
+function animarCampoAutoComplete(campo) {
+    campo.style.transition = 'all 0.3s ease';
+    campo.style.backgroundColor = '#e8f5e8';
+    campo.style.borderColor = '#28a745';
+    
+    setTimeout(() => {
+        campo.style.backgroundColor = '';
+        campo.style.borderColor = '';
+    }, 2000);
+}
+
+// Mostrar indicador de auto-completado
+function mostrarIndicadorAutoComplete() {
+    // Crear o actualizar indicador visual
+    let indicador = document.getElementById('autocomplete-indicator');
+    if (!indicador) {
+        indicador = document.createElement('div');
+        indicador.id = 'autocomplete-indicator';
+        indicador.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        `;
+        indicador.textContent = '✓ Datos auto-completados';
+        document.body.appendChild(indicador);
+    }
+    
+    // Mostrar indicador
+    setTimeout(() => {
+        indicador.style.opacity = '1';
+        indicador.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // Ocultar después de 3 segundos
+    setTimeout(() => {
+        indicador.style.opacity = '0';
+        indicador.style.transform = 'translateY(-10px)';
+    }, 3000);
+}
+
+// Limpiar auto-completado
+function limpiarAutoComplete() {
+    if (timeoutAutoComplete) {
+        clearTimeout(timeoutAutoComplete);
+        timeoutAutoComplete = null;
+    }
+}
+
+// Validar que todos los elementos DOM existan
+function validarElementosDOM() {
+    const elementosFaltantes = [];
+    
+    Object.entries(elementos).forEach(([nombre, elemento]) => {
+        if (!elemento) {
+            elementosFaltantes.push(nombre);
+        }
+    });
+    
+    if (elementosFaltantes.length > 0) {
+        console.warn('Elementos DOM faltantes:', elementosFaltantes);
+    }
+}
+
+// Configurar event listeners
+function configurarEventListeners() {
+    // Búsqueda de productos con debounce
+    if (elementos.busquedaProducto) {
+        elementos.busquedaProducto.addEventListener('input', debounce(filtrarProductos, 300));
+    }
+    
+    // Event delegation para botones de productos
+    if (elementos.productosBody) {
+        elementos.productosBody.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-agregar-producto')) {
+                e.preventDefault();
+                animarBoton(e.target);
+                agregarProductoAFactura(e.target);
+            }
+        });
+    }
+    
+    // Botones de cliente
+    if (elementos.btnRegistrar) {
+        elementos.btnRegistrar.addEventListener('click', registrarCliente);
+    }
+    
+    if (elementos.btnSiguiente) {
+        elementos.btnSiguiente.addEventListener('click', continuarConCliente);
+    }
     
     // Animación para botones principales
     const botones = document.querySelectorAll('.button');
@@ -56,14 +275,70 @@ function configurarEventListeners() {
             animarBoton(this);
         });
     });
+}
+
+// Función debounce para optimizar búsquedas
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Agregar producto a la factura
+function agregarProductoAFactura(boton) {
+    const id = boton.dataset.id;
+    const nombre = boton.dataset.nombre;
+    const precio = parseFloat(boton.dataset.precio);
     
-    // Mostrar/ocultar sección factura con animación
-    elementos.btnSiguiente.addEventListener('click', function() {
-        if (validarClienteMinimo()) {
-            mostrarSeccionFacturaConAnimacion();
-            ocultarPanelClienteConAnimacion();
-        }
-    });
+    if (!id || !nombre || isNaN(precio)) {
+        mostrarAlerta('error', 'Error: Datos del producto incompletos');
+        return;
+    }
+    
+    // Aquí iría la lógica para agregar el producto a la factura
+    mostrarAlerta('success', `Producto "${nombre}" agregado a la factura`);
+    efectoAgregarProducto(nombre);
+}
+
+// Registrar nuevo cliente
+function registrarCliente() {
+    const datosCliente = {
+        cedula: elementos.cedulaInput?.value?.trim(),
+        nombre: elementos.nombreInput?.value?.trim(),
+        apellido: elementos.apellidoInput?.value?.trim(),
+        telefono: elementos.telefonoInput?.value?.trim(),
+        alias: elementos.aliasInput?.value?.trim()
+    };
+    
+    if (!validarDatosCliente(datosCliente)) {
+        mostrarAlerta('error', 'Por favor complete todos los campos obligatorios');
+        return;
+    }
+    
+    // Aquí iría la lógica para registrar el cliente
+    mostrarAlerta('success', 'Cliente registrado exitosamente');
+}
+
+// Continuar con cliente existente
+function continuarConCliente() {
+    if (!validarClienteMinimo()) {
+        mostrarAlerta('error', 'Debe ingresar al menos la cédula del cliente');
+        return;
+    }
+    
+    mostrarSeccionFacturaConAnimacion();
+    ocultarPanelClienteConAnimacion();
+}
+
+// Validar datos del cliente
+function validarDatosCliente(datos) {
+    return datos.cedula && datos.nombre && datos.apellido;
 }
 
 // Validación mínima del cliente

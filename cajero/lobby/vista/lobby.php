@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -23,8 +24,8 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
       <label>Alias <input id="cliente-alias" type="text" placeholder="Alias"></label>
 
       <div class="cliente-actions">
-        <button id="btn-registrar" class="button registrar" type="button">Registrar</button>
-        <button id="btn-siguiente" class="button siguiente" type="button">Siguiente</button>
+        <button id="btn-registrar" class="button registrar" type="button" aria-label="Registrar nuevo cliente">Registrar</button>
+        <button id="btn-siguiente" class="button siguiente" type="button" aria-label="Continuar con cliente seleccionado">Siguiente</button>
       </div>
     </div>
 
@@ -62,15 +63,15 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
           </div>
 
           <div class="factura-actions">
-            <button id="btn-ver-cuenta" class="button cuenta" type="button">Agregar a cuenta</button>
-            <button id="btn-pagar" class="button procesar" type="button">Pagar</button>
+            <button id="btn-ver-cuenta" class="button cuenta" type="button" aria-label="Agregar productos a cuenta del cliente">Agregar a cuenta</button>
+            <button id="btn-pagar" class="button procesar" type="button" aria-label="Procesar pago de la factura">Pagar</button>
           </div>
         </div>
 
         <!-- 🛒 Agregar producto -->
         <div class="agregar-panel">
           <h3>Agregar producto</h3>
-          <input id="busqueda-producto" type="text" placeholder="Buscar producto...">
+          <input id="busqueda-producto" type="text" placeholder="Buscar producto..." aria-label="Buscar productos por nombre">
 
           <div class="lista-productos">
             <table class="tabla-productos">
@@ -100,7 +101,7 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
                         echo "<td>" . htmlspecialchars($producto['id_producto']) . "</td>";
                         echo "<td>" . htmlspecialchars($producto['nombre_produc']) . "</td>";
                         echo "<td>$" . htmlspecialchars(number_format($producto['precio_produc'], 2)) . "</td>";
-                        echo "<td><button class=\"btn-agregar-producto\" data-id=\"" . htmlspecialchars($producto['id_producto']) . "\" data-nombre=\"" . htmlspecialchars($producto['nombre_produc']) . "\" data-precio=\"" . htmlspecialchars($producto['precio_produc']) . "\">Agregar</button></td>";
+                        echo "<td><button class=\"btn-agregar-producto modern-btn\" data-id=\"" . htmlspecialchars($producto['id_producto']) . "\" data-nombre=\"" . htmlspecialchars($producto['nombre_produc']) . "\" data-precio=\"" . htmlspecialchars($producto['precio_produc']) . "\" aria-label=\"Agregar " . htmlspecialchars($producto['nombre_produc']) . " a la factura\">Agregar</button></td>";
                         echo "</tr>";
                     }
                 } else {
