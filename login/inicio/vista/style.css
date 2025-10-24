@@ -60,13 +60,7 @@ label{
     margin-bottom: 10px;
 }
 
-input{
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
+/* Los estilos de inputs ahora se manejan desde main.css */
 
 /* Modern Button Styles - Siguiendo el patrón del inventario */
 .btn {
@@ -187,12 +181,7 @@ input{
     margin-top: 10px;
 }
 
-.inputBox input{
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
+/* Los estilos de inputs de inputBox ahora se manejan desde main.css */
 
 .inputBox span{
     position: absolute;

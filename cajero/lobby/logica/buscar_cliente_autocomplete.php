@@ -22,12 +22,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         // Determinar el tipo de búsqueda según el campo
         switch ($campo) {
             case 'cedula':
+                $sql = "SELECT 
+                            c.id_cliente,
+                            p.nombre,
+                            p.apellido, 
+                            p.cedula,
+                            p.telefono,
+                            c.alias
+                        FROM cliente c
+                        JOIN usuario u ON c.id_usuario = u.id_usuario
+                        JOIN persona p ON u.id_persona = p.id_persona
+                        WHERE p.cedula LIKE ?";
+                $params = ["%$valor%"];
+                break;
+                
             case 'telefono':
                 $sql = "SELECT 
                             c.id_cliente,
                             p.nombre,
                             p.apellido, 
-                            p.telefono as cedula,
+                            p.cedula,
                             p.telefono,
                             c.alias
                         FROM cliente c
@@ -42,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                             c.id_cliente,
                             p.nombre,
                             p.apellido, 
-                            p.telefono as cedula,
+                            p.cedula,
                             p.telefono,
                             c.alias
                         FROM cliente c
@@ -57,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                             c.id_cliente,
                             p.nombre,
                             p.apellido, 
-                            p.telefono as cedula,
+                            p.cedula,
                             p.telefono,
                             c.alias
                         FROM cliente c
@@ -72,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                             c.id_cliente,
                             p.nombre,
                             p.apellido, 
-                            p.telefono as cedula,
+                            p.cedula,
                             p.telefono,
                             c.alias
                         FROM cliente c
@@ -88,17 +102,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                             c.id_cliente,
                             p.nombre,
                             p.apellido, 
-                            p.telefono as cedula,
+                            p.cedula,
                             p.telefono,
                             c.alias
                         FROM cliente c
                         JOIN usuario u ON c.id_usuario = u.id_usuario
                         JOIN persona p ON u.id_persona = p.id_persona
-                        WHERE p.telefono LIKE ? 
+                        WHERE p.cedula LIKE ? 
+                           OR p.telefono LIKE ? 
                            OR p.nombre LIKE ? 
                            OR p.apellido LIKE ? 
                            OR c.alias LIKE ?";
-                $params = ["%$valor%", "%$valor%", "%$valor%", "%$valor%"];
+                $params = ["%$valor%", "%$valor%", "%$valor%", "%$valor%", "%$valor%"];
                 break;
         }
         

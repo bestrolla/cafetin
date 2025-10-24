@@ -14,23 +14,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     try {
         // Verificar si el cliente ya existe por cédula
-        $sqlCheck = "SELECT id_persona FROM persona WHERE telefono = ?";
+        $sqlCheck = "SELECT id_persona FROM persona WHERE cedula = ?";
         $stmtCheck = $conexion->prepare($sqlCheck);
-        $stmtCheck->execute([$telefono]);
+        $stmtCheck->execute([$cedula]);
         $personaExistente = $stmtCheck->fetch(PDO::FETCH_ASSOC);
         
         if ($personaExistente) {
             echo json_encode([
                 'success' => false,
-                'message' => 'Ya existe un cliente con este teléfono'
+                'message' => 'Ya existe un cliente con esta cédula'
             ]);
             exit;
         }
         
         // Insertar en tabla persona
-        $sqlPersona = "INSERT INTO persona (nombre, apellido, telefono) VALUES (?, ?, ?)";
+        $sqlPersona = "INSERT INTO persona (cedula, nombre, apellido, telefono) VALUES (?, ?, ?, ?)";
         $stmtPersona = $conexion->prepare($sqlPersona);
-        $stmtPersona->execute([$nombre, $apellido, $telefono]);
+        $stmtPersona->execute([$cedula, $nombre, $apellido, $telefono]);
         $id_persona = $conexion->lastInsertId();
         
         // Insertar en tabla usuario (cliente básico)
@@ -38,7 +38,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtUsuario = $conexion->prepare($sqlUsuario);
         $usuario = strtolower($nombre . $apellido);
         $contrasena = password_hash($cedula, PASSWORD_DEFAULT);
-        $id_rol = 3; // Rol de cliente
+        
+        // Verificar si existe el rol de cliente, si no, crearlo
+        $sqlCheckRol = "SELECT id_rol FROM rol WHERE nombre_rol = 'cliente'";
+        $stmtCheckRol = $conexion->prepare($sqlCheckRol);
+        $stmtCheckRol->execute();
+        $rolExistente = $stmtCheckRol->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$rolExistente) {
+            // Crear rol de cliente si no existe
+            $sqlCrearRol = "INSERT INTO rol (nombre_rol) VALUES ('cliente')";
+            $stmtCrearRol = $conexion->prepare($sqlCrearRol);
+            $stmtCrearRol->execute();
+            $id_rol = $conexion->lastInsertId();
+        } else {
+            $id_rol = $rolExistente['id_rol'];
+        }
+        
         $stmtUsuario->execute([$id_persona, $usuario, $contrasena, $id_rol]);
         $id_usuario = $conexion->lastInsertId();
         

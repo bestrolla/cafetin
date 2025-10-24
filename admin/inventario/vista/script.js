@@ -5,6 +5,54 @@ document.addEventListener('DOMContentLoaded', function () {
   const tbody = table ? table.querySelector('tbody') : null;
   const pagination = document.getElementById('pagination');
 
+  // 🔹 ELEMENTOS PARA CÁLCULOS AUTOMÁTICOS
+  const cajasInput = document.getElementById('caja_produc');
+  const unidadesPorCajaInput = document.getElementById('cantidad_caja');
+  const precioCajaInput = document.getElementById('precio_caja');
+  const precioUnidadInput = document.getElementById('precio_produc');
+  
+  // 🔹 FUNCIONES DE CÁLCULO AUTOMÁTICO
+  function calcularPrecioUnidad() {
+    const cajas = parseFloat(cajasInput?.value) || 0;
+    const unidadesPorCaja = parseFloat(unidadesPorCajaInput?.value) || 0;
+    const precioCaja = parseFloat(precioCajaInput?.value) || 0;
+    
+    if (unidadesPorCaja > 0 && precioCaja > 0) {
+      const precioUnidad = precioCaja / unidadesPorCaja;
+      if (precioUnidadInput) {
+        precioUnidadInput.value = precioUnidad.toFixed(2);
+        
+        // Agregar animación visual para indicar que se calculó
+        precioUnidadInput.style.backgroundColor = '#e8f5e8';
+        setTimeout(() => {
+          precioUnidadInput.style.backgroundColor = '';
+        }, 1000);
+      }
+    } else if (precioUnidadInput) {
+      precioUnidadInput.value = '';
+    }
+  }
+  
+  function mostrarUnidadesTotales() {
+    const cajas = parseFloat(cajasInput?.value) || 0;
+    const unidadesPorCaja = parseFloat(unidadesPorCajaInput?.value) || 0;
+    const totalUnidades = cajas * unidadesPorCaja;
+    
+    // Mostrar el total en algún lugar visible (puedes agregar un elemento para esto)
+    console.log(`Total de unidades: ${totalUnidades}`);
+  }
+  
+  // 🔹 EVENT LISTENERS PARA CÁLCULOS AUTOMÁTICOS
+  if (precioCajaInput && unidadesPorCajaInput) {
+    precioCajaInput.addEventListener('input', calcularPrecioUnidad);
+    unidadesPorCajaInput.addEventListener('input', calcularPrecioUnidad);
+  }
+  
+  if (cajasInput && unidadesPorCajaInput) {
+    cajasInput.addEventListener('input', mostrarUnidadesTotales);
+    unidadesPorCajaInput.addEventListener('input', mostrarUnidadesTotales);
+  }
+
   // Toggle switch functionality
   const toggleSwitch = document.querySelector('.toggle-switch');
   const toggleInput = document.getElementById('edit-activo');
@@ -235,6 +283,44 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('edit-precio-unidad').value = producto.precio_produc;
     document.getElementById('edit-precio-venta').value = producto.precio_venta;
     document.getElementById('edit-activo').checked = producto.activo;
+    
+    // 🔹 AGREGAR EVENT LISTENERS PARA CÁLCULOS EN EL MODAL
+    const editPrecioCaja = document.getElementById('edit-precio-caja');
+    const editUnidades = document.getElementById('edit-unidades');
+    const editPrecioUnidad = document.getElementById('edit-precio-unidad');
+    const editCajas = document.getElementById('edit-cajas');
+    
+    // Función para calcular precio por unidad en el modal
+    function calcularPrecioUnidadModal() {
+      const precioCaja = parseFloat(editPrecioCaja?.value) || 0;
+      const unidadesPorCaja = parseFloat(editUnidades?.value) || 0;
+      
+      if (unidadesPorCaja > 0 && precioCaja > 0) {
+        const precioUnidad = precioCaja / unidadesPorCaja;
+        if (editPrecioUnidad) {
+          editPrecioUnidad.value = precioUnidad.toFixed(2);
+          
+          // Animación visual
+          editPrecioUnidad.style.backgroundColor = '#e8f5e8';
+          setTimeout(() => {
+            editPrecioUnidad.style.backgroundColor = '';
+          }, 1000);
+        }
+      } else if (editPrecioUnidad) {
+        editPrecioUnidad.value = '';
+      }
+    }
+    
+    // Remover event listeners anteriores si existen
+    if (editPrecioCaja) {
+      editPrecioCaja.removeEventListener('input', calcularPrecioUnidadModal);
+      editPrecioCaja.addEventListener('input', calcularPrecioUnidadModal);
+    }
+    
+    if (editUnidades) {
+      editUnidades.removeEventListener('input', calcularPrecioUnidadModal);
+      editUnidades.addEventListener('input', calcularPrecioUnidadModal);
+    }
     
     // Mostrar el modal
     document.getElementById('modal-editar').style.display = 'block';

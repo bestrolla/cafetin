@@ -5,7 +5,7 @@ let timeoutAutoComplete = null; // Para el debounce del auto-completado
 // Elementos del DOM
 const elementos = {
     // Cliente
-    containerCliente: document.querySelector('.container_cliente'), // Nuevo elemento
+    containerCliente: document.getElementById('container-cliente'),
     cedulaInput: document.getElementById('cliente-cedula'),
     nombreInput: document.getElementById('cliente-nombre'),
     apellidoInput: document.getElementById('cliente-apellido'),
@@ -27,15 +27,17 @@ const elementos = {
     productosBody: document.getElementById('productos-body')
 };
 
-// Inicialización
+// Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     inicializarApp();
 });
 
 function inicializarApp() {
+    validarElementosDOM();
     configurarEventListeners();
     inicializarAnimaciones();
-    validarElementosDOM();
+    agregarEstilosSugerencias();
+    cargarTodosLosProductos();
 }
 
 // Validar que todos los elementos DOM existan
@@ -55,9 +57,28 @@ function validarElementosDOM() {
 
 // Configurar event listeners
 function configurarEventListeners() {
-    // Búsqueda de productos con debounce
+    // Búsqueda de productos con autocompletado mejorado
     if (elementos.busquedaProducto) {
         elementos.busquedaProducto.addEventListener('input', debounce(filtrarProductos, 300));
+        
+        // Limpiar búsqueda al hacer blur si está vacío
+        elementos.busquedaProducto.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                // Recargar todos los productos
+                setTimeout(() => {
+                    cargarTodosLosProductos();
+                }, 100);
+            }
+        });
+        
+        // Limpiar búsqueda con Escape
+        elementos.busquedaProducto.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                this.value = '';
+                cargarTodosLosProductos();
+                this.blur();
+            }
+        });
     }
     
     // Event delegation para botones de productos
@@ -82,88 +103,292 @@ function configurarEventListeners() {
     
     // Auto-completado para campos de cliente
     configurarAutoCompletado();
+    
+    // Validación en tiempo real para habilitar/deshabilitar botones
+    configurarValidacionTiempoReal();
+    
+    // Animación para botones principales
+    const botones = document.querySelectorAll('.button');
+    botones.forEach(boton => {
+        boton.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        boton.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
 }
 
-// Configurar auto-completado para todos los campos de cliente
-function configurarAutoCompletado() {
+// Configurar validación en tiempo real
+function configurarValidacionTiempoReal() {
     const camposCliente = [
-        { elemento: elementos.cedulaInput, campo: 'cedula' },
-        { elemento: elementos.nombreInput, campo: 'nombre' },
-        { elemento: elementos.apellidoInput, campo: 'apellido' },
-        { elemento: elementos.telefonoInput, campo: 'telefono' },
-        { elemento: elementos.aliasInput, campo: 'alias' }
+        elementos.cedulaInput,
+        elementos.nombreInput,
+        elementos.apellidoInput,
+        elementos.telefonoInput,
+        elementos.aliasInput
     ];
     
-    camposCliente.forEach(({ elemento, campo }) => {
+    camposCliente.forEach(campo => {
+        if (campo) {
+            campo.addEventListener('input', validarFormularioCompleto);
+            campo.addEventListener('blur', validarFormularioCompleto);
+        }
+    });
+    
+    // Validación inicial
+    validarFormularioCompleto();
+}
+
+// Validar formulario completo y actualizar estado de botones
+function validarFormularioCompleto() {
+    const todosLosCamposCompletos = validarTodosLosCampos();
+    const cedulaCompleta = validarClienteMinimo();
+    
+    // Actualizar estado del botón Siguiente
+    if (elementos.btnSiguiente) {
+        if (todosLosCamposCompletos) {
+            habilitarBoton(elementos.btnSiguiente);
+        } else {
+            deshabilitarBoton(elementos.btnSiguiente);
+        }
+    }
+    
+    // Actualizar estado del botón Registrar (solo necesita cédula mínima)
+    if (elementos.btnRegistrar) {
+        if (cedulaCompleta) {
+            habilitarBoton(elementos.btnRegistrar);
+        } else {
+            deshabilitarBoton(elementos.btnRegistrar);
+        }
+    }
+    
+    // Actualizar indicadores visuales
+    actualizarIndicadoresVisuales();
+}
+
+// Validar que todos los campos estén completos
+function validarTodosLosCampos() {
+    const campos = [
+        elementos.cedulaInput?.value?.trim(),
+        elementos.nombreInput?.value?.trim(),
+        elementos.apellidoInput?.value?.trim(),
+        elementos.telefonoInput?.value?.trim(),
+        elementos.aliasInput?.value?.trim()
+    ];
+    
+    return campos.every(campo => campo && campo.length > 0);
+}
+
+// Habilitar botón
+function habilitarBoton(boton) {
+    if (boton) {
+        boton.disabled = false;
+        boton.style.opacity = '1';
+        boton.style.cursor = 'pointer';
+        boton.style.filter = 'none';
+        boton.classList.remove('disabled');
+    }
+}
+
+// Deshabilitar botón
+function deshabilitarBoton(boton) {
+    if (boton) {
+        boton.disabled = true;
+        boton.style.opacity = '0.5';
+        boton.style.cursor = 'not-allowed';
+        boton.style.filter = 'grayscale(50%)';
+        boton.classList.add('disabled');
+    }
+}
+
+// Actualizar indicadores visuales de campos
+function actualizarIndicadoresVisuales() {
+    const campos = [
+        { elemento: elementos.cedulaInput, nombre: 'Cédula' },
+        { elemento: elementos.nombreInput, nombre: 'Nombre' },
+        { elemento: elementos.apellidoInput, nombre: 'Apellido' },
+        { elemento: elementos.telefonoInput, nombre: 'Teléfono' },
+        { elemento: elementos.aliasInput, nombre: 'Alias' }
+    ];
+    
+    campos.forEach(({ elemento, nombre }) => {
         if (elemento) {
-            elemento.addEventListener('input', function(e) {
-                const valor = e.target.value.trim();
+            const valor = elemento.value.trim();
+            if (valor.length > 0) {
+                // Campo completo - borde verde
+                elemento.style.borderColor = '#28a745';
+                elemento.classList.remove('campo-incompleto');
+                elemento.classList.add('campo-completo');
+            } else {
+                // Campo vacío - borde rojo suave
+                elemento.style.borderColor = '#dc3545';
+                elemento.classList.remove('campo-completo');
+                elemento.classList.add('campo-incompleto');
+            }
+        }
+    });
+}
+
+// Configurar auto-completado mejorado para campos de cliente
+function configurarAutoCompletado() {
+    const camposCliente = [
+        { campo: elementos.cedulaInput, tipo: 'cedula' },
+        { campo: elementos.nombreInput, tipo: 'nombre' },
+        { campo: elementos.apellidoInput, tipo: 'apellido' },
+        { campo: elementos.telefonoInput, tipo: 'telefono' },
+        { campo: elementos.aliasInput, tipo: 'alias' }
+    ];
+    
+    camposCliente.forEach(({ campo, tipo }) => {
+        if (campo) {
+            // Crear contenedor de sugerencias si no existe
+            crearContenedorSugerencias(campo, tipo);
+            
+            campo.addEventListener('input', function() {
+                const valor = this.value.trim();
                 if (valor.length >= 2) {
-                    buscarClienteAutoComplete(campo, valor);
+                    buscarClienteAutoComplete(this, valor, tipo);
                 } else {
-                    limpiarAutoComplete();
+                    ocultarSugerencias(tipo);
                 }
             });
             
-            // Limpiar auto-completado cuando el campo pierde el foco
-            elemento.addEventListener('blur', function() {
-                setTimeout(() => limpiarAutoComplete(), 200);
+            campo.addEventListener('blur', function() {
+                // Limpiar auto-completado cuando se pierde el foco
+                setTimeout(() => ocultarSugerencias(tipo), 200);
+            });
+            
+            // Navegación con teclado
+            campo.addEventListener('keydown', function(e) {
+                manejarNavegacionTeclado(e, tipo);
             });
         }
     });
 }
 
-// Buscar cliente para auto-completado
-function buscarClienteAutoComplete(campo, valor) {
-    // Cancelar búsqueda anterior si existe
+// Buscar cliente para auto-completado mejorado
+function buscarClienteAutoComplete(campo, valor, tipo) {
+    // Limpiar timeout anterior
     if (timeoutAutoComplete) {
         clearTimeout(timeoutAutoComplete);
     }
     
+    // Debounce de 300ms
     timeoutAutoComplete = setTimeout(() => {
-        fetch(`../logica/buscar_cliente_autocomplete.php?campo=${encodeURIComponent(campo)}&valor=${encodeURIComponent(valor)}`)
+        fetch(`../logica/buscar_cliente_autocomplete.php?campo=${encodeURIComponent(tipo)}&valor=${encodeURIComponent(valor)}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.clientes && data.clientes.length > 0) {
-                    // Tomar el primer resultado para auto-rellenar
-                    const cliente = data.clientes[0];
-                    autoRellenarCamposCliente(cliente);
-                    mostrarIndicadorAutoComplete();
+                    mostrarSugerenciasCliente(data.clientes, tipo, valor);
+                } else {
+                    ocultarSugerencias(tipo);
                 }
             })
             .catch(error => {
                 console.error('Error en auto-completado:', error);
+                ocultarSugerencias(tipo);
             });
     }, 300);
 }
 
+// Mostrar sugerencias de clientes
+function mostrarSugerenciasCliente(clientes, tipo, valorBusqueda) {
+    const contenedor = document.getElementById(`sugerencias-${tipo}`);
+    if (!contenedor) return;
+    
+    contenedor.innerHTML = '';
+    
+    // Limitar a máximo 5 sugerencias
+    const clientesLimitados = clientes.slice(0, 5);
+    
+    clientesLimitados.forEach((cliente, index) => {
+        const item = document.createElement('div');
+        item.className = 'sugerencia-item';
+        if (index === 0) item.classList.add('sugerencia-seleccionada');
+        
+        // Resaltar texto coincidente
+        const textoMostrar = obtenerTextoSugerencia(cliente, tipo);
+        const textoResaltado = resaltarCoincidencia(textoMostrar, valorBusqueda);
+        
+        item.innerHTML = `
+            <div class="sugerencia-principal">${textoResaltado}</div>
+            <div class="sugerencia-secundaria">${cliente.nombre} ${cliente.apellido} - ${cliente.telefono}</div>
+        `;
+        
+        item.addEventListener('click', () => {
+            autoRellenarCamposCliente(cliente);
+            ocultarSugerencias(tipo);
+            animarCampoAutoComplete(elementos.cedulaInput);
+        });
+        
+        item.addEventListener('mouseenter', () => {
+            contenedor.querySelectorAll('.sugerencia-item').forEach(s => s.classList.remove('sugerencia-seleccionada'));
+            item.classList.add('sugerencia-seleccionada');
+        });
+        
+        contenedor.appendChild(item);
+    });
+    
+    contenedor.style.display = 'block';
+}
+
+// Obtener texto para mostrar según el tipo de campo
+function obtenerTextoSugerencia(cliente, tipo) {
+    switch (tipo) {
+        case 'cedula': return cliente.cedula || '';
+        case 'nombre': return cliente.nombre || '';
+        case 'apellido': return cliente.apellido || '';
+        case 'telefono': return cliente.telefono || '';
+        case 'alias': return cliente.alias || '';
+        default: return `${cliente.nombre} ${cliente.apellido}`;
+    }
+}
+
+// Resaltar coincidencias en el texto
+function resaltarCoincidencia(texto, busqueda) {
+    // Validar que texto sea un string válido
+    if (!busqueda || !texto || typeof texto !== 'string') {
+        return texto || '';
+    }
+    
+    const regex = new RegExp(`(${busqueda.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return texto.replace(regex, '<strong>$1</strong>');
+}
+
 // Auto-rellenar campos del cliente
 function autoRellenarCamposCliente(cliente) {
-    // Solo rellenar campos vacíos para no sobrescribir lo que el usuario está escribiendo
-    if (elementos.cedulaInput && !elementos.cedulaInput.value.trim()) {
+    // Siempre rellenar todos los campos con los datos del cliente seleccionado
+    if (elementos.cedulaInput) {
         elementos.cedulaInput.value = cliente.cedula || '';
         animarCampoAutoComplete(elementos.cedulaInput);
     }
     
-    if (elementos.nombreInput && !elementos.nombreInput.value.trim()) {
+    if (elementos.nombreInput) {
         elementos.nombreInput.value = cliente.nombre || '';
         animarCampoAutoComplete(elementos.nombreInput);
     }
     
-    if (elementos.apellidoInput && !elementos.apellidoInput.value.trim()) {
+    if (elementos.apellidoInput) {
         elementos.apellidoInput.value = cliente.apellido || '';
         animarCampoAutoComplete(elementos.apellidoInput);
     }
     
-    if (elementos.telefonoInput && !elementos.telefonoInput.value.trim()) {
+    if (elementos.telefonoInput) {
         elementos.telefonoInput.value = cliente.telefono || '';
         animarCampoAutoComplete(elementos.telefonoInput);
     }
     
-    if (elementos.aliasInput && !elementos.aliasInput.value.trim()) {
+    if (elementos.aliasInput) {
         elementos.aliasInput.value = cliente.alias || '';
         animarCampoAutoComplete(elementos.aliasInput);
     }
+    
+    // Revalidar después del auto-completado
+    setTimeout(() => {
+        validarFormularioCompleto();
+    }, 100);
 }
 
 // Animar campo auto-completado
@@ -195,7 +420,7 @@ function mostrarIndicadorAutoComplete() {
             border-radius: 20px;
             font-size: 12px;
             font-weight: bold;
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+             box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
             z-index: 1000;
             opacity: 0;
             transform: translateY(-10px);
@@ -226,57 +451,6 @@ function limpiarAutoComplete() {
     }
 }
 
-// Validar que todos los elementos DOM existan
-function validarElementosDOM() {
-    const elementosFaltantes = [];
-    
-    Object.entries(elementos).forEach(([nombre, elemento]) => {
-        if (!elemento) {
-            elementosFaltantes.push(nombre);
-        }
-    });
-    
-    if (elementosFaltantes.length > 0) {
-        console.warn('Elementos DOM faltantes:', elementosFaltantes);
-    }
-}
-
-// Configurar event listeners
-function configurarEventListeners() {
-    // Búsqueda de productos con debounce
-    if (elementos.busquedaProducto) {
-        elementos.busquedaProducto.addEventListener('input', debounce(filtrarProductos, 300));
-    }
-    
-    // Event delegation para botones de productos
-    if (elementos.productosBody) {
-        elementos.productosBody.addEventListener('click', function(e) {
-            if (e.target.classList.contains('btn-agregar-producto')) {
-                e.preventDefault();
-                animarBoton(e.target);
-                agregarProductoAFactura(e.target);
-            }
-        });
-    }
-    
-    // Botones de cliente
-    if (elementos.btnRegistrar) {
-        elementos.btnRegistrar.addEventListener('click', registrarCliente);
-    }
-    
-    if (elementos.btnSiguiente) {
-        elementos.btnSiguiente.addEventListener('click', continuarConCliente);
-    }
-    
-    // Animación para botones principales
-    const botones = document.querySelectorAll('.button');
-    botones.forEach(boton => {
-        boton.addEventListener('click', function() {
-            animarBoton(this);
-        });
-    });
-}
-
 // Función debounce para optimizar búsquedas
 function debounce(func, wait) {
     let timeout;
@@ -290,45 +464,151 @@ function debounce(func, wait) {
     };
 }
 
-// Agregar producto a la factura
+// Array para almacenar los productos de la factura
+let productosFactura = [];
+
 function agregarProductoAFactura(boton) {
-    const id = boton.dataset.id;
-    const nombre = boton.dataset.nombre;
-    const precio = parseFloat(boton.dataset.precio);
+    console.log('Agregando producto a la factura...');
     
-    if (!id || !nombre || isNaN(precio)) {
-        mostrarAlerta('error', 'Error: Datos del producto incompletos');
+    // Prevenir doble clic deshabilitando temporalmente el botón
+    if (boton.disabled) return;
+    boton.disabled = true;
+    
+    // Obtener los datos del producto desde los atributos data-* del botón
+    const idProducto = boton.dataset.id;
+    const nombreProducto = boton.dataset.nombre;
+    const precioProducto = parseFloat(boton.dataset.precio) || 0;
+    
+    console.log('Datos del producto:', {
+        id: idProducto,
+        nombre: nombreProducto,
+        precio: precioProducto
+    });
+    
+    if (!nombreProducto || precioProducto <= 0) {
+        console.error('Datos del producto inválidos');
+        mostrarAlerta('error', 'Error: Datos del producto inválidos');
+        boton.disabled = false; // Rehabilitar el botón
         return;
     }
     
-    // Aquí iría la lógica para agregar el producto a la factura
-    mostrarAlerta('success', `Producto "${nombre}" agregado a la factura`);
-    efectoAgregarProducto(nombre);
+    const producto = {
+        id: idProducto,
+        nombre: nombreProducto,
+        precio: precioProducto,
+        categoria: 'General', // Valor por defecto
+        cantidad: 1
+    };
+    
+    // Verificar si el producto ya está en la factura (buscar por ID)
+    const productoExistente = productosFactura.find(p => p.id === producto.id);
+    
+    if (productoExistente) {
+        // Si ya existe, aumentar la cantidad
+        productoExistente.cantidad++;
+        console.log('Producto existente, nueva cantidad:', productoExistente.cantidad);
+    } else {
+        // Si no existe, agregarlo
+        productosFactura.push(producto);
+        console.log('Producto nuevo agregado');
+    }
+    
+    console.log('Array de productos actualizado:', productosFactura);
+    
+    // Actualizar la tabla de la factura
+    actualizarTablaFactura();
+    
+    // Calcular y mostrar el total
+    calcularTotalFactura();
+    
+    // Mostrar mensaje de éxito
+    mostrarAlerta('success', `Producto "${producto.nombre}" agregado a la factura`);
+    
+    // Rehabilitar el botón después de un breve delay
+    setTimeout(() => {
+        boton.disabled = false;
+    }, 500);
 }
 
 // Registrar nuevo cliente
 function registrarCliente() {
-    const datosCliente = {
-        cedula: elementos.cedulaInput?.value?.trim(),
-        nombre: elementos.nombreInput?.value?.trim(),
-        apellido: elementos.apellidoInput?.value?.trim(),
-        telefono: elementos.telefonoInput?.value?.trim(),
-        alias: elementos.aliasInput?.value?.trim()
-    };
-    
-    if (!validarDatosCliente(datosCliente)) {
-        mostrarAlerta('error', 'Por favor complete todos los campos obligatorios');
+    if (!validarClienteMinimo()) {
+        mostrarAlerta('error', 'Debe ingresar al menos la cédula del cliente');
+        elementos.cedulaInput.focus();
         return;
     }
     
-    // Aquí iría la lógica para registrar el cliente
-    mostrarAlerta('success', 'Cliente registrado exitosamente');
+    // Recopilar datos del cliente
+    const datosCliente = {
+        cedula: elementos.cedulaInput.value.trim(),
+        nombre: elementos.nombreInput.value.trim(),
+        apellido: elementos.apellidoInput.value.trim(),
+        telefono: elementos.telefonoInput.value.trim(),
+        alias: elementos.aliasInput.value.trim()
+    };
+    
+    // Validar que todos los campos estén completos
+    if (!validarDatosCliente(datosCliente)) {
+        mostrarAlerta('error', 'Debe completar todos los campos del cliente');
+        resaltarCamposIncompletos();
+        return;
+    }
+    
+    // Deshabilitar botón durante el registro
+    deshabilitarBoton(elementos.btnRegistrar);
+    elementos.btnRegistrar.textContent = 'Registrando...';
+    
+    // Enviar datos al backend
+    fetch('../logica/agregar_cliente.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(datosCliente)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarAlerta('success', data.message);
+            // Limpiar formulario después del registro exitoso
+            limpiarFormularioCliente();
+            // Continuar a la sección de factura
+            setTimeout(() => {
+                mostrarSeccionFacturaConAnimacion();
+                ocultarPanelClienteConAnimacion();
+            }, 1500);
+        } else {
+            mostrarAlerta('error', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error al registrar cliente:', error);
+        mostrarAlerta('error', 'Error de conexión. Intente nuevamente.');
+    })
+    .finally(() => {
+        // Rehabilitar botón
+        habilitarBoton(elementos.btnRegistrar);
+        elementos.btnRegistrar.textContent = 'Registrar';
+    });
+}
+
+// Limpiar formulario de cliente
+function limpiarFormularioCliente() {
+    if (elementos.cedulaInput) elementos.cedulaInput.value = '';
+    if (elementos.nombreInput) elementos.nombreInput.value = '';
+    if (elementos.apellidoInput) elementos.apellidoInput.value = '';
+    if (elementos.telefonoInput) elementos.telefonoInput.value = '';
+    if (elementos.aliasInput) elementos.aliasInput.value = '';
+    
+    // Actualizar validación visual
+    actualizarIndicadoresVisuales();
 }
 
 // Continuar con cliente existente
 function continuarConCliente() {
-    if (!validarClienteMinimo()) {
-        mostrarAlerta('error', 'Debe ingresar al menos la cédula del cliente');
+    if (!validarTodosLosCampos()) {
+        mostrarAlerta('error', 'Debe completar todos los campos del cliente para continuar');
+        resaltarCamposIncompletos();
         return;
     }
     
@@ -336,106 +616,398 @@ function continuarConCliente() {
     ocultarPanelClienteConAnimacion();
 }
 
-// Validar datos del cliente
-function validarDatosCliente(datos) {
-    return datos.cedula && datos.nombre && datos.apellido;
+// Resaltar campos incompletos
+function resaltarCamposIncompletos() {
+    const campos = [
+        { elemento: elementos.cedulaInput, nombre: 'Cédula' },
+        { elemento: elementos.nombreInput, nombre: 'Nombre' },
+        { elemento: elementos.apellidoInput, nombre: 'Apellido' },
+        { elemento: elementos.telefonoInput, nombre: 'Teléfono' },
+        { elemento: elementos.aliasInput, nombre: 'Alias' }
+    ];
+    
+    campos.forEach(({ elemento, nombre }) => {
+        if (elemento && !elemento.value.trim()) {
+            // Animación de shake para campos vacíos
+            elemento.style.animation = 'shake 0.5s ease-in-out';
+            elemento.style.borderColor = '#dc3545';
+            elemento.style.backgroundColor = '#fff5f5';
+            
+            setTimeout(() => {
+                elemento.style.animation = '';
+                elemento.style.backgroundColor = '';
+            }, 500);
+        }
+    });
 }
 
-// Validación mínima del cliente
+// Validar datos del cliente (actualizada)
+function validarDatosCliente(datos) {
+    return datos.cedula && datos.nombre && datos.apellido && datos.telefono && datos.alias;
+}
+
+// Validación mínima del cliente (solo para registro)
 function validarClienteMinimo() {
-    if (!elementos.cedulaInput.value.trim()) {
-        mostrarAlerta('error', 'Ingrese al menos la cédula del cliente');
-        elementos.cedulaInput.focus();
+    if (!elementos.cedulaInput?.value?.trim()) {
         return false;
     }
     return true;
 }
 
-// Ocultar panel del cliente con animación
+// 🔹 FUNCIONES DE ANIMACIÓN MEJORADAS ENTRE CLIENTE Y FACTURA
 function ocultarPanelClienteConAnimacion() {
     if (elementos.containerCliente) {
-        elementos.containerCliente.style.transition = 'all 0.5s ease';
-        elementos.containerCliente.style.opacity = '0';
-        elementos.containerCliente.style.transform = 'translateX(-20px)';
-        elementos.containerCliente.style.maxHeight = '0';
-        elementos.containerCliente.style.overflow = 'hidden';
+        // Agregar clase de transición
+        elementos.containerCliente.classList.add('transitioning');
         
-        // Ocultar completamente después de la animación
+        // Aplicar animación de salida
+        elementos.containerCliente.classList.add('slide-out-left');
+        
+        // Después de la animación, ocultar completamente
         setTimeout(() => {
             elementos.containerCliente.style.display = 'none';
-        }, 500);
+            elementos.containerCliente.classList.remove('slide-out-left', 'transitioning');
+        }, 600); // Duración de la animación
     }
 }
 
-// Mostrar panel del cliente (por si necesitas restaurarlo)
-function mostrarPanelClienteConAnimacion() {
-    if (elementos.containerCliente) {
-        elementos.containerCliente.style.display = 'grid';
-        elementos.containerCliente.style.transition = 'all 0.5s ease';
-        elementos.containerCliente.style.opacity = '0';
-        elementos.containerCliente.style.transform = 'translateX(-20px)';
-        elementos.containerCliente.style.maxHeight = '0';
+function mostrarSeccionFacturaConAnimacion() {
+    if (elementos.containerFactura) {
+        // Actualizar resumen del cliente antes de mostrar la factura
+        actualizarResumenCliente();
         
-        // Animar después de un pequeño delay
+        // Mostrar el contenedor
+        elementos.containerFactura.style.display = 'flex';
+        elementos.containerFactura.classList.remove('hidden');
+        elementos.containerFactura.classList.add('transitioning');
+        
+        // Pequeño delay para asegurar que el display se aplique
         setTimeout(() => {
-            elementos.containerCliente.style.opacity = '1';
-            elementos.containerCliente.style.transform = 'translateX(0)';
-            elementos.containerCliente.style.maxHeight = '500px';
+            // Aplicar animación de entrada
+            elementos.containerFactura.classList.add('slide-in-right');
+            
+            // Después de un breve delay, mostrar elementos internos
+            setTimeout(() => {
+                elementos.containerFactura.classList.add('show');
+            }, 200);
+            
+            // Limpiar clases después de la animación
+            setTimeout(() => {
+                elementos.containerFactura.classList.remove('slide-in-right', 'transitioning');
+            }, 600);
+            
+            // Scroll suave a la factura
+            elementos.containerFactura.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
         }, 50);
     }
 }
 
-// Mostrar sección factura con animación
-function mostrarSeccionFacturaConAnimacion() {
-    elementos.containerFactura.style.opacity = '0';
-    elementos.containerFactura.style.transform = 'translateY(20px)';
-    elementos.containerFactura.classList.remove('hidden');
+// Actualizar la tabla de la factura
+function actualizarTablaFactura() {
+    console.log('Actualizando tabla de factura...');
+    console.log('Productos en factura:', productosFactura);
     
-    setTimeout(() => {
-        elementos.containerFactura.style.transition = 'all 0.5s ease';
-        elementos.containerFactura.style.opacity = '1';
-        elementos.containerFactura.style.transform = 'translateY(0)';
-    }, 50);
+    if (!elementos.tablaFacturaBody) {
+        console.error('Elemento tablaFacturaBody no encontrado');
+        return;
+    }
     
-    // Scroll suave a la factura
-    elementos.containerFactura.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
+    // Limpiar la tabla
+    elementos.tablaFacturaBody.innerHTML = '';
+    
+    if (productosFactura.length === 0) {
+        elementos.tablaFacturaBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-gray-500">
+                    No hay productos en la factura
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Agregar cada producto a la tabla
+    productosFactura.forEach((producto, index) => {
+        console.log(`Procesando producto ${index}:`, producto);
+        
+        const subtotalUSD = producto.precio * producto.cantidad;
+        const subtotalBs = subtotalUSD * 36; // Tasa de cambio aproximada
+        
+        console.log(`Subtotal USD: ${subtotalUSD}, Subtotal Bs: ${subtotalBs}`);
+        
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+            <td>${producto.nombre}</td>
+            <td>
+                <div class="cantidad-controls">
+                    <button onclick="cambiarCantidadProducto(${index}, -1)" 
+                            class="btn-cantidad btn-decrementar">
+                        -
+                    </button>
+                    <input type="number" 
+                           class="cantidad-numero" 
+                           value="${producto.cantidad}" 
+                           min="1" 
+                           max="999"
+                           onchange="actualizarCantidadManual(${index}, this.value)"
+                           onblur="validarCantidadInput(this)"
+                           onclick="this.select()">
+                    <button onclick="cambiarCantidadProducto(${index}, 1)" 
+                            class="btn-cantidad btn-incrementar">
+                        +
+                    </button>
+                </div>
+            </td>
+            <td>$${producto.precio.toFixed(2)}</td>
+            <td>Bs. ${(producto.precio * 36).toFixed(2)}</td>
+            <td>$${subtotalUSD.toFixed(2)} | Bs. ${subtotalBs.toFixed(2)}</td>
+            <td>
+                <button onclick="eliminarProductoFactura(${index})" 
+                        class="btn-eliminar">
+                    Eliminar
+                </button>
+            </td>
+        `;
+        elementos.tablaFacturaBody.appendChild(fila);
     });
+    
+    console.log('Tabla actualizada');
+}
+
+// Cambiar cantidad de un producto en la factura
+function cambiarCantidadProducto(index, cambio) {
+    if (index < 0 || index >= productosFactura.length) return;
+    
+    productosFactura[index].cantidad += cambio;
+    
+    // Si la cantidad llega a 0 o menos, eliminar el producto
+    if (productosFactura[index].cantidad <= 0) {
+        productosFactura.splice(index, 1);
+    }
+    
+    // Actualizar la tabla y el total
+    actualizarTablaFactura();
+    calcularTotalFactura();
+}
+
+// Eliminar producto de la factura
+function eliminarProductoFactura(index) {
+    if (index < 0 || index >= productosFactura.length) return;
+    
+    const producto = productosFactura[index];
+    productosFactura.splice(index, 1);
+    
+    // Actualizar la tabla y el total
+    actualizarTablaFactura();
+    calcularTotalFactura();
+    
+    mostrarAlerta('info', `Producto "${producto.nombre}" eliminado de la factura`);
+}
+
+// Calcular y mostrar el total de la factura
+function calcularTotalFactura() {
+    console.log('Calculando total de factura...');
+    console.log('Productos en factura:', productosFactura);
+    
+    const totalUSD = productosFactura.reduce((sum, producto) => {
+        console.log(`Producto: ${producto.nombre}, Precio: ${producto.precio}, Cantidad: ${producto.cantidad}`);
+        return sum + (producto.precio * producto.cantidad);
+    }, 0);
+    
+    const totalBs = totalUSD * 36; // Tasa de cambio aproximada
+    
+    console.log('Total USD:', totalUSD);
+    console.log('Total Bs:', totalBs);
+    console.log('Elemento totalText:', elementos.totalText);
+    
+    if (elementos.totalText) {
+        elementos.totalText.innerHTML = `
+            <div class="total-container">
+                <div class="total-label">TOTAL A PAGAR</div>
+                <div class="total-amounts">
+                    <div class="total-usd">$${totalUSD.toFixed(2)} USD</div>
+                    <div class="total-separator">|</div>
+                    <div class="total-bs">Bs ${totalBs.toFixed(2)}</div>
+                </div>
+            </div>
+        `;
+        console.log('Total actualizado en DOM');
+    } else {
+        console.error('Elemento totalText no encontrado');
+    }
+    
+    return totalUSD;
+}
+function actualizarResumenCliente() {
+    if (elementos.resumenCliente) {
+        const cedula = elementos.cedulaInput?.value.trim() || '';
+        const nombre = elementos.nombreInput?.value.trim() || '';
+        const apellido = elementos.apellidoInput?.value.trim() || '';
+        const telefono = elementos.telefonoInput?.value.trim() || '';
+        const alias = elementos.aliasInput?.value.trim() || '';
+        
+        if (cedula || nombre || apellido) {
+            const resumen = `
+                <strong>Cédula:</strong> ${cedula}<br>
+                <strong>Nombre:</strong> ${nombre} ${apellido}<br>
+                <strong>Teléfono:</strong> ${telefono}<br>
+                <strong>Alias:</strong> ${alias}
+            `;
+            elementos.resumenCliente.innerHTML = resumen;
+        } else {
+            elementos.resumenCliente.textContent = 'Ninguno';
+        }
+    }
 }
 
 // Filtrar productos en tiempo real
 function filtrarProductos() {
-    const filtro = elementos.busquedaProducto.value.toLowerCase();
-    const filas = elementos.productosBody.querySelectorAll('tr');
+    if (!elementos.busquedaProducto || !elementos.productosBody) return;
     
-    filas.forEach(fila => {
-        const textoFila = fila.textContent.toLowerCase();
-        if (textoFila.includes(filtro)) {
+    const filtro = elementos.busquedaProducto.value.trim();
+    
+    // Si no hay filtro, mostrar todos los productos
+    if (filtro.length === 0) {
+        const filas = elementos.productosBody.querySelectorAll('tr');
+        filas.forEach(fila => {
             fila.style.display = '';
-            // Animación de aparición
             fila.style.animation = 'fadeIn 0.3s ease';
-        } else {
-            fila.style.display = 'none';
-        }
-    });
-    
-    // Mostrar mensaje si no hay resultados
-    const filasVisibles = Array.from(filas).some(fila => fila.style.display !== 'none');
-    if (!filasVisibles && filtro !== '') {
-        mostrarMensajeNoResultados();
+        });
+        return;
     }
+    
+    // Si hay menos de 2 caracteres, no buscar
+    if (filtro.length < 2) {
+        return;
+    }
+    
+    // Buscar productos usando el backend
+    buscarProductosAutoComplete(filtro);
 }
 
-// Mostrar mensaje cuando no hay resultados
-function mostrarMensajeNoResultados() {
-    const mensajeExistente = elementos.productosBody.querySelector('.no-results');
-    if (!mensajeExistente) {
-        const mensaje = document.createElement('tr');
-        mensaje.className = 'no-results';
-        mensaje.innerHTML = `<td colspan="4" style="text-align: center; color: #666; padding: 20px;">No se encontraron productos</td>`;
-        elementos.productosBody.appendChild(mensaje);
+// Nueva función para buscar productos con autocompletado
+function buscarProductosAutoComplete(termino) {
+    // Limpiar timeout anterior
+    if (timeoutAutoComplete) {
+        clearTimeout(timeoutAutoComplete);
     }
+    
+    // Debounce de 300ms
+    timeoutAutoComplete = setTimeout(() => {
+        fetch(`../logica/buscar_producto.php?q=${encodeURIComponent(termino)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    actualizarTablaProductos(data.productos);
+                    mostrarIndicadorBusquedaProductos(data.productos.length);
+                } else {
+                    // Si no hay resultados, mostrar mensaje
+                    mostrarTablaVacia();
+                }
+            })
+            .catch(error => {
+                console.error('Error al buscar productos:', error);
+                mostrarAlerta('error', 'Error al buscar productos');
+            });
+    }, 300);
+}
+
+// Actualizar tabla de productos con resultados de búsqueda
+function actualizarTablaProductos(productos) {
+    console.log('Actualizando tabla de productos con:', productos);
+    
+    if (!elementos.productosBody) return;
+    
+    // Limpiar tabla actual
+    elementos.productosBody.innerHTML = '';
+    
+    if (productos.length === 0) {
+        mostrarTablaVacia();
+        return;
+    }
+    
+    // Agregar productos encontrados
+    productos.forEach(producto => {
+        console.log('Procesando producto para tabla:', producto);
+        
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+            <td>${producto.nombre_produc}</td>
+            <td>$${parseFloat(producto.precio_produc).toFixed(2)}</td>
+            <td>General</td>
+            <td>
+                <button class="btn-agregar-producto modern-btn" 
+                        data-id="${producto.id_producto}" 
+                        data-nombre="${producto.nombre_produc}" 
+                        data-precio="${producto.precio_produc}" 
+                        onclick="agregarProductoAFactura(this)"
+                        aria-label="Agregar ${producto.nombre_produc} a la factura">
+                    Agregar
+                </button>
+            </td>
+        `;
+        
+        // Animación de aparición
+        fila.style.animation = 'fadeIn 0.3s ease';
+        elementos.productosBody.appendChild(fila);
+    });
+    
+    console.log('Tabla de productos actualizada');
+}
+
+// Mostrar tabla vacía cuando no hay resultados
+function mostrarTablaVacia() {
+    if (!elementos.productosBody) return;
+    
+    elementos.productosBody.innerHTML = `
+        <tr>
+            <td colspan="4" style="text-align: center; padding: 20px; color: #666;">
+                No se encontraron productos
+            </td>
+        </tr>
+    `;
+}
+
+// Mostrar indicador de búsqueda de productos
+function mostrarIndicadorBusquedaProductos(cantidad) {
+    // Crear o actualizar indicador
+    let indicador = document.getElementById('indicador-busqueda-productos');
+    
+    if (!indicador) {
+        indicador = document.createElement('div');
+        indicador.id = 'indicador-busqueda-productos';
+        indicador.style.cssText = `
+            position: absolute;
+            top: -25px;
+            right: 0;
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        `;
+        
+        // Agregar al contenedor de búsqueda
+        const contenedorBusqueda = elementos.busquedaProducto.parentElement;
+        if (contenedorBusqueda) {
+            contenedorBusqueda.style.position = 'relative';
+            contenedorBusqueda.appendChild(indicador);
+        }
+    }
+    
+    indicador.textContent = `${cantidad} producto${cantidad !== 1 ? 's' : ''} encontrado${cantidad !== 1 ? 's' : ''}`;
+    
+    // Ocultar después de 2 segundos
+    setTimeout(() => {
+        if (indicador && indicador.parentElement) {
+            indicador.remove();
+        }
+    }, 2000);
 }
 
 // Animación para botones
@@ -533,15 +1105,10 @@ function inicializarAnimaciones() {
             }
         }
         
-        @keyframes slideOutLeft {
-            from { 
-                transform: translateX(0); 
-                opacity: 1; 
-            }
-            to { 
-                transform: translateX(-20px); 
-                opacity: 0; 
-            }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
         
         .btn-agregar-producto {
@@ -562,108 +1129,434 @@ function inicializarAnimaciones() {
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         
-        /* Animación para cuando se muestran elementos */
+        .button.disabled {
+            pointer-events: none;
+        }
+        
+        .campo-completo {
+            border-color: #28a745 !important;
+        }
+        
+        .campo-incompleto {
+            border-color: #dc3545 !important;
+        }
+        
         .container_factura {
             transition: all 0.5s ease;
         }
         
-        /* Animación para panel cliente */
         .container_cliente {
             transition: all 0.5s ease;
             overflow: hidden;
         }
         
-        /* Animación para filas de tabla */
-        .tabla-productos tr {
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .tabla-factura tr {
-            transition: all 0.3s ease;
-        }
-        
-        .tabla-factura tr:hover {
-            background-color: #f8f9fa;
-            transform: scale(1.01);
-        }
-        
-        /* Efecto de carga para botones */
-        .button.loading {
-            position: relative;
-            color: transparent;
-        }
-        
-        .button.loading::after {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            top: 50%;
-            left: 50%;
-            margin: -8px 0 0 -8px;
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            border-right-color: transparent;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .custom-alert {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
         }
     `;
     document.head.appendChild(estiloAnimaciones);
 }
 
-// Función para mostrar estado de carga en botones
-function mostrarCarga(boton) {
-    boton.classList.add('loading');
-    boton.disabled = true;
+// Función para cargar todos los productos inicialmente
+function cargarTodosLosProductos() {
+    fetch('../logica/obtener_producto.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.productos) {
+                actualizarTablaProductos(data.productos);
+            } else {
+                console.error('Error al cargar productos:', data.message);
+                mostrarTablaVacia('Error al cargar productos');
+            }
+        })
+        .catch(error => {
+            console.error('Error en la petición:', error);
+            mostrarTablaVacia('Error de conexión');
+        });
 }
 
-function ocultarCarga(boton) {
-    boton.classList.remove('loading');
-    boton.disabled = false;
-}
+// ...
 
-// Efecto al agregar producto a la factura (puedes llamar esta función desde PHP)
-function efectoAgregarProducto(nombreProducto) {
-    mostrarAlerta('success', `✓ ${nombreProducto} agregado`);
+// Crear contenedor de sugerencias para autocompletado
+function crearContenedorSugerencias(campo, tipo) {
+    const contenedorId = `sugerencias-${tipo}`;
+    let contenedor = document.getElementById(contenedorId);
     
-    // Efecto visual en la tabla de factura
-    const ultimaFila = elementos.tablaFacturaBody.lastElementChild;
-    if (ultimaFila) {
-        ultimaFila.style.animation = 'highlightRow 0.6s ease';
+    if (!contenedor) {
+        contenedor = document.createElement('div');
+        contenedor.id = contenedorId;
+        contenedor.className = 'sugerencias-autocomplete';
+        contenedor.style.cssText = `
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            display: none;
+        `;
         
-        // Remover la animación después de que termine
+        // Insertar después del campo
+        campo.parentNode.style.position = 'relative';
+        campo.parentNode.appendChild(contenedor);
+        
+        // Agregar clase de animación cuando se muestre
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    if (contenedor.style.display !== 'none' && !contenedor.classList.contains('entrando')) {
+                        contenedor.classList.add('entrando');
+                        setTimeout(() => {
+                            contenedor.classList.remove('entrando');
+                        }, 300);
+                    }
+                }
+            });
+        });
+        
+        observer.observe(contenedor, { attributes: true });
+    }
+    
+    return contenedor;
+}
+
+// Manejar navegación con teclado en sugerencias
+function manejarNavegacionTeclado(e, tipo) {
+    const contenedor = document.getElementById(`sugerencias-${tipo}`);
+    if (!contenedor || contenedor.style.display === 'none') return;
+    
+    const sugerencias = contenedor.querySelectorAll('.sugerencia-item');
+    if (sugerencias.length === 0) return;
+    
+    let seleccionado = contenedor.querySelector('.sugerencia-seleccionada');
+    let indiceActual = seleccionado ? Array.from(sugerencias).indexOf(seleccionado) : -1;
+    
+    switch (e.key) {
+        case 'ArrowDown':
+            e.preventDefault();
+            if (seleccionado) seleccionado.classList.remove('sugerencia-seleccionada');
+            indiceActual = (indiceActual + 1) % sugerencias.length;
+            sugerencias[indiceActual].classList.add('sugerencia-seleccionada');
+            sugerencias[indiceActual].scrollIntoView({ block: 'nearest' });
+            break;
+            
+        case 'ArrowUp':
+            e.preventDefault();
+            if (seleccionado) seleccionado.classList.remove('sugerencia-seleccionada');
+            indiceActual = indiceActual <= 0 ? sugerencias.length - 1 : indiceActual - 1;
+            sugerencias[indiceActual].classList.add('sugerencia-seleccionada');
+            sugerencias[indiceActual].scrollIntoView({ block: 'nearest' });
+            break;
+            
+        case 'Enter':
+            e.preventDefault();
+            if (seleccionado) {
+                seleccionado.click();
+            }
+            break;
+            
+        case 'Escape':
+            e.preventDefault();
+            ocultarSugerencias(tipo);
+            break;
+    }
+}
+
+// Ocultar sugerencias de autocompletado
+function ocultarSugerencias(tipo) {
+    const contenedor = document.getElementById(`sugerencias-${tipo}`);
+    if (contenedor) {
+        contenedor.style.display = 'none';
+        contenedor.innerHTML = '';
+    }
+}
+
+// Agregar estilos CSS para sugerencias de autocompletado
+function agregarEstilosSugerencias() {
+    const estiloId = 'estilos-sugerencias-autocomplete';
+    if (document.getElementById(estiloId)) return;
+    
+    const estilos = document.createElement('style');
+    estilos.id = estiloId;
+    estilos.textContent = `
+        .sugerencias-autocomplete {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            background: #ffffff;
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            max-height: 280px;
+            overflow-y: auto;
+            z-index: 1000;
+            animation: slideDown 0.2s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .sugerencia-item {
+            padding: 14px 18px;
+            cursor: pointer;
+            border-bottom: 1px solid #f5f7fa;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            background: linear-gradient(135deg, transparent 0%, rgba(59, 130, 246, 0.02) 100%);
+        }
+        
+        .sugerencia-item:first-child {
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        
+        .sugerencia-item:last-child {
+            border-bottom: none;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+        
+        .sugerencia-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            transform: scaleY(0);
+            transition: transform 0.2s ease;
+        }
+        
+        .sugerencia-item:hover,
+        .sugerencia-item.sugerencia-seleccionada {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            transform: translateX(2px);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+        }
+        
+        .sugerencia-item:hover::before,
+        .sugerencia-item.sugerencia-seleccionada::before {
+            transform: scaleY(1);
+        }
+        
+        .sugerencia-principal {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .sugerencia-principal strong {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 700;
+            box-shadow: 0 1px 3px rgba(146, 64, 14, 0.1);
+        }
+        
+        .sugerencia-secundaria {
+            font-size: 12px;
+            color: #64748b;
+            opacity: 0.9;
+            font-weight: 400;
+            line-height: 1.3;
+        }
+        
+        /* Scrollbar personalizado */
+        .sugerencias-autocomplete::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .sugerencias-autocomplete::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+            margin: 8px 0;
+        }
+        
+        .sugerencias-autocomplete::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+            border-radius: 10px;
+            border: 2px solid #f1f5f9;
+        }
+        
+        .sugerencias-autocomplete::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+        }
+        
+        /* Efecto de entrada suave */
+        .sugerencias-autocomplete.entrando {
+            animation: entradaSuave 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        @keyframes entradaSuave {
+            0% {
+                opacity: 0;
+                transform: translateY(-15px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        /* Indicador de más resultados */
+        .sugerencias-autocomplete::after {
+            content: '';
+            position: sticky;
+            bottom: 0;
+            height: 20px;
+            background: linear-gradient(transparent, rgba(255, 255, 255, 0.9));
+            pointer-events: none;
+        }
+    `;
+    
+    document.head.appendChild(estilos);
+}
+
+// Función para actualizar cantidad manualmente
+function actualizarCantidadManual(index, nuevaCantidad) {
+    const cantidad = parseInt(nuevaCantidad);
+    
+    // Validar que la cantidad sea válida
+    if (isNaN(cantidad) || cantidad < 1) {
+        mostrarAlerta('error', 'La cantidad debe ser un número mayor a 0');
+        actualizarTablaFactura(); // Restaurar valor anterior
+        return;
+    }
+    
+    if (cantidad > 999) {
+        mostrarAlerta('error', 'La cantidad no puede ser mayor a 999');
+        actualizarTablaFactura(); // Restaurar valor anterior
+        return;
+    }
+    
+    // Actualizar la cantidad del producto
+    productosFactura[index].cantidad = cantidad;
+    
+    // Recalcular totales
+    calcularTotalFactura();
+    
+    console.log(`Cantidad actualizada manualmente: ${cantidad} para producto ${productosFactura[index].nombre}`);
+}
+
+// Función para validar el input de cantidad
+function validarCantidadInput(input) {
+    const valor = parseInt(input.value);
+    
+    if (isNaN(valor) || valor < 1) {
+        input.value = 1;
+        input.style.borderColor = '#ff4757';
         setTimeout(() => {
-            ultimaFila.style.animation = '';
+            input.style.borderColor = '';
+        }, 2000);
+    } else if (valor > 999) {
+        input.value = 999;
+        input.style.borderColor = '#ff4757';
+        setTimeout(() => {
+            input.style.borderColor = '';
+        }, 2000);
+    } else {
+        input.style.borderColor = '#2ed573';
+        setTimeout(() => {
+            input.style.borderColor = '';
+        }, 1000);
+    }
+}
+
+// Función para eliminar factura completa y regresar al cliente
+function eliminarFacturaCompleta() {
+    // Confirmar acción (sin validar si hay productos)
+    const confirmar = confirm('¿Estás seguro de que deseas regresar a la selección de cliente? Se perderán todos los productos agregados.');
+    
+    if (confirmar) {
+        // Limpiar array de productos
+        productosFactura = [];
+        
+        // Actualizar tabla
+        actualizarTablaFactura();
+        
+        // Recalcular totales
+        calcularTotalFactura();
+        
+        // Ocultar sección factura
+        const containerFactura = elementos.containerFactura;
+        containerFactura.classList.add('hidden');
+        
+        // Mostrar sección cliente
+        const containerCliente = elementos.containerCliente;
+        if (containerCliente) {
+            containerCliente.style.display = 'flex';
+            containerCliente.classList.remove('hidden');
+        } else {
+            console.error('No se encontró el container_cliente');
+        }
+        
+        // Limpiar búsqueda de productos
+        if (elementos.busquedaProducto) {
+            elementos.busquedaProducto.value = '';
+            mostrarTablaVacia();
+        }
+        
+        // Limpiar formulario de cliente para permitir agregar nuevo cliente
+        limpiarFormularioCliente();
+        
+        // Limpiar autocompletado
+        limpiarAutoComplete();
+        
+        // Mostrar mensaje de confirmación
+        // mostrarAlerta('success', 'Regresando a selección de cliente. Puedes agregar un nuevo cliente o buscar uno existente.');
+        
+        console.log('Factura eliminada completamente');
+        
+        // Recargar la página
+        window.location.reload();
+    }
+}
+
+// Función para transición suave de vuelta al cliente
+function mostrarPanelClienteConAnimacion() {
+    if (elementos.containerCliente) {
+        // Mostrar el contenedor
+        elementos.containerCliente.style.display = 'flex';
+        elementos.containerCliente.classList.add('transitioning');
+        
+        // Pequeño delay para asegurar que el display se aplique
+        setTimeout(() => {
+            // Aplicar animación de entrada
+            elementos.containerCliente.classList.add('fade-in-up');
+            
+            // Limpiar clases después de la animación
+            setTimeout(() => {
+                elementos.containerCliente.classList.remove('fade-in-up', 'transitioning');
+            }, 600);
+        }, 50);
+    }
+}
+
+function ocultarSeccionFacturaConAnimacion() {
+    if (elementos.containerFactura) {
+        // Agregar clase de transición
+        elementos.containerFactura.classList.add('transitioning');
+        elementos.containerFactura.classList.remove('show');
+        
+        // Aplicar animación de salida
+        elementos.containerFactura.classList.add('fade-out-down');
+        
+        // Después de la animación, ocultar completamente
+        setTimeout(() => {
+            elementos.containerFactura.style.display = 'none';
+            elementos.containerFactura.classList.remove('fade-out-down', 'transitioning');
+            elementos.containerFactura.classList.add('hidden');
         }, 600);
     }
-}
-
-// Agregar esta animación al estilo
-const estiloExtra = document.createElement('style');
-estiloExtra.textContent = `
-    @keyframes highlightRow {
-        0% { background-color: #d4edda; }
-        100% { background-color: transparent; }
-    }
-    
-    .custom-alert {
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-    }
-`;
-document.head.appendChild(estiloExtra);
-
-// Función para limpiar filtro
-function limpiarFiltro() {
-    elementos.busquedaProducto.value = '';
-    filtrarProductos();
-}
-
-// Efecto al eliminar producto de la factura
-function efectoEliminarProducto() {
-    mostrarAlerta('info', 'Producto eliminado');
 }

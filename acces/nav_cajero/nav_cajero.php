@@ -75,13 +75,13 @@ section header .logo img {
 
 <section>
   <header id="header-cajero" class="header-hidden">
-    <h2>Bienvenido admin</h2>
+  
     <nav>
       <ul>
-        <li><a href="/cafetin/admin/inventario/vista/inventario.php">lobby</a></li>
-        <li><a href="/cafetin/admin/caja/vista/caja.php">Caja</a></li>
-        <li><a href="/cafetin/admin/deudas/vista/deudas.php">cuentas</a></li>
-        <li><a href="/cafetin/admin/agregar_cajero/vista/agregar_cajero.php">configuracion</a></li>
+        <li><a href="/cafetin/cajero/lobby/vista/lobby.php">lobby</a></li>
+      
+        <li><a href="/cafetin/cajero/cuentas/vista/cuentas.php">cuentas</a></li>
+        <li><a href="/cafetin/cajero/configuracion/vista/configuracion.php">configuracion</a></li>
         <li><a href="/cafetin/login/inicio/vista/inicio.php">Cerrar Sesión</a></li>
       </ul>
     </nav>

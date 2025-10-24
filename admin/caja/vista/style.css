@@ -44,11 +44,7 @@ h1 {
   font-weight: bold;
 }
 
-.filters input[type="date"] {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
+/* Los estilos de inputs ahora se manejan desde main.css */
 
 /* Modern Button Styles - Siguiendo el patrón del inventario */
 .btn {

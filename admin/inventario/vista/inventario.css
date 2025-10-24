@@ -163,7 +163,9 @@ h2 {
     letter-spacing: 0.5px;
 }
 
-.form-group input {
+/* Los estilos generales de inputs ahora se manejan desde main.css */
+
+/* .form-group input {
     width: 100%;
     padding: 15px 18px;
     border: 2px solid #e9ecef;
@@ -183,7 +185,7 @@ h2 {
         0 0 0 4px rgba(102, 126, 234, 0.1),
         0 8px 25px rgba(102, 126, 234, 0.15);
     transform: translateY(-2px);
-}
+} */
 
 .form-group input[type="checkbox"] {
     width: auto;
@@ -637,37 +639,47 @@ td .btn:active {
 }
 
 label {
-    font-weight: bold;
-    font-size: 14px;
     display: block;
     margin-bottom: 8px;
-    color: #495057;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-input[type="text"],
+/* Los estilos de inputs ahora se manejan desde main.css */
+
+/* input[type="text"],
 input[type="number"] {
-  width: 100%;
-  padding: 10px 5px;
-  font-size: 16px;
-  background-color: transparent;
-  border: none;
-  border-bottom: 2px solid #ccc;
-  box-sizing: border-box;
-  transition: border-bottom-color 0.3s;
-  border-radius: 0;
+    width: 100%;
+    padding: 15px 18px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #f8f9fa;
+    color: #2c3e50;
 }
 
 input[type="text"]:focus,
 input[type="number"]:focus {
     outline: none;
-    border-bottom-color: #007bff;
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 
+        0 0 0 4px rgba(102, 126, 234, 0.1),
+        0 8px 25px rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
 }
 
 input[readonly] {
     background-color: #e9ecef;
     cursor: not-allowed;
-    border-bottom-style: dashed;
-}
+    border-color: #ced4da;
+    color: #6c757d;
+} */
 
 .submit-btn {
     margin-bottom: 20px;
