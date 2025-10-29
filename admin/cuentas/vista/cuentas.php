@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <?php require_once '../../../acces/nav_cajero/nav_cajero.php'; ?>
+    <?php require_once '../../../acces/nav_admin/nav_admin.php'; ?>
     <div class="container">
         <div class="accounts-container">
             <h1>Gestión de Facturas</h1>
