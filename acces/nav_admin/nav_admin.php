@@ -80,7 +80,7 @@ section header .logo img {
       <ul>
         <li><a href="/cafetin/admin/inventario/vista/inventario.php">Inventario</a></li>
         <li><a href="/cafetin/admin/caja/vista/caja.php">Caja</a></li>
-        <li><a href="/cafetin/admin/deudas/vista/deudas.php">Deudas</a></li>
+        <li><a href="/cafetin/admin/cuentas/vista/cuentas.php">Cuentas</a></li>
         <li><a href="/cafetin/admin/agregar_cajero/vista/agregar_cajero.php">Agregar Cajero</a></li>
         <li><a href="/cafetin/admin/configuracion/vista/configuracion.php">Configuracion</a></li>
         <li><a href="/cafetin/login/inicio/vista/inicio.php">Cerrar Sesión</a></li>

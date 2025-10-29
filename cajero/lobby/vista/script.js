@@ -101,6 +101,29 @@ function configurarEventListeners() {
         elementos.btnSiguiente.addEventListener('click', continuarConCliente);
     }
     
+    // Event listeners para los botones de la factura
+    if (elementos.btnVerCuenta) {
+        elementos.btnVerCuenta.addEventListener('click', agregarACuenta);
+    }
+    
+    if (elementos.btnPagar) {
+        elementos.btnPagar.addEventListener('click', procesarPago);
+    }
+    
+    // Event listener para búsqueda de productos
+    if (elementos.busquedaProducto) {
+        elementos.busquedaProducto.addEventListener('input', filtrarProductos);
+    }
+    
+    // Event listener para agregar productos desde la tabla
+    if (elementos.productosBody) {
+        elementos.productosBody.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-agregar-producto')) {
+                agregarProductoAFactura(e.target);
+            }
+        });
+    }
+    
     // Auto-completado para campos de cliente
     configurarAutoCompletado();
     
@@ -570,11 +593,16 @@ function registrarCliente() {
     .then(data => {
         if (data.success) {
             mostrarAlerta('success', data.message);
-            // Limpiar formulario después del registro exitoso
-            limpiarFormularioCliente();
-            // Continuar a la sección de factura
+            // NO limpiar formulario para mantener los datos del cliente registrado
+            // Los datos se mantendrán para mostrarlos en la factura
+            
+            // Continuar a la sección de factura inmediatamente
             setTimeout(() => {
+                // Primero actualizar el resumen del cliente mientras los campos están visibles
+                actualizarResumenCliente();
+                // Luego mostrar la factura
                 mostrarSeccionFacturaConAnimacion();
+                // Finalmente ocultar el panel del cliente
                 ocultarPanelClienteConAnimacion();
             }, 1500);
         } else {
@@ -673,8 +701,7 @@ function ocultarPanelClienteConAnimacion() {
 
 function mostrarSeccionFacturaConAnimacion() {
     if (elementos.containerFactura) {
-        // Actualizar resumen del cliente antes de mostrar la factura
-        actualizarResumenCliente();
+        // NO actualizar resumen aquí ya que se hace antes de llamar esta función
         
         // Mostrar el contenedor
         elementos.containerFactura.style.display = 'flex';
@@ -842,12 +869,24 @@ function calcularTotalFactura() {
     return totalUSD;
 }
 function actualizarResumenCliente() {
+    console.log('Ejecutando actualizarResumenCliente()');
+    
     if (elementos.resumenCliente) {
         const cedula = elementos.cedulaInput?.value.trim() || '';
         const nombre = elementos.nombreInput?.value.trim() || '';
         const apellido = elementos.apellidoInput?.value.trim() || '';
         const telefono = elementos.telefonoInput?.value.trim() || '';
         const alias = elementos.aliasInput?.value.trim() || '';
+        
+        console.log('Valores obtenidos:', { cedula, nombre, apellido, telefono, alias });
+        console.log('Elementos DOM:', {
+            cedulaInput: elementos.cedulaInput,
+            nombreInput: elementos.nombreInput,
+            apellidoInput: elementos.apellidoInput,
+            telefonoInput: elementos.telefonoInput,
+            aliasInput: elementos.aliasInput,
+            resumenCliente: elementos.resumenCliente
+        });
         
         if (cedula || nombre || apellido) {
             const resumen = `
@@ -857,9 +896,13 @@ function actualizarResumenCliente() {
                 <strong>Alias:</strong> ${alias}
             `;
             elementos.resumenCliente.innerHTML = resumen;
+            console.log('Resumen actualizado con datos del cliente');
         } else {
             elementos.resumenCliente.textContent = 'Ninguno';
+            console.log('No hay datos del cliente, mostrando "Ninguno"');
         }
+    } else {
+        console.error('Elemento resumenCliente no encontrado');
     }
 }
 
@@ -936,13 +979,13 @@ function actualizarTablaProductos(productos) {
         const fila = document.createElement('tr');
         fila.innerHTML = `
             <td>${producto.nombre_produc}</td>
-            <td>$${parseFloat(producto.precio_produc).toFixed(2)}</td>
+            <td>$${parseFloat(producto.precio_venta).toFixed(2)}</td>
             <td>General</td>
             <td>
                 <button class="btn-agregar-producto modern-btn" 
                         data-id="${producto.id_producto}" 
                         data-nombre="${producto.nombre_produc}" 
-                        data-precio="${producto.precio_produc}" 
+                        data-precio="${producto.precio_venta}" 
                         onclick="agregarProductoAFactura(this)"
                         aria-label="Agregar ${producto.nombre_produc} a la factura">
                     Agregar
@@ -1560,3 +1603,201 @@ function ocultarSeccionFacturaConAnimacion() {
         }, 600);
     }
 }
+
+// Función para agregar productos a cuenta del cliente (crédito)
+function agregarACuenta() {
+    console.log('Agregando productos a cuenta del cliente...');
+    
+    // Validar que hay productos en la factura
+    if (productosFactura.length === 0) {
+        mostrarAlerta('error', 'No hay productos en la factura para agregar a cuenta');
+        return;
+    }
+    
+    // Validar que hay un cliente seleccionado
+    const clienteId = obtenerClienteId();
+    if (!clienteId) {
+        mostrarAlerta('error', 'Debe seleccionar un cliente antes de agregar a cuenta');
+        return;
+    }
+    
+    // Confirmar la acción
+    const confirmar = confirm('¿Está seguro de agregar estos productos a la cuenta del cliente?');
+    if (!confirmar) return;
+    
+    // Preparar datos para enviar
+    const datosFactura = {
+        tipo: 'credito',
+        cliente_id: clienteId,
+        productos: productosFactura.map(producto => ({
+            id: producto.id,
+            nombre: producto.nombre,
+            cantidad: producto.cantidad,
+            precio: producto.precio,
+            total: producto.precio * producto.cantidad
+        })),
+        total_dolares: calcularTotalDolares(),
+        total_bolivares: calcularTotalBolivares()
+    };
+    
+    console.log('Datos a enviar:', datosFactura);
+    
+    // Deshabilitar botón mientras se procesa
+    elementos.btnVerCuenta.disabled = true;
+    elementos.btnVerCuenta.textContent = 'Procesando...';
+    
+    // Enviar datos al servidor
+    fetch('../logica/guardar_factura.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datosFactura)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Respuesta del servidor:', data);
+        
+        if (data.success) {
+            mostrarAlerta('success', `Productos agregados a cuenta exitosamente. Número de crédito: ${data.numero_factura}`);
+            
+            // Limpiar factura después de agregar a cuenta
+            setTimeout(() => {
+                limpiarFacturaCompleta();
+            }, 2000);
+        } else {
+            mostrarAlerta('error', data.message || 'Error al agregar productos a cuenta');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarAlerta('error', 'Error de conexión al agregar productos a cuenta');
+    })
+    .finally(() => {
+        // Rehabilitar botón
+        elementos.btnVerCuenta.disabled = false;
+        elementos.btnVerCuenta.textContent = 'Agregar a cuenta';
+    });
+}
+
+function procesarPago() {
+    console.log('Procesando pago de la factura...');
+    
+    // Validar que hay productos en la factura
+    if (productosFactura.length === 0) {
+        mostrarAlerta('error', 'No hay productos en la factura para procesar el pago');
+        return;
+    }
+    
+    // Validar que hay un cliente seleccionado
+    const clienteId = obtenerClienteId();
+    if (!clienteId) {
+        mostrarAlerta('error', 'Debe seleccionar un cliente antes de procesar el pago');
+        return;
+    }
+    
+    // Confirmar la acción
+    const totalDolares = calcularTotalDolares();
+    const confirmar = confirm(`¿Confirma el pago de $${totalDolares.toFixed(2)}?`);
+    if (!confirmar) return;
+    
+    // Preparar datos para enviar
+    const datosFactura = {
+        tipo: 'contado',
+        cliente_id: clienteId,
+        productos: productosFactura.map(producto => ({
+            id: producto.id,
+            nombre: producto.nombre,
+            cantidad: producto.cantidad,
+            precio: producto.precio,
+            total: producto.precio * producto.cantidad
+        })),
+        total_dolares: totalDolares,
+        total_bolivares: calcularTotalBolivares()
+    };
+    
+    console.log('Datos a enviar:', datosFactura);
+    
+    // Deshabilitar botón mientras se procesa
+    elementos.btnPagar.disabled = true;
+    elementos.btnPagar.textContent = 'Procesando...';
+    
+    // Enviar datos al servidor
+    fetch('../logica/guardar_factura.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datosFactura)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Respuesta del servidor:', data);
+        
+        if (data.success) {
+            mostrarAlerta('success', `Pago procesado exitosamente. Número de factura: ${data.numero_factura}`);
+            
+            // Limpiar factura después del pago
+            setTimeout(() => {
+                limpiarFacturaCompleta();
+            }, 2000);
+        } else {
+            mostrarAlerta('error', data.message || 'Error al procesar el pago');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarAlerta('error', 'Error de conexión al procesar el pago');
+    })
+    .finally(() => {
+        // Rehabilitar botón
+        elementos.btnPagar.disabled = false;
+        elementos.btnPagar.textContent = 'Pagar';
+    });
+}
+
+// Función auxiliar para obtener el ID del cliente actual
+function obtenerClienteId() {
+    // Buscar el ID del cliente en los campos del formulario o en una variable global
+    const cedulaCliente = elementos.cedulaInput?.value;
+    
+    if (!cedulaCliente) {
+        console.error('No se encontró cédula del cliente');
+        return null;
+    }
+    
+    // Por ahora retornamos 1 como ID por defecto
+    // En una implementación completa, deberías obtener el ID real del cliente
+    // desde la base de datos o almacenarlo cuando se registra/selecciona el cliente
+    return 1;
+}
+
+// Función auxiliar para calcular total en dólares
+function calcularTotalDolares() {
+    return productosFactura.reduce((total, producto) => {
+        return total + (producto.precio * producto.cantidad);
+    }, 0);
+}
+
+// Función auxiliar para calcular total en bolívares
+function calcularTotalBolivares() {
+    const totalDolares = calcularTotalDolares();
+    return totalDolares * 36; // Tasa de cambio aproximada
+}
+
+// Función para limpiar la factura completa después de procesar
+function limpiarFacturaCompleta() {
+    // Limpiar array de productos
+    productosFactura = [];
+    
+    // Actualizar tabla
+    actualizarTablaFactura();
+    
+    // Recalcular totales
+    calcularTotalFactura();
+    
+    // Regresar a la selección de cliente
+    eliminarFacturaCompleta();
+}
+
+// ... existing code ...

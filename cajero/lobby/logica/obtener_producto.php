@@ -4,7 +4,7 @@ require_once '../../../BBDD/BBDD.php';
 header('Content-Type: application/json');
 
 try {
-    $sql = "SELECT id_producto, nombre_produc, precio_produc 
+    $sql = "SELECT id_producto, nombre_produc, precio_venta 
             FROM inventario 
             WHERE activo = TRUE 
             ORDER BY nombre_produc ASC";

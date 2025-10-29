@@ -102,7 +102,7 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
                 require_once '../../../BBDD/BBDD.php';
 
                 // Consulta para obtener los productos activos del inventario
-                $sql = "SELECT id_producto, nombre_produc, precio_produc FROM inventario WHERE activo = TRUE ORDER BY nombre_produc ASC";
+                $sql = "SELECT id_producto, nombre_produc, precio_venta FROM inventario WHERE activo = TRUE ORDER BY nombre_produc ASC";
                 $stmt = $conexion->prepare($sql);
                 $stmt->execute();
                 $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -113,8 +113,8 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
                         echo "<tr>";
                         echo "<td>" . htmlspecialchars($producto['id_producto']) . "</td>";
                         echo "<td>" . htmlspecialchars($producto['nombre_produc']) . "</td>";
-                        echo "<td>$" . htmlspecialchars(number_format($producto['precio_produc'], 2)) . "</td>";
-                        echo "<td><button class=\"btn-agregar-producto modern-btn\" data-id=\"" . htmlspecialchars($producto['id_producto']) . "\" data-nombre=\"" . htmlspecialchars($producto['nombre_produc']) . "\" data-precio=\"" . htmlspecialchars($producto['precio_produc']) . "\" aria-label=\"Agregar " . htmlspecialchars($producto['nombre_produc']) . " a la factura\">Agregar</button></td>";
+                        echo "<td>$" . htmlspecialchars(number_format($producto['precio_venta'], 2)) . "</td>";
+                        echo "<td><button class=\"btn-agregar-producto modern-btn\" data-id=\"" . htmlspecialchars($producto['id_producto']) . "\" data-nombre=\"" . htmlspecialchars($producto['nombre_produc']) . "\" data-precio=\"" . htmlspecialchars($producto['precio_venta']) . "\" aria-label=\"Agregar " . htmlspecialchars($producto['nombre_produc']) . " a la factura\" onclick=\"agregarProductoAFactura(this)\">Agregar</button></td>";
                         echo "</tr>";
                     }
                 } else {
