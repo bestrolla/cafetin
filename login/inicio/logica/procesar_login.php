@@ -30,10 +30,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($user && password_verify($contrasena_post, $user['contrasena'])) {
             // Contraseña correcta, iniciar sesión
+            // Variables de sesión para compatibilidad con el sistema existente
             $_SESSION['id_usuario'] = $user['id_usuario'];
             $_SESSION['usuario'] = $usuario_post;
             $_SESSION['nombre_completo'] = $user['nombre'] . ' ' . $user['apellido'];
             $_SESSION['rol'] = $user['nombre_rol'];
+            
+            // Variables de sesión para el nuevo sistema de autenticación
+            $_SESSION['usuario_id'] = $user['id_usuario'];
+            $_SESSION['usuario_nombre'] = $usuario_post;
+            $_SESSION['usuario_rol'] = $user['nombre_rol'];
+            $_SESSION['ultimo_acceso'] = time();
 
             $response['success'] = true;
             $response['message'] = 'Inicio de sesión exitoso.';

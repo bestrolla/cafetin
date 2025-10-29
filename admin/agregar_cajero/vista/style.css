@@ -1,144 +1,156 @@
+/* Estilos modernos para Agregar Cajero */
 .container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-top: 100px; /* Space for the fixed nav */
-  padding-bottom: 80px; /* Space for the fixed footer */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: calc(100vh - 180px);
+    padding: 120px 20px 120px;
+    position: relative;
 }
 
 #form-agregar-cajero {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 30px 40px;
-  border-radius: 15px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  width: 95%;
-  max-width: 700px;
+    background: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.2);
+    width: 100%;
+    max-width: 800px;
+    position: relative;
+    z-index: 1;
+    animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#form-agregar-cajero h1 {
+    text-align: center;
+    color: #2c3e50;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+#form-agregar-cajero p {
+    text-align: center;
+    color: #6c757d;
+    font-size: 1rem;
+    margin-bottom: 30px;
+    line-height: 1.5;
 }
 
 .form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
 }
 
-.form-column h2 {
-  text-align: center;
-  margin-bottom: 15px;
-  color: #333;
-}
-
-label {
-  font-weight: bold;
-  font-size: 14px;
-  display: block;
-  margin-bottom: 5px;
-}
-
-/* Los estilos de inputs ahora se manejan desde main.css */
-
-.submit-btn {
-  width: 100%;
-  padding: 15px;
-  font-size: 16px;
-/* Modern Button Styles - Siguiendo el patrón del inventario */
-.btn {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    position: relative;
-    overflow: hidden;
-    min-width: 90px;
-    white-space: nowrap;
-}
-
-.btn .btn-icon {
-    font-size: 14px;
-    display: inline-block;
-    transition: transform 0.3s ease;
-}
-
-.btn .btn-text {
-    font-size: 11px;
-    font-weight: 700;
+.form-column {
+    background: rgba(248, 249, 250, 0.8);
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
 }
 
-.btn::before {
+.form-column:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.form-column h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #495057;
+    font-size: 1.3rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.form-column h2::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 2px;
+}
+
+.form-column label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #495057;
+    display: block;
+    margin-bottom: 8px;
+    margin-top: 15px;
+    transition: color 0.3s ease;
+}
+
+.form-column label:first-of-type {
+    margin-top: 0;
+}
+
+.form-column input {
     width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.5s;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    box-sizing: border-box;
 }
 
-.btn:hover::before {
-    left: 100%;
+.form-column input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
 }
 
-.btn:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-
-.btn:hover .btn-icon {
-    transform: scale(1.2);
-}
-
-.btn:active {
-    transform: translateY(0) scale(0.95);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-}
-
-.btn-primary:hover {
-    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
-}
-
-.btn-success {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-}
-
-.btn-success:hover {
-    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+.form-column input:focus + label,
+.form-column input:not(:placeholder-shown) + label {
+    color: #667eea;
 }
 
 .submit-btn {
-  width: 100%;
-  padding: 14px 30px;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  min-width: 140px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  color: white;
-  margin-top: 20px;
+    width: 100%;
+    padding: 16px 30px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    margin-top: 20px;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
 }
 
 .submit-btn::before {
@@ -166,23 +178,127 @@ label {
 }
 
 #response-message {
-  margin-top: 15px;
-  padding: 10px;
-  border-radius: 5px;
-  text-align: center;
-  font-weight: bold;
+    margin-top: 20px;
+    padding: 15px 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .hidden {
-  display: none;
+    display: none;
 }
 
 .success {
-  background-color: #d4edda;
-  color: #155724;
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+    border: 1px solid #c3e6cb;
 }
 
 .error {
-  background-color: #f8d7da;
-  color: #721c24;
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 100px 15px 80px;
+    }
+    
+    #form-agregar-cajero {
+        padding: 30px 20px;
+        margin: 0 10px;
+    }
+    
+    #form-agregar-cajero h1 {
+        font-size: 1.8rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .form-column {
+        padding: 20px;
+    }
+    
+    .form-column h2 {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 90px 10px 70px;
+    }
+    
+    #form-agregar-cajero {
+        padding: 25px 15px;
+    }
+    
+    #form-agregar-cajero h1 {
+        font-size: 1.6rem;
+    }
+    
+    .form-column {
+        padding: 15px;
+    }
+    
+    .submit-btn {
+        padding: 14px 25px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Animaciones adicionales */
+.form-column input {
+    position: relative;
+}
+
+.form-column input:valid {
+    border-color: #28a745;
+}
+
+.form-column input:invalid:not(:focus):not(:placeholder-shown) {
+    border-color: #dc3545;
+}
+
+/* Efectos de hover mejorados */
+.form-column:hover label {
+    color: #667eea;
+}
+
+/* Loading state para el botón */
+.submit-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.submit-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+@keyframes spin {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    100% { transform: translateY(-50%) rotate(360deg); }
 }

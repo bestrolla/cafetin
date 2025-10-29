@@ -82,7 +82,7 @@ section header .logo img {
       
         <li><a href="/cafetin/cajero/cuentas/vista/cuentas.php">cuentas</a></li>
         <li><a href="/cafetin/cajero/configuracion/vista/configuracion.php">configuracion</a></li>
-        <li><a href="/cafetin/login/inicio/vista/inicio.php">Cerrar Sesión</a></li>
+        <li><a href="/cafetin/acces/logout.php">Cerrar Sesión</a></li>
       </ul>
     </nav>
     <div class="logo">

@@ -49,3 +49,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Función para mostrar/ocultar contraseña
+function togglePassword() {
+    const passwordInput = document.getElementById('contrasena');
+    const toggleIcon = document.querySelector('.toggle-password');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.textContent = '🙈'; // Cambiar a ojo cerrado
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.textContent = '👁️'; // Cambiar a ojo abierto
+    }
+}

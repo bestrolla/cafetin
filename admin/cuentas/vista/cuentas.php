@@ -1,3 +1,10 @@
+<?php
+// Incluir sistema de control de acceso
+require_once '../../../acces/auth_check.php';
+
+// Proteger página - solo administradores
+protegerPagina(['admin']);
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>

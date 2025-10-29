@@ -181,6 +181,53 @@ label{
     margin-top: 10px;
 }
 
+/* Estilo específico para el input de contraseña con espacio para el ojo */
+.inputBox input[type="password"],
+.inputBox input[type="text"]#contrasena {
+    padding-right: 50px !important; /* Espacio suficiente para el ojo */
+}
+
+/* Estilos mejorados para el icono de mostrar/ocultar contraseña */
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 20px;
+    color: #8e8e93;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+    padding: 4px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.toggle-password:hover {
+    color: #007bff;
+    background: rgba(0, 123, 255, 0.1);
+    border-color: rgba(0, 123, 255, 0.3);
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.toggle-password:active {
+    transform: translateY(-50%) scale(0.95);
+    transition: all 0.1s ease;
+}
+
 /* Los estilos de inputs de inputBox ahora se manejan desde main.css */
 
 .inputBox span{
