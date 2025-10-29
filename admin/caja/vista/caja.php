@@ -30,10 +30,12 @@
 
             <!-- Filtros -->
             <div class="filters">
-                <label for="fecha_inicio">Desde:</label>
-                <input type="date" id="fecha_inicio" name="fecha_inicio">
-                <label for="fecha_fin">Hasta:</label>
-                <input type="date" id="fecha_fin" name="fecha_fin">
+                <div class="date-group">
+                    <label for="fecha_inicio">Desde:</label>
+                    <input type="date" id="fecha_inicio" name="fecha_inicio">
+                    <label for="fecha_fin">Hasta:</label>
+                    <input type="date" id="fecha_fin" name="fecha_fin">
+                </div>
                 <button id="filtrar" class="btn">Filtrar</button>
             </div>
 

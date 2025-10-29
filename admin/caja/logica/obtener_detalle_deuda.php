@@ -77,6 +77,7 @@ try {
     $saldo_pendiente = $total_factura - $total_abonado;
 
     $response = [
+        'id_cliente' => $id_cliente,
         'cliente' => $cliente['cliente'] ?? 'Cliente no encontrado',
         'fecha_factura' => $fecha_factura,
         'productos' => $productos,

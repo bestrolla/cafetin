@@ -168,96 +168,124 @@ function verDetalleDeuda(idCliente, fechaFactura) {
 }
 
 // Función para mostrar modal con detalle
- function mostrarModalDetalle(data) {
-     const modal = document.getElementById('modal-detalle-deuda');
-     const modalBody = modal.querySelector('.modal-body');
+function mostrarModalDetalle(data) {
+    const modal = document.getElementById('modal-detalle-deuda');
+    const modalBody = document.querySelector('#modal-detalle-deuda .modal-body');
     
     // Crear HTML para productos
     let productosHtml = '';
     if (data.productos && data.productos.length > 0) {
         productosHtml = `
-            <h4>Productos:</h4>
-            <table class="tabla-detalle">
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Subtotal</th>
-                        <th>Fecha/Hora</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="deuda-section">
+                <h3>Productos</h3>
+                <table class="productos-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                            <th>Fecha/Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
         `;
         
         data.productos.forEach(producto => {
             productosHtml += `
                 <tr>
-                    <td>${producto.producto}</td>
-                    <td>${producto.cantidad}</td>
-                    <td>$${parseFloat(producto.subtotal).toFixed(2)}</td>
-                    <td>${producto.fecha_compra} ${producto.hora_compra}</td>
+                    <td>${producto.producto || 'N/A'}</td>
+                    <td>${producto.cantidad || 0}</td>
+                    <td>$${parseFloat(producto.subtotal || 0).toFixed(2)}</td>
+                    <td>${producto.fecha_compra || ''} ${producto.hora_compra || ''}</td>
                 </tr>
             `;
         });
         
-        productosHtml += '</tbody></table>';
+        productosHtml += '</tbody></table></div>';
     }
     
     // Crear HTML para abonos
     let abonosHtml = '';
     if (data.abonos && data.abonos.length > 0) {
         abonosHtml = `
-            <h4>Historial de Abonos:</h4>
-            <table class="tabla-detalle">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Monto</th>
-                        <th>Método</th>
-                        <th>Observaciones</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="deuda-section">
+                <h3>Historial de Abonos</h3>
+                <table class="abonos-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Monto</th>
+                            <th>Método</th>
+                            <th>Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
         `;
         
         data.abonos.forEach(abono => {
             abonosHtml += `
                 <tr>
                     <td>${new Date(abono.fecha_abono).toLocaleDateString()}</td>
-                    <td>$${parseFloat(abono.monto).toFixed(2)}</td>
-                    <td>${abono.metodo_pago}</td>
+                    <td>$${parseFloat(abono.monto || 0).toFixed(2)}</td>
+                    <td>${abono.metodo_pago || 'N/A'}</td>
                     <td>${abono.observaciones || '-'}</td>
                 </tr>
             `;
         });
         
-        abonosHtml += '</tbody></table>';
+        abonosHtml += '</tbody></table></div>';
     } else {
-        abonosHtml = '<h4>Historial de Abonos:</h4><p>No hay abonos registrados</p>';
+        abonosHtml = `
+            <div class="deuda-section">
+                <h3>Historial de Abonos</h3>
+                <p style="text-align: center; color: #666; font-style: italic;">No hay abonos registrados</p>
+            </div>
+        `;
     }
     
+    // Obtener totales desde data.resumen o calcular si no existen
+    const total = data.resumen ? data.resumen.total_factura : (data.total || 0);
+    const abonado = data.resumen ? data.resumen.total_abonado : (data.abonado || 0);
+    const saldo = data.resumen ? data.resumen.saldo_pendiente : (data.saldo || 0);
+    
     modalBody.innerHTML = `
-        <div class="detalle-cliente">
-            <h3>Cliente: ${data.cliente}</h3>
-            <p><strong>Fecha de Factura:</strong> ${data.fecha_factura}</p>
+        <div class="deuda-section">
+            <h3>Información del Cliente</h3>
+            <div class="deuda-info-grid">
+                <div class="deuda-info-item">
+                    <span class="deuda-info-label">Cliente</span>
+                    <span class="deuda-info-value">${data.cliente || 'N/A'}</span>
+                </div>
+                <div class="deuda-info-item">
+                    <span class="deuda-info-label">Fecha de Factura</span>
+                    <span class="deuda-info-value">${data.fecha_factura || 'N/A'}</span>
+                </div>
+                <div class="deuda-info-item">
+                    <span class="deuda-info-label">ID Cliente</span>
+                    <span class="deuda-info-value">${data.id_cliente || 'N/A'}</span>
+                </div>
+            </div>
         </div>
         
         ${productosHtml}
         
         ${abonosHtml}
         
-        <div class="resumen-totales">
-            <div class="total-item">
-                <span>Total Factura:</span>
-                <span>$${parseFloat(data.resumen.total_factura).toFixed(2)}</span>
-            </div>
-            <div class="total-item">
-                <span>Total Abonado:</span>
-                <span>$${parseFloat(data.resumen.total_abonado).toFixed(2)}</span>
-            </div>
-            <div class="total-item saldo-pendiente">
-                <span>Saldo Pendiente:</span>
-                <span>$${parseFloat(data.resumen.saldo_pendiente).toFixed(2)}</span>
+        <div class="totales-resumen">
+            <h3 style="margin-bottom: 15px; text-align: center; color: #333;">Resumen de Totales</h3>
+            <div class="totales-grid">
+                <div class="total-item">
+                    <div class="total-label">Total</div>
+                    <div class="total-value total">$${parseFloat(total).toFixed(2)}</div>
+                </div>
+                <div class="total-item">
+                    <div class="total-label">Abonado</div>
+                    <div class="total-value abonado">$${parseFloat(abonado).toFixed(2)}</div>
+                </div>
+                <div class="total-item">
+                    <div class="total-label">Saldo Pendiente</div>
+                    <div class="total-value saldo">$${parseFloat(saldo).toFixed(2)}</div>
+                </div>
             </div>
         </div>
     `;
@@ -266,6 +294,10 @@ function verDetalleDeuda(idCliente, fechaFactura) {
 }
 
 function cerrarModal() {
+    document.getElementById('modal-detalle-deuda').style.display = 'none';
+}
+
+function cerrarModalDetalle() {
     document.getElementById('modal-detalle-deuda').style.display = 'none';
 }
 

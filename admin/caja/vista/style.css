@@ -90,6 +90,28 @@ h1 {
     flex-wrap: wrap;
 }
 
+.date-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.date-group label {
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+}
+
+.date-group input[type="date"] {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    min-width: 150px;
+}
+
 .filters label {
     font-weight: 600;
     color: #555;
@@ -103,7 +125,8 @@ h1 {
     transition: border-color 0.3s ease;
 }
 
-.filters input[type="date"]:focus {
+.filters input[type="date"]:focus,
+.date-group input[type="date"]:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -324,11 +347,214 @@ tbody tr:last-child td {
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
+    border: none;
+    background: none;
+    padding: 5px 10px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
 }
 
 .close:hover {
+    color: #fff;
+    background-color: #dc3545;
+    transform: scale(1.1);
+}
+
+.close:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+
+/* Estilos específicos para el modal de detalles de deudas */
+#modal-detalle-deuda .modal-content {
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#modal-detalle-deuda .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin: -30px -30px 25px -30px;
+    padding: 20px 30px;
+    border-radius: 15px 15px 0 0;
+    border-bottom: none;
+}
+
+#modal-detalle-deuda .modal-header h2 {
+    color: white;
+    font-size: 1.6em;
+    font-weight: 600;
+}
+
+#modal-detalle-deuda .close {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 24px;
+}
+
+#modal-detalle-deuda .close:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Estilos para el contenido del modal de deudas */
+.deuda-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+}
+
+.deuda-section h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.deuda-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.deuda-info-item {
+    background: white;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.deuda-info-label {
+    font-weight: 600;
+    color: #666;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.deuda-info-value {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Tabla de productos en el modal */
+.productos-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.productos-table th {
+    background: #667eea;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.productos-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.productos-table tbody tr:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+}
+
+/* Tabla de abonos en el modal */
+.abonos-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.abonos-table th {
+    background: #28a745;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.abonos-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.abonos-table tbody tr:hover {
+    background-color: rgba(40, 167, 69, 0.05);
+}
+
+/* Resumen de totales */
+.totales-resumen {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    border: 2px solid #dee2e6;
+}
+
+.totales-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.total-item {
+    text-align: center;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.total-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.total-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+}
+
+.total-value.total {
     color: #667eea;
+}
+
+.total-value.abonado {
+    color: #28a745;
+}
+
+.total-value.saldo {
+    color: #dc3545;
 }
 
 .detalle-grid {
@@ -376,6 +602,18 @@ tbody tr:last-child td {
     .filters {
         flex-direction: column;
         align-items: stretch;
+        gap: 20px;
+    }
+    
+    .date-group {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    
+    .date-group input[type="date"] {
+        flex: 1;
+        min-width: 120px;
     }
     
     .tab-button {
