@@ -26,13 +26,17 @@ function cargarCuentas() {
 
 // Función para mostrar las facturas en la tabla
 function mostrarCuentas() {
-    const tbody = document.getElementById('tablaCuentas');
+    const tbody = document.querySelector('#tablaCuentas tbody');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
     if (facturasFiltradas.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay facturas registradas</td></tr>';
         return;
     }
+
+    // Orden alfabético por nombre del cliente
+    facturasFiltradas.sort((a, b) => (a.cliente || '').localeCompare((b.cliente || ''), 'es', { sensitivity: 'base' }));
 
     facturasFiltradas.forEach(factura => {
         const saldo = parseFloat(factura.saldo_pendiente);
@@ -41,9 +45,8 @@ function mostrarCuentas() {
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${factura.id_factura}</td>
             <td>${factura.cliente}</td>
-            <td>${factura.total_productos} producto(s)</td>
+            <td>${factura.total_productos} factura(s)</td>
             <td>$${parseFloat(factura.total_factura).toFixed(2)}</td>
             <td>$${parseFloat(factura.total_abonado).toFixed(2)}</td>
             <td>$${saldo.toFixed(2)}</td>
@@ -53,10 +56,9 @@ function mostrarCuentas() {
                 </span>
             </td>
             <td>
-                <button class="btn btn-sm btn-primary" onclick="verDetalleFactura(${factura.id_cliente}, '${factura.fecha_factura}')">
-                    Ver Detalle
-                </button>
-                ${saldo > 0 ? `<button class="btn btn-sm btn-success ms-1" onclick="abrirModalAbono(${factura.id_factura})">Abonar</button>` : ''}
+                <button class="btn btn-sm btn-primary" onclick="verDetalleCliente(${factura.id_cliente})">Ver Detalles</button>
+                <button class="btn btn-sm btn-success ms-1" onclick="abrirModalAbonoCliente(${factura.id_cliente}, '${factura.cliente}', ${saldo.toFixed(2)})">Abonar</button>
+                <button class="btn btn-sm btn-info ms-1" onclick="verHistorialCliente(${factura.id_cliente})">Historial</button>
             </td>
         `;
         tbody.appendChild(row);
@@ -88,7 +90,8 @@ function filtrarCuentas() {
     facturasFiltradas = facturas.filter(factura => {
         const cumpleCliente = !filtroCliente || factura.cliente.toLowerCase().includes(filtroCliente);
         const cumpleEstado = !filtroEstado || factura.estado_factura === filtroEstado;
-        const cumpleFecha = !filtroFecha || factura.fecha_factura === filtroFecha;
+        // Al agrupar por cliente, no filtramos por fecha en esta tabla
+        const cumpleFecha = true;
         
         return cumpleCliente && cumpleEstado && cumpleFecha;
     });
@@ -210,6 +213,82 @@ function verDetalleFactura(idCliente, fechaFactura) {
             console.error('Error:', error);
             mostrarMensaje('Error al cargar el detalle de la factura', 'error');
         });
+}
+
+// Historial por cliente (agrupado por fecha)
+function verHistorialCliente(idCliente) {
+    fetch(`../logica/obtener_historial_cliente.php?id_cliente=${idCliente}`)
+        .then(response => response.json())
+        .then(historial => {
+            if (historial.error) {
+                mostrarMensaje('Error al cargar el historial: ' + historial.error, 'error');
+                return;
+            }
+            mostrarModalHistorial(historial);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarMensaje('Error al cargar el historial del cliente', 'error');
+        });
+}
+
+function mostrarModalHistorial(historial) {
+    const modal = document.getElementById('modalDetalle');
+    const modalBody = modal.querySelector('.modal-body');
+
+    let contenido = '';
+    if (!historial || historial.length === 0) {
+        contenido = '<p class="text-center">Sin historial de facturas pendientes.</p>';
+    } else {
+        historial.forEach(h => {
+            let productosHtml = '';
+            h.productos.forEach(p => {
+                productosHtml += `
+                    <tr>
+                        <td>${p.producto}</td>
+                        <td>${p.cantidad}</td>
+                        <td>$${parseFloat(p.subtotal).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            contenido += `
+                <div class="mb-4">
+                    <h6 class="bg-light p-2 rounded">
+                        <strong>Fecha:</strong> ${h.fecha}
+                        <span class="float-right">Saldo: $${parseFloat(h.saldo_pendiente).toFixed(2)}</span>
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${productosHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-md-4"><strong>Total:</strong> $${parseFloat(h.total_factura).toFixed(2)}</div>
+                        <div class="col-md-4"><strong>Abonado:</strong> $${parseFloat(h.total_abonado).toFixed(2)}</div>
+                        <div class="col-md-4"><strong>Pendiente:</strong> $${parseFloat(h.saldo_pendiente).toFixed(2)}</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    modalBody.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5>Historial de Facturas por Fecha</h5>
+            <button class="btn btn-sm btn-secondary" onclick="cerrarModalDetalle()">Cerrar</button>
+        </div>
+        ${contenido}
+    `;
+    modal.style.display = 'block';
 }
 
 // Función para cerrar el modal de detalles
@@ -392,3 +471,150 @@ document.addEventListener('DOMContentLoaded', function() {
     // Botón limpiar filtros
     document.getElementById('btn-limpiar-filtros').addEventListener('click', limpiarFiltros);
 });
+function verDetalleCliente(idCliente) {
+    Promise.all([
+        fetch(`../logica/obtener_detalle_cliente.php?id_cliente=${idCliente}`).then(r => r.json()),
+        fetch(`../logica/obtener_historial_cliente.php?id_cliente=${idCliente}`).then(r => r.json())
+    ])
+    .then(([data, historial]) => {
+        if (data.error) { mostrarMensaje(data.error, 'error'); return; }
+        if (historial.error) { mostrarMensaje(historial.error, 'error'); return; }
+
+        const modal = document.getElementById('modalDetalle');
+        const body = modal.querySelector('.modal-body');
+
+        const resumenHtml = `
+            <div class="p-2">
+                <h4>Resumen de Cuenta</h4>
+                <p><strong>Total a pagar:</strong> $${parseFloat(data.total_factura).toFixed(2)}</p>
+                <p><strong>Total abonado:</strong> $${parseFloat(data.total_abonado).toFixed(2)}</p>
+                <p><strong>Saldo pendiente:</strong> $${parseFloat(data.saldo_pendiente).toFixed(2)}</p>
+                <h5>Fechas de abono</h5>
+                ${data.fechas_abono && data.fechas_abono.length ?
+                    `<ul>` + data.fechas_abono.map(f => `<li>${f.fecha} - $${parseFloat(f.monto).toFixed(2)}</li>`).join('') + `</ul>`
+                    : '<p>Sin abonos registrados.</p>'}
+            </div>`;
+
+        const facturasHtml = `
+            <div class="p-2">
+                <h4>Facturas por fecha</h4>
+                ${Array.isArray(historial) && historial.length ? `
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Total</th>
+                                    <th>Abonado</th>
+                                    <th>Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${historial.map(h => `
+                                    <tr>
+                                        <td>${h.fecha}</td>
+                                        <td>$${parseFloat(h.total_factura).toFixed(2)}</td>
+                                        <td>$${parseFloat(h.total_abonado).toFixed(2)}</td>
+                                        <td>$${parseFloat(h.saldo_pendiente).toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : '<p>No hay facturas registradas.</p>'}
+            </div>`;
+
+        body.innerHTML = resumenHtml + facturasHtml;
+        modal.style.display = 'block';
+    })
+    .catch(e => { console.error(e); mostrarMensaje('Error al cargar el detalle del cliente', 'error'); });
+}
+
+function abrirModalAbonoCliente(idCliente, nombreCliente) {
+    fetch(`../logica/obtener_creditos_cliente.php?id_cliente=${idCliente}`)
+        .then(r => r.json())
+        .then(creditos => {
+            if (creditos.error) { mostrarMensaje(creditos.error, 'error'); return; }
+            document.getElementById('clienteAbono').value = nombreCliente;
+            const select = document.getElementById('fechaFacturaAbono');
+            select.innerHTML = '<option value="">Seleccione una factura...</option>';
+            creditos.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id_credito;
+                opt.textContent = `${c.fecha} - Saldo $${parseFloat(c.saldo).toFixed(2)}`;
+                opt.dataset.saldo = parseFloat(c.saldo).toFixed(2);
+                select.appendChild(opt);
+            });
+            // Guardar id del cliente y saldo total para permitir abono general
+            const totalSaldo = Array.isArray(creditos) ? creditos.reduce((sum, c) => sum + parseFloat(c.saldo || 0), 0) : 0;
+            const modal = document.getElementById('modalAbono');
+            modal.dataset.idCliente = idCliente;
+            modal.dataset.totalSaldo = totalSaldo.toFixed(2);
+            // Mostrar saldo total en el campo visual
+            const saldoInput = document.getElementById('saldoAbono');
+            saldoInput.value = `$${totalSaldo.toFixed(2)}`;
+            saldoInput.dataset.saldoNumerico = totalSaldo;
+            select.onchange = function() {
+                const sel = select.options[select.selectedIndex];
+                document.getElementById('idCreditoAbono').value = sel.value;
+                const saldoNumerico = sel.dataset.saldo ? parseFloat(sel.dataset.saldo) : 0;
+                const saldoInput = document.getElementById('saldoAbono');
+                saldoInput.value = sel.dataset.saldo ? `$${saldoNumerico.toFixed(2)}` : '';
+                saldoInput.dataset.saldoNumerico = saldoNumerico;
+                const montoInput = document.getElementById('montoAbono');
+                if (sel.dataset.saldo) {
+                    montoInput.max = saldoNumerico;
+                } else {
+                    montoInput.max = totalSaldo.toFixed(2);
+                }
+            };
+            const montoInput = document.getElementById('montoAbono');
+            montoInput.value = '';
+            // Establecer máximo inicial al saldo total para abono general
+            montoInput.max = totalSaldo.toFixed(2);
+            document.getElementById('metodoPago').value = '';
+            document.getElementById('observacionesAbono').value = '';
+            document.getElementById('idCreditoAbono').value = '';
+            document.getElementById('modalAbono').style.display = 'block';
+        })
+        .catch(e => { console.error(e); mostrarMensaje('Error al preparar el abono', 'error'); });
+}
+
+async function procesarAbono() {
+    const idCredito = document.getElementById('idCreditoAbono').value;
+    const montoAbono = parseFloat(document.getElementById('montoAbono').value);
+    const metodoPago = document.getElementById('metodoPago').value;
+    const observaciones = document.getElementById('observacionesAbono').value;
+    if (!(montoAbono > 0)) { mostrarMensaje('Monto inválido', 'error'); return; }
+    const modal = document.getElementById('modalAbono');
+    const totalSaldoCliente = parseFloat(modal.dataset.totalSaldo || '0');
+    try {
+        if (idCredito) {
+            const saldoNumerico = parseFloat(document.getElementById('saldoAbono').dataset.saldoNumerico || '0');
+            if (montoAbono > saldoNumerico) { mostrarMensaje('El monto del abono excede el saldo pendiente', 'error'); return; }
+            const formData = new FormData();
+            formData.append('id_credito', idCredito);
+            formData.append('monto_abono', montoAbono);
+            formData.append('metodo_pago', metodoPago);
+            formData.append('observaciones', observaciones);
+            const response = await fetch('../logica/procesar_abono.php', { method: 'POST', body: formData });
+            const data = await response.json();
+            if (data.success) { mostrarMensaje('Abono procesado', 'success'); cerrarModalAbono(); cargarCuentas(); }
+            else { mostrarMensaje(data.message || 'Error al procesar el abono', 'error'); }
+        } else {
+            // Abono general a la cuenta del cliente
+            const idCliente = modal.dataset.idCliente;
+            if (!idCliente) { mostrarMensaje('No se pudo identificar el cliente para el abono general', 'error'); return; }
+            if (montoAbono > totalSaldoCliente) { mostrarMensaje('El monto del abono excede el saldo pendiente total', 'error'); return; }
+            const formData = new FormData();
+            formData.append('id_cliente', idCliente);
+            formData.append('monto_abono', montoAbono);
+            formData.append('metodo_pago', metodoPago);
+            formData.append('observaciones', observaciones);
+            const response = await fetch('../logica/procesar_abono_general.php', { method: 'POST', body: formData });
+            const data = await response.json();
+            if (data.success) { cerrarModalAbono(); cargarCuentas(); }
+            else { mostrarMensaje(data.message || 'Error al procesar el abono general', 'error'); }
+        }
+    } catch (err) { console.error(err); mostrarMensaje('Error de conexión al procesar abono', 'error'); }
+}

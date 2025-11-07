@@ -86,10 +86,29 @@ function cargarVentas() {
 function cargarDeudas() {
     const fechaInicio = document.getElementById('fecha_inicio').value;
     const fechaFin = document.getElementById('fecha_fin').value;
+    const buscarNombre = document.getElementById('buscar_nombre')?.value || '';
+    const buscarApellido = document.getElementById('buscar_apellido')?.value || '';
+    const buscarCedula = document.getElementById('buscar_cedula')?.value || '';
     
     let url = '../logica/obtener_deudas.php';
     if (fechaInicio && fechaFin) {
         url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+    }
+    // Agregar filtros de texto
+    const params = new URLSearchParams();
+    if (fechaInicio && fechaFin) {
+        // ya agregados arriba en la URL, no repetir
+    } else {
+        // si no se incluyó fecha en la URL base, usaremos params
+        if (fechaInicio) params.set('fecha_inicio', fechaInicio);
+        if (fechaFin) params.set('fecha_fin', fechaFin);
+    }
+    if (buscarNombre) params.set('buscar_nombre', buscarNombre);
+    if (buscarApellido) params.set('buscar_apellido', buscarApellido);
+    if (buscarCedula) params.set('buscar_cedula', buscarCedula);
+    const queryString = params.toString();
+    if (queryString) {
+        url += (url.includes('?') ? '&' : '?') + queryString;
     }
     
     fetch(url)
@@ -129,9 +148,11 @@ function cargarDeudas() {
                 }
                 
                 const row = document.createElement('tr');
+                const fechaMostrar = deuda.fecha_factura ? new Date(deuda.fecha_factura).toLocaleDateString() : '';
                 row.innerHTML = `
                     <td>${deuda.id_credito}</td>
                     <td>${deuda.cliente}</td>
+                    <td>${fechaMostrar}</td>
                     <td>${deuda.total_productos} producto(s)</td>
                     <td>$${parseFloat(deuda.total_factura).toFixed(2)}</td>
                     <td>$${parseFloat(deuda.total_abonado).toFixed(2)}</td>

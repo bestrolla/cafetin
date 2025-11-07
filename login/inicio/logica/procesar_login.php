@@ -54,6 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['usuario_rol'] = $user['nombre_rol'];
             $_SESSION['ultimo_acceso'] = time();
 
+            // Actualizar la cantidad_total en el inventario
+            $sqlUpdateInventario = "UPDATE inventario SET cantidad_total = (caja_produc * cantidad_caja) + unidades_sueltas";
+            $stmtUpdate = $conexion->prepare($sqlUpdateInventario);
+            $stmtUpdate->execute();
+
             $response['success'] = true;
             $response['message'] = 'Inicio de sesión exitoso.';
             $response['role'] = $user['nombre_rol'];

@@ -41,32 +41,34 @@ try {
         $pdo->exec($createTable);
     }
 
-    // Consulta para obtener las facturas agrupadas por cliente y fecha
+    // Consulta corregida para evitar duplicar SUM(c.total) por múltiples filas en abonos
+    // Se agrega una subconsulta que suma abonos por crédito y se une por id_credito
     $sql = "
         SELECT 
-            MIN(c.id_credito) as id_factura,
-            CONCAT(p.nombre, ' ', p.apellido) as cliente,
+            CONCAT(p.nombre, ' ', p.apellido) AS cliente,
             c.id_cliente,
-            DATE(c.fecha_cre) as fecha_factura,
-            c.fecha_cre,
-            COUNT(c.id_credito) as total_productos,
-            SUM(c.total) as total_factura,
-            COALESCE(SUM(a.monto), 0) as total_abonado,
-            (SUM(c.total) - COALESCE(SUM(a.monto), 0)) as saldo_pendiente,
+            COUNT(c.id_credito) AS total_productos,
+            SUM(c.total) AS total_factura,
+            COALESCE(SUM(a.total_abonado), 0) AS total_abonado,
+            (SUM(c.total) - COALESCE(SUM(a.total_abonado), 0)) AS saldo_pendiente,
             CASE 
-                WHEN (SUM(c.total) - COALESCE(SUM(a.monto), 0)) <= 0 THEN 'pagado'
-                WHEN COALESCE(SUM(a.monto), 0) > 0 THEN 'parcial'
+                WHEN (SUM(c.total) - COALESCE(SUM(a.total_abonado), 0)) <= 0 THEN 'pagado'
+                WHEN COALESCE(SUM(a.total_abonado), 0) > 0 THEN 'parcial'
                 ELSE 'pendiente'
-            END as estado_factura
+            END AS estado_factura
         FROM credito c
         INNER JOIN cliente cl ON c.id_cliente = cl.id_cliente
         INNER JOIN usuario u ON cl.id_usuario = u.id_usuario
         INNER JOIN persona p ON u.id_persona = p.id_persona
-        LEFT JOIN abonos a ON c.id_credito = a.id_credito
+        LEFT JOIN (
+            SELECT id_credito, SUM(monto) AS total_abonado
+            FROM abonos
+            GROUP BY id_credito
+        ) a ON a.id_credito = c.id_credito
         WHERE c.estado IN ('pendiente', 'parcial')
-        GROUP BY c.id_cliente, DATE(c.fecha_cre), p.nombre, p.apellido
+        GROUP BY c.id_cliente, p.nombre, p.apellido
         HAVING saldo_pendiente > 0
-        ORDER BY c.fecha_cre DESC
+        ORDER BY p.nombre ASC, p.apellido ASC
     ";
 
     $stmt = $pdo->prepare($sql);

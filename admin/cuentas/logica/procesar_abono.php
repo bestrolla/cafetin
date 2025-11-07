@@ -17,7 +17,7 @@ try {
     // Verificar que se recibieron los datos necesarios
     $id_credito = $_POST['id_credito'] ?? null;
     $monto_abono = $_POST['monto_abono'] ?? null;
-    $metodo_pago = $_POST['metodo_pago'] ?? 'efectivo';
+    $metodo_pago = isset($_POST['metodo_pago']) ? trim($_POST['metodo_pago']) : null;
     $observaciones = $_POST['observaciones'] ?? '';
     
     if (!$id_credito || !$monto_abono) {
@@ -26,6 +26,10 @@ try {
     
     if ($monto_abono <= 0) {
         throw new Exception('El monto del abono debe ser mayor a 0');
+    }
+    $metodos_permitidos = ['efectivo','transferencia','tarjeta'];
+    if (!$metodo_pago || !in_array($metodo_pago, $metodos_permitidos, true)) {
+        throw new Exception('Debe seleccionar un método de pago válido');
     }
     
     // Configuración de la base de datos

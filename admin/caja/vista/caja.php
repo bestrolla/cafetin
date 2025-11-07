@@ -43,6 +43,11 @@ protegerPagina(['admin']);
                     <label for="fecha_fin">Hasta:</label>
                     <input type="date" id="fecha_fin" name="fecha_fin">
                 </div>
+                <div class="search-group" style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+                    <input type="text" id="buscar_nombre" placeholder="Buscar por nombre">
+                    <input type="text" id="buscar_apellido" placeholder="Buscar por apellido">
+                    <input type="text" id="buscar_cedula" placeholder="Buscar por cédula">
+                </div>
                 <button id="filtrar" class="btn">Filtrar</button>
             </div>
 
@@ -76,6 +81,7 @@ protegerPagina(['admin']);
                             <tr>
                                 <th>ID Factura</th>
                                 <th>Cliente</th>
+                                <th>Fecha</th>
                                 <th>Productos</th>
                                 <th>Total</th>
                                 <th>Abonado</th>

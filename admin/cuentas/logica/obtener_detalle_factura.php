@@ -50,7 +50,7 @@ try {
         WHERE c.id_cliente = :id_cliente 
         AND DATE(c.fecha_cre) = :fecha_factura
         AND c.estado IN ('pendiente', 'parcial')
-        ORDER BY DATE(c.fecha_cre) ASC, TIME(c.fecha_cre) ASC
+        ORDER BY c.fecha_cre ASC, TIME(c.fecha_cre) ASC
     ";
 
     $stmt = $pdo->prepare($sql);

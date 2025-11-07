@@ -70,12 +70,11 @@ protegerPagina(['cajero']);
                 <table id="tablaCuentas">
                     <thead>
                         <tr>
-                            <th>ID Factura</th>
-                            <th>Cliente</th>
-                            <th>Productos</th>
-                            <th>Total</th>
+                            <th>Nombre</th>
+                            <th>Cantidad de facturas</th>
+                            <th>Total a deber</th>
                             <th>Abonado</th>
-                            <th>Saldo</th>
+                            <th>Debiendo</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
@@ -105,11 +104,17 @@ protegerPagina(['cajero']);
     <div id="modalAbono" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Abonar a Factura</h2>
+                <h2>Abonar por Total</h2>
                 <span class="close" onclick="cerrarModalAbono()">&times;</span>
             </div>
             <div class="modal-body">
                 <form id="formAbono">
+                    <div class="form-group" style="display:none;">
+                        <label for="fechaFacturaAbono">Factura / Fecha:</label>
+                        <select id="fechaFacturaAbono">
+                            <option value="">Seleccione una factura...</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="clienteAbono">Cliente:</label>
                         <input type="text" id="clienteAbono" readonly>

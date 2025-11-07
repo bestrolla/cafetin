@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          alert('Producto agregado con éxito');
+          // alert('Producto agregado con éxito');
           formProducto.reset();
           mostrarUnidadesTotales();
           if (precioUnidadInput) {
@@ -82,12 +82,12 @@ document.addEventListener('DOMContentLoaded', function () {
           }
           loadData();
         } else {
-          alert('Error: ' + data.message);
+          // alert('Error: ' + data.message);
         }
       })
       .catch(error => {
         console.error('Error al agregar producto:', error);
-        alert('Error al agregar el producto');
+        // alert('Error al agregar el producto');
       })
       .finally(() => {
         if (submitBtn) {
@@ -272,7 +272,8 @@ document.addEventListener('DOMContentLoaded', function () {
         abrirModalEditar(id);
       } else if (e.target.classList.contains('btn-delete')) {
         const id = e.target.getAttribute('data-id');
-        if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+        // Confirmación deshabilitada: proceder directamente a eliminar
+        {
           fetch('../logica/eliminar_producto.php', {
             method: 'POST',
             headers: {
@@ -283,15 +284,15 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(response => response.json())
           .then(data => {
             if (data.success) {
-              alert('Producto eliminado correctamente');
+              // alert('Producto eliminado correctamente');
               loadData(); // Recargar la tabla
             } else {
-              alert('Error: ' + data.message);
+              // alert('Error: ' + data.message);
             }
           })
           .catch(error => {
             console.error('Error:', error);
-            alert('Error al eliminar el producto');
+            // alert('Error al eliminar el producto');
           });
         }
       }
@@ -318,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const producto = productos.find(p => p.id_producto == id);
     
     if (!producto) {
-      alert('Producto no encontrado');
+      // alert('Producto no encontrado');
       return;
     }
     
@@ -413,16 +414,16 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        alert('Producto actualizado correctamente');
+        // alert('Producto actualizado correctamente');
         cerrarModal();
         loadData(); // Ahora loadData está disponible en este ámbito
       } else {
-        alert('Error: ' + data.message);
+        // alert('Error: ' + data.message);
       }
     })
     .catch(error => {
       console.error('Error:', error);
-      alert('Error al actualizar el producto');
+      // alert('Error al actualizar el producto');
     });
   };
 

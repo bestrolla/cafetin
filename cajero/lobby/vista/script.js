@@ -1,5 +1,7 @@
 // Variables globales
 let productosDisponibles = [];
+// ID del cliente seleccionado/registrado para usar en ventas y créditos
+let clienteSeleccionadoId = null;
 let timeoutAutoComplete = null; // Para el debounce del auto-completado
 
 // Elementos del DOM
@@ -383,6 +385,8 @@ function resaltarCoincidencia(texto, busqueda) {
 // Auto-rellenar campos del cliente
 function autoRellenarCamposCliente(cliente) {
     // Siempre rellenar todos los campos con los datos del cliente seleccionado
+    // Guardar el id_cliente del cliente seleccionado para futuras operaciones
+    clienteSeleccionadoId = cliente.id_cliente || null;
     if (elementos.cedulaInput) {
         elementos.cedulaInput.value = cliente.cedula || '';
         animarCampoAutoComplete(elementos.cedulaInput);
@@ -428,42 +432,41 @@ function animarCampoAutoComplete(campo) {
 
 // Mostrar indicador de auto-completado
 function mostrarIndicadorAutoComplete() {
-    // Crear o actualizar indicador visual
-    let indicador = document.getElementById('autocomplete-indicator');
-    if (!indicador) {
-        indicador = document.createElement('div');
-        indicador.id = 'autocomplete-indicator';
-        indicador.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-             box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-            z-index: 1000;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-        `;
-        indicador.textContent = '✓ Datos auto-completados';
-        document.body.appendChild(indicador);
-    }
-    
-    // Mostrar indicador
-    setTimeout(() => {
-        indicador.style.opacity = '1';
-        indicador.style.transform = 'translateY(0)';
-    }, 100);
-    
-    // Ocultar después de 3 segundos
-    setTimeout(() => {
-        indicador.style.opacity = '0';
-        indicador.style.transform = 'translateY(-10px)';
-    }, 3000);
+    /*
+    Indicador de auto-completado deshabilitado por solicitud.
+    Código original conservado pero comentado.
+    */
+    // let indicador = document.getElementById('autocomplete-indicator');
+    // if (!indicador) {
+    //     indicador = document.createElement('div');
+    //     indicador.id = 'autocomplete-indicator';
+    //     indicador.style.cssText = `
+    //         position: fixed;
+    //         top: 20px;
+    //         right: 20px;
+    //         background: linear-gradient(135deg, #28a745, #20c997);
+    //         color: white;
+    //         padding: 8px 16px;
+    //         border-radius: 20px;
+    //         font-size: 12px;
+    //         font-weight: bold;
+    //          box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    //         z-index: 1000;
+    //         opacity: 0;
+    //         transform: translateY(-10px);
+    //         transition: all 0.3s ease;
+    //     `;
+    //     indicador.textContent = '✓ Datos auto-completados';
+    //     document.body.appendChild(indicador);
+    // }
+    // setTimeout(() => {
+    //     indicador.style.opacity = '1';
+    //     indicador.style.transform = 'translateY(0)';
+    // }, 100);
+    // setTimeout(() => {
+    //     indicador.style.opacity = '0';
+    //     indicador.style.transform = 'translateY(-10px)';
+    // }, 3000);
 }
 
 // Limpiar auto-completado
@@ -604,6 +607,8 @@ function registrarCliente() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // Guardar el id_cliente recién creado
+            clienteSeleccionadoId = data.id_cliente || null;
             mostrarAlerta('success', data.message);
             // NO limpiar formulario para mantener los datos del cliente registrado
             // Los datos se mantendrán para mostrarlos en la factura
@@ -1077,50 +1082,44 @@ function animarBoton(boton) {
 
 // Mostrar alertas animadas
 function mostrarAlerta(tipo, mensaje) {
-    // Eliminar alerta anterior si existe
-    const alertaAnterior = document.querySelector('.custom-alert');
-    if (alertaAnterior) {
-        alertaAnterior.remove();
-    }
-    
-    const alerta = document.createElement('div');
-    alerta.className = `custom-alert alert-${tipo}`;
-    alerta.textContent = mensaje;
-    
-    // Estilos para la alerta
-    alerta.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: bold;
-        z-index: 10000;
-        max-width: 300px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        animation: slideInRight 0.3s ease-out;
-    `;
-    
-    // Colores según el tipo
-    const colores = {
-        success: '#28a745',
-        error: '#dc3545',
-        warning: '#ffc107',
-        info: '#17a2b8'
-    };
-    
-    alerta.style.backgroundColor = colores[tipo] || colores.info;
-    
-    document.body.appendChild(alerta);
-    
-    // Auto-eliminar después de 4 segundos
-    setTimeout(() => {
-        if (alerta.parentNode) {
-            alerta.style.animation = 'slideOutRight 0.3s ease-in';
-            setTimeout(() => alerta.remove(), 300);
-        }
-    }, 4000);
+    /*
+    Alertas visuales deshabilitadas por solicitud.
+    Código original conservado pero comentado.
+    */
+    // const alertaAnterior = document.querySelector('.custom-alert');
+    // if (alertaAnterior) {
+    //     alertaAnterior.remove();
+    // }
+    // const alerta = document.createElement('div');
+    // alerta.className = `custom-alert alert-${tipo}`;
+    // alerta.textContent = mensaje;
+    // alerta.style.cssText = `
+    //     position: fixed;
+    //     top: 20px;
+    //     right: 20px;
+    //     padding: 15px 20px;
+    //     border-radius: 8px;
+    //     color: white;
+    //     font-weight: bold;
+    //     z-index: 10000;
+    //     max-width: 300px;
+    //     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    //     animation: slideInRight 0.3s ease-out;
+    // `;
+    // const colores = {
+    //     success: '#28a745',
+    //     error: '#dc3545',
+    //     warning: '#ffc107',
+    //     info: '#17a2b8'
+    // };
+    // alerta.style.backgroundColor = colores[tipo] || colores.info;
+    // document.body.appendChild(alerta);
+    // setTimeout(() => {
+    //     if (alerta.parentNode) {
+    //         alerta.style.animation = 'slideOutRight 0.3s ease-in';
+    //         setTimeout(() => alerta.remove(), 300);
+    //     }
+    // }, 4000);
 }
 
 // Inicializar animaciones CSS
@@ -1530,10 +1529,8 @@ function validarCantidadInput(input) {
 
 // Función para eliminar factura completa y regresar al cliente
 function eliminarFacturaCompleta() {
-    // Confirmar acción (sin validar si hay productos)
-    const confirmar = confirm('¿Estás seguro de que deseas regresar a la selección de cliente? Se perderán todos los productos agregados.');
-    
-    if (confirmar) {
+    // Confirmación deshabilitada: regresar directamente a la selección de cliente
+    {
         // Limpiar array de productos
         productosFactura = [];
         
@@ -1633,9 +1630,7 @@ function agregarACuenta() {
         return;
     }
     
-    // Confirmar la acción
-    const confirmar = confirm('¿Está seguro de agregar estos productos a la cuenta del cliente?');
-    if (!confirmar) return;
+    // Confirmación deshabilitada: proceder directamente a agregar a cuenta
     
     // Preparar datos para enviar
     const datosFactura = {
@@ -1708,10 +1703,8 @@ function procesarPago() {
         return;
     }
     
-    // Confirmar la acción
+    // Confirmación deshabilitada: proceder directamente con el pago
     const totalDolares = calcularTotalDolares();
-    const confirmar = confirm(`¿Confirma el pago de $${totalDolares.toFixed(2)}?`);
-    if (!confirmar) return;
     
     // Preparar datos para enviar
     const datosFactura = {
@@ -1771,17 +1764,18 @@ function procesarPago() {
 // Función auxiliar para obtener el ID del cliente actual
 function obtenerClienteId() {
     // Buscar el ID del cliente en los campos del formulario o en una variable global
-    const cedulaCliente = elementos.cedulaInput?.value;
-    
+    if (clienteSeleccionadoId && Number.isInteger(clienteSeleccionadoId)) {
+        return clienteSeleccionadoId;
+    }
+    const cedulaCliente = elementos.cedulaInput?.value?.trim();
     if (!cedulaCliente) {
         console.error('No se encontró cédula del cliente');
         return null;
     }
-    
-    // Por ahora retornamos 1 como ID por defecto
-    // En una implementación completa, deberías obtener el ID real del cliente
-    // desde la base de datos o almacenarlo cuando se registra/selecciona el cliente
-    return 1;
+    // Si no hay id almacenado, pedir al backend que resuelva el cliente por cédula de forma síncrona no es posible aquí.
+    // Forzar selección/registro correcto antes de continuar.
+    console.warn('id_cliente no está definido. Seleccione desde autocompletado o registre el cliente.');
+    return null;
 }
 
 // Función auxiliar para calcular total en dólares

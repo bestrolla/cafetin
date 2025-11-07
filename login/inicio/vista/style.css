@@ -197,8 +197,9 @@ label{
 .toggle-password {
     position: absolute;
     right: 12px;
-    top: 50%;
-    transform: translateY(-52%); /* ajuste fino para centrar visualmente */
+    top: 0;
+    bottom: 0;
+    margin: auto 0;
     line-height: 0; /* evita desalineación por altura de línea */
     cursor: pointer;
     font-size: 20px;
@@ -230,18 +231,18 @@ label{
     color: #007bff;
     background: rgba(0, 123, 255, 0.1);
     border-color: rgba(0, 123, 255, 0.3);
-    transform: translateY(-50%) scale(1.05);
+    transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
 }
 
 .toggle-password:active {
-    transform: translateY(-50%) scale(0.95);
+    transform: scale(0.95);
     transition: all 0.1s ease;
 }
 
 /* Los estilos de inputs de inputBox ahora se manejan desde main.css */
 
-.inputBox span{
+.inputBox input + span{
     position: absolute;
     top: 20px;
     left: 10px;

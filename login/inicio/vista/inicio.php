@@ -27,7 +27,6 @@ $csrf = csrfEnsureToken();
     <div class="inputBox">
       <input type="password" name="contrasena" id="contrasena" required>
       <span>Contrase&ntilde;a</span>
-      <i></i>
       <span class="toggle-password" onclick="togglePassword()" aria-label="Mostrar u ocultar contraseña" title="Mostrar/Ocultar">
         <!-- Ojo abierto -->
         <svg class="icon-eye" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
