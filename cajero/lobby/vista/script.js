@@ -1080,6 +1080,134 @@ function animarBoton(boton) {
     }, 100);
 }
 
+// Panel de confirmación HTML (reutilizable)
+function confirmarAccion(mensaje, opciones = {}) {
+    return new Promise(resolve => {
+        const {
+            titulo = 'Confirmación',
+            textoConfirmar = 'Confirmar',
+            textoCancelar = 'Cancelar'
+        } = opciones;
+
+        // Crear overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10000;
+        `;
+
+        // Crear panel
+        const panel = document.createElement('div');
+        panel.style.cssText = `
+            background: #fff; border-radius: 10px; width: 90%; max-width: 420px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            overflow: hidden; transform: translateY(-10px); opacity: 0;
+            transition: all .2s ease;
+        `;
+
+        const header = document.createElement('div');
+        header.textContent = titulo;
+        header.style.cssText = `background: #222; color: #fff; padding: 12px 16px; font-weight: 600;`;
+
+        const body = document.createElement('div');
+        body.textContent = mensaje;
+        body.style.cssText = `padding: 16px; color: #333; line-height: 1.5;`;
+
+        const footer = document.createElement('div');
+        footer.style.cssText = `display: flex; gap: 10px; padding: 12px 16px; justify-content: flex-end; background: #f7f7f7;`;
+
+        const btnCancelar = document.createElement('button');
+        btnCancelar.textContent = textoCancelar;
+        btnCancelar.style.cssText = `
+            padding: 8px 14px; border-radius: 6px; border: 1px solid #ccc; background: #fff; cursor: pointer;
+        `;
+
+        const btnConfirmar = document.createElement('button');
+        btnConfirmar.textContent = textoConfirmar;
+        btnConfirmar.style.cssText = `
+            padding: 8px 14px; border-radius: 6px; border: 1px solid #28a745; background: #28a745; color: #fff; cursor: pointer;
+        `;
+
+        btnCancelar.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+            resolve(false);
+        });
+        btnConfirmar.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+            resolve(true);
+        });
+
+        footer.appendChild(btnCancelar);
+        footer.appendChild(btnConfirmar);
+
+        panel.appendChild(header);
+        panel.appendChild(body);
+        panel.appendChild(footer);
+        overlay.appendChild(panel);
+        document.body.appendChild(overlay);
+
+        requestAnimationFrame(() => {
+            panel.style.transform = 'translateY(0)';
+            panel.style.opacity = '1';
+        });
+    });
+}
+
+// Toast reutilizable para mensajes informativos
+function mostrarToast(tipo = 'info', mensaje = '') {
+    const colores = {
+        success: { bg: '#28a745', border: '#1f8a37' },
+        error: { bg: '#dc3545', border: '#b02a37' },
+        info: { bg: '#17a2b8', border: '#117a8b' },
+        warning: { bg: '#ffc107', border: '#e0a800' }
+    };
+    const { bg, border } = colores[tipo] || colores.info;
+
+    let contenedor = document.getElementById('toast-contenedor-global');
+    if (!contenedor) {
+        contenedor = document.createElement('div');
+        contenedor.id = 'toast-contenedor-global';
+        contenedor.style.cssText = `
+            position: fixed; top: 16px; right: 16px; z-index: 10001;
+            display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
+        `;
+        document.body.appendChild(contenedor);
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        color: #fff; background: ${bg}; border-left: 5px solid ${border};
+        padding: 10px 12px; border-radius: 8px; box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+        min-width: 240px; max-width: 360px; opacity: 0; transform: translateY(-6px);
+        transition: all .2s ease; font-size: 14px;
+    `;
+    toast.textContent = mensaje;
+    contenedor.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    });
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-6px)';
+        setTimeout(() => {
+            if (toast.parentNode === contenedor) contenedor.removeChild(toast);
+        }, 200);
+    }, 3500);
+}
+
+// Reimplementar mostrarAlerta para usar toasts en lugar de banners
+function mostrarAlerta(tipo = 'info', mensaje = '') {
+    try {
+        mostrarToast(tipo, mensaje);
+    } catch (e) {
+        console.warn('No se pudo mostrar el toast:', e);
+    }
+}
+
 // Mostrar alertas animadas
 function mostrarAlerta(tipo, mensaje) {
     /*
@@ -1512,25 +1640,23 @@ function validarCantidadInput(input) {
         input.style.borderColor = '#ff4757';
         setTimeout(() => {
             input.style.borderColor = '';
-        }, 2000);
+        }, 200);
     } else if (valor > 999) {
         input.value = 999;
         input.style.borderColor = '#ff4757';
         setTimeout(() => {
             input.style.borderColor = '';
-        }, 2000);
+        }, 200);
     } else {
         input.style.borderColor = '#2ed573';
         setTimeout(() => {
             input.style.borderColor = '';
-        }, 1000);
+        }, 100);
     }
 }
 
-// Función para eliminar factura completa y regresar al cliente
+// Función para eliminar factura completa y regresar al cliente (sin confirmación)
 function eliminarFacturaCompleta() {
-    // Confirmación deshabilitada: regresar directamente a la selección de cliente
-    {
         // Limpiar array de productos
         productosFactura = [];
         
@@ -1573,7 +1699,7 @@ function eliminarFacturaCompleta() {
         // Recargar la página
         window.location.reload();
     }
-}
+
 
 // Función para transición suave de vuelta al cliente
 function mostrarPanelClienteConAnimacion() {
@@ -1590,7 +1716,7 @@ function mostrarPanelClienteConAnimacion() {
             // Limpiar clases después de la animación
             setTimeout(() => {
                 elementos.containerCliente.classList.remove('fade-in-up', 'transitioning');
-            }, 600);
+            }, 100);
         }, 50);
     }
 }
@@ -1609,12 +1735,12 @@ function ocultarSeccionFacturaConAnimacion() {
             elementos.containerFactura.style.display = 'none';
             elementos.containerFactura.classList.remove('fade-out-down', 'transitioning');
             elementos.containerFactura.classList.add('hidden');
-        }, 600);
+        }, 200);
     }
 }
 
 // Función para agregar productos a cuenta del cliente (crédito)
-function agregarACuenta() {
+async function agregarACuenta() {
     console.log('Agregando productos a cuenta del cliente...');
     
     // Validar que hay productos en la factura
@@ -1630,7 +1756,12 @@ function agregarACuenta() {
         return;
     }
     
-    // Confirmación deshabilitada: proceder directamente a agregar a cuenta
+    const confirmado = await confirmarAccion('¿Está seguro de agregar estos productos a la cuenta del cliente?', {
+        titulo: 'Agregar a cuenta',
+        textoConfirmar: 'Sí, agregar',
+        textoCancelar: 'Cancelar'
+    });
+    if (!confirmado) return;
     
     // Preparar datos para enviar
     const datosFactura = {
@@ -1671,7 +1802,7 @@ function agregarACuenta() {
             // Limpiar factura después de agregar a cuenta
             setTimeout(() => {
                 limpiarFacturaCompleta();
-            }, 2000);
+            }, 500);
         } else {
             mostrarAlerta('error', data.message || 'Error al agregar productos a cuenta');
         }
@@ -1687,7 +1818,7 @@ function agregarACuenta() {
     });
 }
 
-function procesarPago() {
+async function procesarPago() {
     console.log('Procesando pago de la factura...');
     
     // Validar que hay productos en la factura
@@ -1703,8 +1834,13 @@ function procesarPago() {
         return;
     }
     
-    // Confirmación deshabilitada: proceder directamente con el pago
     const totalDolares = calcularTotalDolares();
+    const confirmado = await confirmarAccion(`¿Confirma el pago de $${totalDolares.toFixed(2)}?`, {
+        titulo: 'Confirmar pago',
+        textoConfirmar: 'Pagar',
+        textoCancelar: 'Cancelar'
+    });
+    if (!confirmado) return;
     
     // Preparar datos para enviar
     const datosFactura = {
@@ -1745,7 +1881,7 @@ function procesarPago() {
             // Limpiar factura después del pago
             setTimeout(() => {
                 limpiarFacturaCompleta();
-            }, 2000);
+            }, 500);
         } else {
             mostrarAlerta('error', data.message || 'Error al procesar el pago');
         }

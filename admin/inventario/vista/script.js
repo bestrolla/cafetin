@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          // alert('Producto agregado con éxito');
+          mostrarToast('success', 'Producto agregado con éxito');
           formProducto.reset();
           mostrarUnidadesTotales();
           if (precioUnidadInput) {
@@ -82,12 +82,12 @@ document.addEventListener('DOMContentLoaded', function () {
           }
           loadData();
         } else {
-          // alert('Error: ' + data.message);
+          mostrarToast('error', 'Error: ' + (data.message || 'No se pudo agregar'));
         }
       })
       .catch(error => {
         console.error('Error al agregar producto:', error);
-        // alert('Error al agregar el producto');
+        mostrarToast('error', 'Error al agregar el producto');
       })
       .finally(() => {
         if (submitBtn) {
@@ -265,15 +265,83 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Event delegation para botones de la tabla
+  // Panel de confirmación (HTML) reutilizable
+  function confirmarAccion(mensaje, opciones = {}) {
+    return new Promise(resolve => {
+      const {
+        titulo = 'Confirmación',
+        textoConfirmar = 'Confirmar',
+        textoCancelar = 'Cancelar'
+      } = opciones;
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+      const panel = document.createElement('div');
+      panel.style.cssText = 'background:#fff;border-radius:10px;width:90%;max-width:420px;box-shadow:0 10px 25px rgba(0,0,0,.2);overflow:hidden;transform:translateY(-10px);opacity:0;transition:all .2s ease;';
+      const header = document.createElement('div');
+      header.textContent = titulo;
+      header.style.cssText = 'background:#222;color:#fff;padding:12px 16px;font-weight:600;';
+      const body = document.createElement('div');
+      body.textContent = mensaje;
+      body.style.cssText = 'padding:16px;color:#333;line-height:1.5;';
+      const footer = document.createElement('div');
+      footer.style.cssText = 'display:flex;gap:10px;padding:12px 16px;justify-content:flex-end;background:#f7f7f7;';
+      const btnCancelar = document.createElement('button');
+      btnCancelar.textContent = textoCancelar;
+      btnCancelar.style.cssText = 'padding:8px 14px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;';
+      const btnConfirmar = document.createElement('button');
+      btnConfirmar.textContent = textoConfirmar;
+      btnConfirmar.style.cssText = 'padding:8px 14px;border-radius:6px;border:1px solid #dc3545;background:#dc3545;color:#fff;cursor:pointer;';
+      btnCancelar.addEventListener('click', () => { document.body.removeChild(overlay); resolve(false); });
+      btnConfirmar.addEventListener('click', () => { document.body.removeChild(overlay); resolve(true); });
+      footer.appendChild(btnCancelar);
+      footer.appendChild(btnConfirmar);
+      panel.appendChild(header); panel.appendChild(body); panel.appendChild(footer);
+      overlay.appendChild(panel);
+      document.body.appendChild(overlay);
+      requestAnimationFrame(() => { panel.style.transform='translateY(0)'; panel.style.opacity='1'; });
+    });
+  }
+
+  // Toast reutilizable para mensajes informativos
+  function mostrarToast(tipo = 'info', mensaje = '') {
+    const colores = {
+      success: { bg: '#28a745', border: '#1f8a37' },
+      error: { bg: '#dc3545', border: '#b02a37' },
+      info: { bg: '#17a2b8', border: '#117a8b' },
+      warning: { bg: '#ffc107', border: '#e0a800' }
+    };
+    const { bg, border } = colores[tipo] || colores.info;
+
+    let contenedor = document.getElementById('toast-contenedor-global');
+    if (!contenedor) {
+      contenedor = document.createElement('div');
+      contenedor.id = 'toast-contenedor-global';
+      contenedor.style.cssText = 'position:fixed;top:16px;right:16px;z-index:10001;display:flex;flex-direction:column;gap:10px;align-items:flex-end;';
+      document.body.appendChild(contenedor);
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText = `color:#fff;background:${bg};border-left:5px solid ${border};padding:10px 12px;border-radius:8px;box-shadow:0 6px 14px rgba(0,0,0,.15);min-width:240px;max-width:360px;opacity:0;transform:translateY(-6px);transition:all .2s ease;font-size:14px;`;
+    toast.textContent = mensaje;
+    contenedor.appendChild(toast);
+
+    requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; });
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-6px)'; setTimeout(() => { if (toast.parentNode === contenedor) contenedor.removeChild(toast); }, 200); }, 3500);
+  }
+
   if (table) {
-    table.addEventListener('click', function(e) {
+    table.addEventListener('click', async function(e) {
       if (e.target.classList.contains('btn-edit')) {
         const id = e.target.getAttribute('data-id');
         abrirModalEditar(id);
       } else if (e.target.classList.contains('btn-delete')) {
         const id = e.target.getAttribute('data-id');
-        // Confirmación deshabilitada: proceder directamente a eliminar
-        {
+        const confirmado = await confirmarAccion('¿Estás seguro de que quieres eliminar este producto?', {
+          titulo: 'Eliminar producto',
+          textoConfirmar: 'Eliminar',
+          textoCancelar: 'Cancelar'
+        });
+        if (!confirmado) return;
           fetch('../logica/eliminar_producto.php', {
             method: 'POST',
             headers: {
@@ -284,17 +352,16 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(response => response.json())
           .then(data => {
             if (data.success) {
-              // alert('Producto eliminado correctamente');
+              mostrarToast('success', 'Producto eliminado correctamente');
               loadData(); // Recargar la tabla
             } else {
-              // alert('Error: ' + data.message);
+              mostrarToast('error', 'Error: ' + (data.message || 'No se pudo eliminar'));
             }
           })
           .catch(error => {
             console.error('Error:', error);
-            // alert('Error al eliminar el producto');
+            mostrarToast('error', 'Error al eliminar el producto');
           });
-        }
       }
     });
   }
@@ -414,16 +481,16 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        // alert('Producto actualizado correctamente');
+        mostrarToast('success', 'Producto actualizado correctamente');
         cerrarModal();
         loadData(); // Ahora loadData está disponible en este ámbito
       } else {
-        // alert('Error: ' + data.message);
+        mostrarToast('error', 'Error: ' + (data.message || 'No se pudo actualizar'));
       }
     })
     .catch(error => {
       console.error('Error:', error);
-      // alert('Error al actualizar el producto');
+      mostrarToast('error', 'Error al actualizar el producto');
     });
   };
 
