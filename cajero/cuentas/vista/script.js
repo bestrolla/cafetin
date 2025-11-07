@@ -168,17 +168,15 @@ async function procesarAbono(event) {
     }
     
     try {
+        const formData = new FormData();
+        formData.append('id_credito', cuentaSeleccionada.id_credito);
+        formData.append('monto_abono', montoAbono);
+        formData.append('metodo_pago', metodoPago);
+        formData.append('observaciones', observaciones);
+
         const response = await fetch('../logica/procesar_abono.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                id_credito: cuentaSeleccionada.id_credito,
-                monto_abono: montoAbono,
-                metodo_pago: metodoPago,
-                observaciones: observaciones
-            })
+            body: formData
         });
         
         const data = await response.json();

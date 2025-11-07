@@ -7,10 +7,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $busqueda = $_GET['q'] ?? '';
     
     try {
-        $sql = "SELECT id_producto, nombre_produc, precio_produc 
+        $sql = "SELECT 
+                    id_producto, 
+                    nombre_produc, 
+                    precio_venta,
+                    cantidad_total,
+                    (COALESCE(cantidad_total,0)) AS stock_disponible
                 FROM inventario 
                 WHERE activo = TRUE 
-                AND (nombre_produc LIKE ? OR id_producto LIKE ?)
+                AND (nombre_produc LIKE ? OR CAST(id_producto AS CHAR) LIKE ?)
                 ORDER BY nombre_produc ASC";
         
         $stmt = $conexion->prepare($sql);

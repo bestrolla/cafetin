@@ -19,6 +19,7 @@ try {
                 precio_caja, 
                 precio_produc, 
                 precio_venta,
+                cantidad_total,
                 activo 
             FROM inventario";
     

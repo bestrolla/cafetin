@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $precio_caja = $_POST['precio_caja'] ?? 0;
     $precio_unidad = $_POST['precio_produc'] ?? null;
     $precio_venta = $_POST['precio_venta'] ?? null;
+    $cantidad_total = $_POST['cantidad_total'] ?? null;
     $activo = isset($_POST['activo']) ? 1 : 0; // Manejar el estado desde el formulario
 
     if (!$id || !$nombre || !$precio_unidad || $precio_venta === null) {
@@ -20,6 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($response);
         exit;
     }
+
+    if ($cantidad_total === null || $cantidad_total === '') {
+        $cantidad_total = (float)$cajas * (float)$unidades_caja;
+    }
+
+    $cantidad_total = (float)$cantidad_total;
 
     try {
         $sql = "UPDATE inventario SET 
@@ -29,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     precio_caja = :precio_caja, 
                     precio_produc = :precio_unidad, 
                     precio_venta = :precio_venta,
+                    cantidad_total = :cantidad_total,
                     activo = :activo
                 WHERE id_producto = :id";
         $stmt = $conexion->prepare($sql);
@@ -40,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':precio_caja' => $precio_caja,
             ':precio_unidad' => $precio_unidad,
             ':precio_venta' => $precio_venta,
+            ':cantidad_total' => $cantidad_total,
             ':activo' => $activo
         ]);
 

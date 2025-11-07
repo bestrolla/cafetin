@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $precio_caja = $_POST['precio_caja'] ?? 0;
     $precio_unidad = $_POST['precio_produc'] ?? null;
     $precio_venta = $_POST['precio_venta'] ?? null; // Nuevo campo
+    $cantidad_total = $_POST['cantidad_total'] ?? null;
 
     // Actualizar validación
     if (!$nombre || !$precio_unidad || $precio_venta === null) {
@@ -19,6 +20,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($response);
         exit;
     }
+
+    if ($cantidad_total === null || $cantidad_total === '') {
+        $cantidad_total = (float)$cajas * (float)$unidades_caja;
+    }
+
+    $cantidad_total = (float)$cantidad_total;
 
     try {
         // Verificar si el producto ya existe
@@ -34,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Si no existe, proceder con la inserción
-        $sql_insert = "INSERT INTO inventario (nombre_produc, caja_produc, cantidad_caja, precio_caja, precio_produc, precio_venta) VALUES (:nombre, :cajas, :unidades_caja, :precio_caja, :precio_unidad, :precio_venta)";
+        $sql_insert = "INSERT INTO inventario (nombre_produc, caja_produc, cantidad_caja, precio_caja, precio_produc, precio_venta, cantidad_total) VALUES (:nombre, :cajas, :unidades_caja, :precio_caja, :precio_unidad, :precio_venta, :cantidad_total)";
         $stmt_insert = $conexion->prepare($sql_insert);
         $stmt_insert->execute([
             ':nombre' => $nombre,
@@ -42,7 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':unidades_caja' => $unidades_caja,
             ':precio_caja' => $precio_caja,
             ':precio_unidad' => $precio_unidad,
-            ':precio_venta' => $precio_venta // Nuevo campo
+            ':precio_venta' => $precio_venta,
+            ':cantidad_total' => $cantidad_total
         ]);
 
         $response['success'] = true;

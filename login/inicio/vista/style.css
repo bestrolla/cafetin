@@ -181,6 +181,12 @@ label{
     margin-top: 10px;
 }
 
+/* Asegurar mismo ancho visual para todos los inputs (incluyendo el de contraseña con ojo) */
+.inputBox input {
+    width: 100%;
+    padding-right: 50px; /* reserva espacio para el icono, unifica ancho visible */
+}
+
 /* Estilo específico para el input de contraseña con espacio para el ojo */
 .inputBox input[type="password"],
 .inputBox input[type="text"]#contrasena {
@@ -192,8 +198,8 @@ label{
     position: absolute;
     right: 12px;
     top: 50%;
-    
-    transform: translateY(-50%);
+    transform: translateY(-52%); /* ajuste fino para centrar visualmente */
+    line-height: 0; /* evita desalineación por altura de línea */
     cursor: pointer;
     font-size: 20px;
     color: #8e8e93;
@@ -213,6 +219,11 @@ label{
     justify-content: center;
     width: 32px;
     height: 32px;
+}
+
+.toggle-password svg {
+    width: 20px;
+    height: 20px;
 }
 
 .toggle-password:hover {

@@ -4,12 +4,15 @@ document.addEventListener('DOMContentLoaded', function () {
   const table = document.getElementById('tabla-inventario');
   const tbody = table ? table.querySelector('tbody') : null;
   const pagination = document.getElementById('pagination');
+  const formProducto = document.getElementById('form-producto');
+  const submitBtn = formProducto ? formProducto.querySelector('.submit-btn') : null;
 
   // 🔹 ELEMENTOS PARA CÁLCULOS AUTOMÁTICOS
   const cajasInput = document.getElementById('caja_produc');
   const unidadesPorCajaInput = document.getElementById('cantidad_caja');
   const precioCajaInput = document.getElementById('precio_caja');
   const precioUnidadInput = document.getElementById('precio_produc');
+  const cantidadTotalInput = document.getElementById('cantidad_total');
   
   // 🔹 FUNCIONES DE CÁLCULO AUTOMÁTICO
   function calcularPrecioUnidad() {
@@ -37,9 +40,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const cajas = parseFloat(cajasInput?.value) || 0;
     const unidadesPorCaja = parseFloat(unidadesPorCajaInput?.value) || 0;
     const totalUnidades = cajas * unidadesPorCaja;
-    
-    // Mostrar el total en algún lugar visible (puedes agregar un elemento para esto)
-    console.log(`Total de unidades: ${totalUnidades}`);
+    if (cantidadTotalInput) {
+      cantidadTotalInput.value = Number.isFinite(totalUnidades) ? totalUnidades : 0;
+    }
   }
   
   // 🔹 EVENT LISTENERS PARA CÁLCULOS AUTOMÁTICOS
@@ -51,6 +54,48 @@ document.addEventListener('DOMContentLoaded', function () {
   if (cajasInput && unidadesPorCajaInput) {
     cajasInput.addEventListener('input', mostrarUnidadesTotales);
     unidadesPorCajaInput.addEventListener('input', mostrarUnidadesTotales);
+    // Calcular valor inicial si ya hay datos
+    mostrarUnidadesTotales();
+  }
+
+  if (formProducto) {
+    formProducto.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Guardando...';
+      }
+
+      const formData = new FormData(formProducto);
+      fetch('../logica/agregar_producto.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Producto agregado con éxito');
+          formProducto.reset();
+          mostrarUnidadesTotales();
+          if (precioUnidadInput) {
+            precioUnidadInput.value = '';
+          }
+          loadData();
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error al agregar producto:', error);
+        alert('Error al agregar el producto');
+      })
+      .finally(() => {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Guardar Producto';
+        }
+      });
+    });
   }
 
   // Toggle switch functionality
@@ -141,12 +186,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     tbody.innerHTML = products.map(p => {
-      const cantidad_total = p.caja_produc * p.cantidad_caja;
+      const cantidad_total = p.cantidad_total !== undefined && p.cantidad_total !== null
+        ? parseFloat(p.cantidad_total)
+        : p.caja_produc * p.cantidad_caja;
+      const totalDisplay = Number.isFinite(cantidad_total) ? cantidad_total : 0;
       const estado = p.activo ? 'Activo' : 'Inactivo';
       return `
         <tr>
           <td>${p.nombre_produc}</td>
-          <td>${cantidad_total}</td>
+          <td>${totalDisplay}</td>
           <td>${p.caja_produc}</td>
           <td>$${parseFloat(p.precio_produc).toFixed(2)}</td>
           <td>$${parseFloat(p.precio_venta).toFixed(2)}</td>
@@ -279,6 +327,10 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('edit-nombre').value = producto.nombre_produc;
     document.getElementById('edit-cajas').value = producto.caja_produc;
     document.getElementById('edit-unidades').value = producto.cantidad_caja;
+    const totalProducto = producto.cantidad_total !== undefined && producto.cantidad_total !== null
+      ? parseFloat(producto.cantidad_total)
+      : producto.caja_produc * producto.cantidad_caja;
+    document.getElementById('edit-total').value = Number.isFinite(totalProducto) ? totalProducto : 0;
     document.getElementById('edit-precio-caja').value = producto.precio_caja || '';
     document.getElementById('edit-precio-unidad').value = producto.precio_produc;
     document.getElementById('edit-precio-venta').value = producto.precio_venta;
@@ -289,6 +341,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const editUnidades = document.getElementById('edit-unidades');
     const editPrecioUnidad = document.getElementById('edit-precio-unidad');
     const editCajas = document.getElementById('edit-cajas');
+    const editTotal = document.getElementById('edit-total');
     
     // Función para calcular precio por unidad en el modal
     function calcularPrecioUnidadModal() {
@@ -311,7 +364,16 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
     
-    // Remover event listeners anteriores si existen
+    function calcularTotalModal() {
+      const cajasModal = parseFloat(editCajas?.value) || 0;
+      const unidadesModal = parseFloat(editUnidades?.value) || 0;
+      const totalModal = cajasModal * unidadesModal;
+      if (editTotal) {
+        editTotal.value = Number.isFinite(totalModal) ? totalModal : 0;
+      }
+    }
+
+    // Remover y agregar event listeners
     if (editPrecioCaja) {
       editPrecioCaja.removeEventListener('input', calcularPrecioUnidadModal);
       editPrecioCaja.addEventListener('input', calcularPrecioUnidadModal);
@@ -320,7 +382,16 @@ document.addEventListener('DOMContentLoaded', function () {
     if (editUnidades) {
       editUnidades.removeEventListener('input', calcularPrecioUnidadModal);
       editUnidades.addEventListener('input', calcularPrecioUnidadModal);
+      editUnidades.removeEventListener('input', calcularTotalModal);
+      editUnidades.addEventListener('input', calcularTotalModal);
     }
+
+    if (editCajas) {
+      editCajas.removeEventListener('input', calcularTotalModal);
+      editCajas.addEventListener('input', calcularTotalModal);
+    }
+
+    calcularTotalModal();
     
     // Mostrar el modal
     document.getElementById('modal-editar').style.display = 'block';

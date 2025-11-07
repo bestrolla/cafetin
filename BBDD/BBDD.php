@@ -22,6 +22,10 @@ class Conexion {
 
             // Modo de errores: lanza excepciones (recomendado)
             $this->conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            // Configurar opciones seguras por defecto
+            $this->conexion->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+            // Desactivar emulación de prepares para mayor seguridad
+            $this->conexion->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
             return $this->conexion;
 

@@ -501,6 +501,18 @@ function agregarProductoAFactura(boton) {
     const idProducto = boton.dataset.id;
     const nombreProducto = boton.dataset.nombre;
     const precioProducto = parseFloat(boton.dataset.precio) || 0;
+    // Leer cantidad desde el input de la misma fila si existe
+    const fila = boton.closest('tr');
+    let cantidadSeleccionada = 1;
+    if (fila) {
+        const inputCantidad = fila.querySelector('.cantidad-input');
+        if (inputCantidad) {
+            const val = parseInt(inputCantidad.value, 10);
+            if (!isNaN(val) && val > 0 && val <= 999) {
+                cantidadSeleccionada = val;
+            }
+        }
+    }
     
     console.log('Datos del producto:', {
         id: idProducto,
@@ -520,15 +532,15 @@ function agregarProductoAFactura(boton) {
         nombre: nombreProducto,
         precio: precioProducto,
         categoria: 'General', // Valor por defecto
-        cantidad: 1
+        cantidad: cantidadSeleccionada
     };
     
     // Verificar si el producto ya está en la factura (buscar por ID)
     const productoExistente = productosFactura.find(p => p.id === producto.id);
     
     if (productoExistente) {
-        // Si ya existe, aumentar la cantidad
-        productoExistente.cantidad++;
+        // Si ya existe, aumentar la cantidad seleccionada
+        productoExistente.cantidad += cantidadSeleccionada;
         console.log('Producto existente, nueva cantidad:', productoExistente.cantidad);
     } else {
         // Si no existe, agregarlo
@@ -639,7 +651,8 @@ function continuarConCliente() {
         resaltarCamposIncompletos();
         return;
     }
-    
+    // Actualizar resumen del cliente antes de transicionar
+    actualizarResumenCliente();
     mostrarSeccionFacturaConAnimacion();
     ocultarPanelClienteConAnimacion();
 }
@@ -980,13 +993,12 @@ function actualizarTablaProductos(productos) {
         fila.innerHTML = `
             <td>${producto.nombre_produc}</td>
             <td>$${parseFloat(producto.precio_venta).toFixed(2)}</td>
-            <td>General</td>
+            <td>${producto.stock_disponible !== undefined ? producto.stock_disponible : (producto.cantidad_total ?? 0)}</td>
             <td>
                 <button class="btn-agregar-producto modern-btn" 
                         data-id="${producto.id_producto}" 
                         data-nombre="${producto.nombre_produc}" 
                         data-precio="${producto.precio_venta}" 
-                        onclick="agregarProductoAFactura(this)"
                         aria-label="Agregar ${producto.nombre_produc} a la factura">
                     Agregar
                 </button>

@@ -4,10 +4,32 @@
  * Verifica si el usuario tiene una sesión válida y los permisos necesarios
  */
 
-// Iniciar sesión si no está iniciada
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
+// Inicialización segura de sesión
+function initSessionIfNeeded() {
+    if (session_status() === PHP_SESSION_NONE) {
+        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+        // Configurar parámetros de la cookie de sesión
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/',
+            'domain' => '',
+            'secure' => $isHttps,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+        // Reforzar configuraciones de sesión
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.cookie_httponly', '1');
+        ini_set('session.cookie_samesite', 'Lax');
+        if ($isHttps) {
+            ini_set('session.cookie_secure', '1');
+        }
+        session_start();
+    }
 }
+
+// Garantizar sesión activa con configuración segura
+initSessionIfNeeded();
 
 /**
  * Función para verificar si el usuario está autenticado

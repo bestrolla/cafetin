@@ -53,13 +53,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // Función para mostrar/ocultar contraseña
 function togglePassword() {
     const passwordInput = document.getElementById('contrasena');
-    const toggleIcon = document.querySelector('.toggle-password');
+    const eyeOpen = document.querySelector('.toggle-password .icon-eye');
+    const eyeOff = document.querySelector('.toggle-password .icon-eye-off');
     
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
-        toggleIcon.textContent = '🙈'; // Cambiar a ojo cerrado
+        if (eyeOpen && eyeOff) { eyeOpen.style.display = 'none'; eyeOff.style.display = 'block'; }
     } else {
         passwordInput.type = 'password';
-        toggleIcon.textContent = '👁️'; // Cambiar a ojo abierto
+        if (eyeOpen && eyeOff) { eyeOpen.style.display = 'block'; eyeOff.style.display = 'none'; }
     }
 }

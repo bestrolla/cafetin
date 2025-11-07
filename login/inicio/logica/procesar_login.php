@@ -1,6 +1,10 @@
 <?php
-session_start();
+require_once '../../../acces/auth_check.php';
+// Asegurar inicialización segura de sesión
+initSessionIfNeeded();
 
+require_once '../../../acces/security_headers.php';
+require_once '../../../acces/csrf.php';
 require_once '../../../BBDD/BBDD.php';
 
 header('Content-Type: application/json');
@@ -8,6 +12,12 @@ header('Content-Type: application/json');
 $response = ['success' => false, 'message' => 'Error desconocido.'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Verificar CSRF token
+    if (!csrfVerifyFromPost('csrf_token')) {
+        $response['message'] = 'Token CSRF inválido o ausente.';
+        echo json_encode($response);
+        exit;
+    }
     $usuario_post = $_POST['usuario'] ?? null;
     $contrasena_post = $_POST['contrasena'] ?? null;
 
@@ -29,6 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($contrasena_post, $user['contrasena'])) {
+            // Regenerar ID de sesión al autenticarse para mitigar fijación de sesión
+            session_regenerate_id(true);
             // Contraseña correcta, iniciar sesión
             // Variables de sesión para compatibilidad con el sistema existente
             $_SESSION['id_usuario'] = $user['id_usuario'];

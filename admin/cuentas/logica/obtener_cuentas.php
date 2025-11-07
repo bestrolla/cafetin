@@ -1,4 +1,15 @@
 <?php
+// Incluir sistema de control de acceso
+require_once '../../../acces/auth_check.php';
+
+// Verificar que el usuario sea administrador
+if (!esAdmin()) {
+    echo json_encode([
+        'error' => 'Acceso denegado. Solo administradores pueden ver las cuentas.'
+    ]);
+    exit;
+}
+
 header('Content-Type: application/json');
 
 // Configuración de la base de datos

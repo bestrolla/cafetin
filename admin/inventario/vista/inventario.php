@@ -26,7 +26,7 @@ protegerPagina(['admin']);
 
             <div class="form-container">
                 <h2>Agregar Nuevo Producto</h2>
-                <form id="form-producto" class="form-grid">
+                <form id="form-producto" class="form-grid" method="POST">
                     <div>
                         <label for="nombre_produc">Nombre:</label>
                         <input type="text" id="nombre_produc" name="nombre_produc" required>
@@ -38,6 +38,10 @@ protegerPagina(['admin']);
                     <div>
                         <label for="cantidad_caja">Unidades por Caja:</label>
                         <input type="number" id="cantidad_caja" name="cantidad_caja" min="0">
+                    </div>
+                    <div>
+                        <label for="cantidad_total">Cantidad Total (unidades):</label>
+                        <input type="number" id="cantidad_total" name="cantidad_total" min="0" step="1" required readonly>
                     </div>
                     <div>
                         <label for="precio_caja">Precio por Caja:</label>
@@ -126,6 +130,10 @@ protegerPagina(['admin']);
                     <div class="form-group">
                         <label for="edit-unidades">Unidades por Caja</label>
                         <input type="number" id="edit-unidades" name="cantidad_caja" min="1" required placeholder="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-total">Cantidad Total (unidades)</label>
+                        <input type="number" id="edit-total" name="cantidad_total" min="0" step="1" required>
                     </div>
                     
                     <div class="form-group">

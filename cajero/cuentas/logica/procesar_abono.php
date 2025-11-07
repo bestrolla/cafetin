@@ -1,4 +1,16 @@
 <?php
+// Incluir sistema de control de acceso
+require_once '../../../acces/auth_check.php';
+
+// Verificar que el usuario sea cajero
+if (!esCajero()) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Acceso denegado. Solo cajeros pueden procesar abonos.'
+    ]);
+    exit;
+}
+
 header('Content-Type: application/json');
 
 try {
