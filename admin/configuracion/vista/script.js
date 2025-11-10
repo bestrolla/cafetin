@@ -11,6 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('form-tasa').addEventListener('submit', manejarCambioTasa);
     document.getElementById('form-empresa').addEventListener('submit', guardarConfiguracionEmpresa);
     document.getElementById('form-sistema').addEventListener('submit', guardarConfiguracionSistema);
+    // Seguridad: cargar preguntas y manejar guardado
+    const formSeguridad = document.getElementById('form-seguridad-admin');
+    if (formSeguridad) {
+        cargarPreguntasSeguridadAdmin();
+        formSeguridad.addEventListener('submit', guardarPreguntaSeguridadAdmin);
+    }
 });
 
 // Funciones para tabs
@@ -277,5 +283,101 @@ window.onclick = function(event) {
     const modal = document.getElementById('modal-confirmacion');
     if (event.target === modal) {
         cerrarModal();
+    }
+}
+
+// --- Seguridad (Admin) ---
+async function cargarPreguntasSeguridadAdmin() {
+    try {
+        const response = await fetch('../logica/obtener_preguntas.php');
+        const data = await response.json();
+        const selects = [
+            document.getElementById('pregunta-seguridad-1'),
+            document.getElementById('pregunta-seguridad-2'),
+            document.getElementById('pregunta-seguridad-3')
+        ];
+        selects.forEach(s => s.innerHTML = '');
+        if (data.success) {
+            // Opciones de preguntas para los 3 selects
+            selects.forEach(s => {
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = '';
+                defaultOpt.textContent = 'Seleccione una pregunta';
+                s.appendChild(defaultOpt);
+                data.preguntas.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id_pregunta;
+                    opt.textContent = p.pregunta;
+                    s.appendChild(opt);
+                });
+            });
+            // Selecciones actuales
+            if (Array.isArray(data.selecciones)) {
+                data.selecciones.slice(0,3).forEach((sel, idx) => {
+                    if (selects[idx]) selects[idx].value = sel.id_pregunta;
+                });
+            }
+        } else {
+            selects.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'Error al cargar preguntas';
+                s.appendChild(opt);
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        const selects = [
+            document.getElementById('pregunta-seguridad-1'),
+            document.getElementById('pregunta-seguridad-2'),
+            document.getElementById('pregunta-seguridad-3')
+        ];
+        selects.forEach(s => s.innerHTML = '<option value="">Error de conexión</option>');
+    }
+}
+
+async function guardarPreguntaSeguridadAdmin(e) {
+    e.preventDefault();
+    const ids = [
+        document.getElementById('pregunta-seguridad-1').value,
+        document.getElementById('pregunta-seguridad-2').value,
+        document.getElementById('pregunta-seguridad-3').value
+    ];
+    const respuestas = [
+        document.getElementById('respuesta-seguridad-1').value,
+        document.getElementById('respuesta-seguridad-2').value,
+        document.getElementById('respuesta-seguridad-3').value
+    ];
+    if (ids.some(id => !id)) {
+        mostrarAlerta('Seleccione las 3 preguntas de seguridad', 'warning');
+        return;
+    }
+    const setIds = new Set(ids);
+    if (setIds.size !== 3) {
+        mostrarAlerta('No repita la misma pregunta. Deben ser 3 distintas.', 'warning');
+        return;
+    }
+    if (respuestas.some(r => !r || r.trim().length < 2)) {
+        mostrarAlerta('Ingrese las 3 respuestas válidas', 'warning');
+        return;
+    }
+    const payload = { respuestas: ids.map((id, idx) => ({ id_pregunta: id, respuesta: respuestas[idx] })) };
+    try {
+        const response = await fetch('../logica/guardar_pregunta.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (data.success) {
+            mostrarAlerta('Preguntas de seguridad guardadas correctamente', 'success');
+            document.getElementById('form-seguridad-admin').reset();
+            cargarPreguntasSeguridadAdmin();
+        } else {
+            mostrarAlerta('Error al guardar: ' + (data.message || 'Desconocido'), 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarAlerta('Error de conexión al guardar seguridad', 'error');
     }
 }

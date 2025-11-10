@@ -43,7 +43,7 @@ $csrf = csrfEnsureToken();
     </div>
     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8'); ?>">
     <div class="links">
-      <a href="#">¿Olvidaste tu contrase&ntilde;a?</a>
+      <a href="../../recuperacion/vista/solicitar.php">¿Olvidaste tu contrase&ntilde;a?</a>
       <!-- <a href="#">Registrate</a> -->
     </div>
     

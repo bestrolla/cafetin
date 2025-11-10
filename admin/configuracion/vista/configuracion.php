@@ -26,6 +26,7 @@ protegerPagina(['admin']);
                 <button class="tab-button active" onclick="showTab('tasa')">Tasa del Día</button>
                 <button class="tab-button" onclick="showTab('empresa')">Datos Empresa</button>
                 <button class="tab-button" onclick="showTab('sistema')">Sistema</button>
+                <button class="tab-button" onclick="showTab('seguridad')">Seguridad</button>
                 <button class="tab-button" onclick="showTab('historial')">Historial</button>
             </div>
 
@@ -125,6 +126,52 @@ protegerPagina(['admin']);
                             </label>
                         </div>
                         <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tab Seguridad -->
+            <div id="seguridad" class="tab-content">
+                <div class="config-section">
+                    <h2>Seguridad</h2>
+                    <div class="alert alert-warning">Estas preguntas son predeterminadas del sistema y no pueden editarse. Seleccione hasta 3 y guarde sus respuestas; se validarán en la recuperación de contraseña.</div>
+                    <p>Seleccione hasta 3 preguntas predeterminadas y defina sus respuestas.</p>
+                    <form id="form-seguridad-admin">
+                        <div class="form-group">
+                            <label for="pregunta-seguridad-1">Pregunta 1:</label>
+                            <select id="pregunta-seguridad-1" required>
+                                <option value="">Cargando preguntas...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="respuesta-seguridad-1">Respuesta 1:</label>
+                            <input type="text" id="respuesta-seguridad-1" placeholder="Escribe tu respuesta" required>
+                            <small>Las respuestas se almacenan cifradas.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pregunta-seguridad-2">Pregunta 2:</label>
+                            <select id="pregunta-seguridad-2" required>
+                                <option value="">Cargando preguntas...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="respuesta-seguridad-2">Respuesta 2:</label>
+                            <input type="text" id="respuesta-seguridad-2" placeholder="Escribe tu respuesta" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pregunta-seguridad-3">Pregunta 3:</label>
+                            <select id="pregunta-seguridad-3" required>
+                                <option value="">Cargando preguntas...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="respuesta-seguridad-3">Respuesta 3:</label>
+                            <input type="text" id="respuesta-seguridad-3" placeholder="Escribe tu respuesta" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Guardar Seguridad</button>
                     </form>
                 </div>
             </div>
