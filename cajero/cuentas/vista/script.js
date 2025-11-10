@@ -609,6 +609,44 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Validación de montos y observaciones en modal Abono (Cajero)
+    const toDecimal = (str) => {
+        const s = (str || '').replace(/[^0-9.,]/g, '').replace(/,/g, '.');
+        const parts = s.split('.');
+        if (parts.length > 2) {
+            return parts[0] + '.' + parts.slice(1).join('');
+        }
+        return s;
+    };
+    const capitalizeFirst = (str) => {
+        const s = (str || '').trim();
+        if (!s) return '';
+        return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    };
+    const usdInput = document.getElementById('montoAbonoUsd');
+    const bsInput = document.getElementById('montoAbonoBs');
+    const obsInput = document.getElementById('observacionesAbono');
+    [usdInput, bsInput].forEach(el => {
+        if (!el) return;
+        el.addEventListener('input', (e) => {
+            const v = toDecimal(e.target.value);
+            if (v !== e.target.value) e.target.value = v;
+            actualizarEquivalenteAbono();
+        });
+        el.addEventListener('blur', (e) => {
+            let n = parseFloat(e.target.value);
+            if (isNaN(n) || n < 0) n = 0;
+            const step = parseFloat(e.target.getAttribute('step') || '0.01');
+            e.target.value = n.toFixed(step >= 1 ? 0 : 2);
+            actualizarEquivalenteAbono();
+        });
+    });
+    if (obsInput) {
+        obsInput.addEventListener('blur', (e) => {
+            e.target.value = capitalizeFirst(e.target.value);
+        });
+    }
 });
 function verDetalleCliente(idCliente) {
     Promise.all([

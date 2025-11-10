@@ -135,7 +135,40 @@ function configurarEventListeners() {
     
     // Auto-completado para campos de cliente
     configurarAutoCompletado();
-    
+
+    // Validaciones y sanitización de campos de cliente
+    const toLettersOnly = (str) => (str || '').replace(/[^a-zA-ZÁÉÍÓÚÜÑáéíóúüñ\s]/g, '').replace(/\s{2,}/g, ' ');
+    const capitalizeFirst = (str) => {
+        const s = (str || '').trim();
+        if (!s) return '';
+        return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    };
+    const toIntOnly = (str) => (str || '').replace(/[^0-9]/g, '');
+
+    // Letras: nombre, apellido, alias
+    [elementos.nombreInput, elementos.apellidoInput, elementos.aliasInput].forEach(el => {
+        if (!el) return;
+        el.addEventListener('input', (e) => {
+            const v = toLettersOnly(e.target.value);
+            if (v !== e.target.value) e.target.value = v;
+        });
+        el.addEventListener('blur', (e) => {
+            e.target.value = capitalizeFirst(e.target.value);
+        });
+    });
+
+    // Números: cédula y teléfono
+    [elementos.cedulaInput, elementos.telefonoInput].forEach(el => {
+        if (!el) return;
+        el.addEventListener('input', (e) => {
+            const v = toIntOnly(e.target.value);
+            if (v !== e.target.value) e.target.value = v;
+        });
+        el.addEventListener('blur', (e) => {
+            e.target.value = toIntOnly(e.target.value);
+        });
+    });
+
     // Validación en tiempo real para habilitar/deshabilitar botones
     configurarValidacionTiempoReal();
     

@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const pagination = document.getElementById('pagination');
   const formProducto = document.getElementById('form-producto');
   const submitBtn = formProducto ? formProducto.querySelector('.submit-btn') : null;
+  const nombreProductoInput = document.getElementById('nombre_produc');
+  const editNombreInput = document.getElementById('edit-nombre');
 
   // 🔹 ELEMENTOS PARA CÁLCULOS AUTOMÁTICOS
   const cajasInput = document.getElementById('caja_produc');
@@ -13,6 +15,77 @@ document.addEventListener('DOMContentLoaded', function () {
   const precioCajaInput = document.getElementById('precio_caja');
   const precioUnidadInput = document.getElementById('precio_produc');
   const cantidadTotalInput = document.getElementById('cantidad_total');
+
+  // Validaciones y sanitización
+  const toLettersOnly = (str) => (str || '').replace(/[^a-zA-ZÁÉÍÓÚÜÑáéíóúüñ\s]/g, '').replace(/\s{2,}/g, ' ');
+  const capitalizeFirst = (str) => {
+    const s = (str || '').trim();
+    if (!s) return '';
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  };
+  const toIntOnly = (str) => (str || '').replace(/[^0-9]/g, '');
+  const toDecimal = (str) => {
+    const s = (str || '').replace(/[^0-9.,]/g, '').replace(/,/g, '.');
+    const parts = s.split('.');
+    if (parts.length > 2) {
+      return parts[0] + '.' + parts.slice(1).join('');
+    }
+    return s;
+  };
+
+  // Aplicar reglas a campos de texto: solo letras y primera mayúscula
+  if (nombreProductoInput) {
+    nombreProductoInput.addEventListener('input', (e) => {
+      const v = toLettersOnly(e.target.value);
+      if (v !== e.target.value) e.target.value = v;
+    });
+    nombreProductoInput.addEventListener('blur', (e) => {
+      e.target.value = capitalizeFirst(e.target.value);
+    });
+  }
+
+  if (editNombreInput) {
+    editNombreInput.addEventListener('input', (e) => {
+      const v = toLettersOnly(e.target.value);
+      if (v !== e.target.value) e.target.value = v;
+    });
+    editNombreInput.addEventListener('blur', (e) => {
+      e.target.value = capitalizeFirst(e.target.value);
+    });
+  }
+
+  // Números enteros no negativos
+  const intFields = ['caja_produc', 'cantidad_caja', 'edit-cajas', 'edit-unidades', 'edit-total'];
+  intFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', (e) => {
+      const v = toIntOnly(e.target.value);
+      if (v !== e.target.value) e.target.value = v;
+    });
+    el.addEventListener('blur', (e) => {
+      const min = parseInt(e.target.getAttribute('min') || '0', 10);
+      const n = parseInt(e.target.value || '0', 10);
+      e.target.value = isNaN(n) ? '' : Math.max(min, n);
+    });
+  });
+
+  // Números decimales no negativos
+  const decimalFields = ['precio_caja', 'precio_venta', 'edit-precio-caja', 'edit-precio-venta'];
+  decimalFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', (e) => {
+      const v = toDecimal(e.target.value);
+      if (v !== e.target.value) e.target.value = v;
+    });
+    el.addEventListener('blur', (e) => {
+      let n = parseFloat(e.target.value);
+      if (isNaN(n) || n < 0) n = 0;
+      const step = parseFloat(e.target.getAttribute('step') || '0.01');
+      e.target.value = n.toFixed(step >= 1 ? 0 : 2);
+    });
+  });
   
   // 🔹 FUNCIONES DE CÁLCULO AUTOMÁTICO
   function calcularPrecioUnidad() {
@@ -61,6 +134,10 @@ document.addEventListener('DOMContentLoaded', function () {
   if (formProducto) {
     formProducto.addEventListener('submit', function (event) {
       event.preventDefault();
+      // Normalizar nombre antes de enviar
+      if (nombreProductoInput) {
+        nombreProductoInput.value = capitalizeFirst(toLettersOnly(nombreProductoInput.value));
+      }
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Guardando...';
@@ -205,9 +282,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="btn-icon">➕</span>
                 <span class="btn-text">Agregar</span>
               </button>
-              <button class="btn btn-history" data-id="${p.id_producto}" title="Ver detalles / historial de llegadas">
+              <button class="btn btn-history" data-id="${p.id_producto}" title="Ver historial de llegadas">
                 <span class="btn-icon">📜</span>
-                <span class="btn-text">Detalles/Historial</span>
+                <span class="btn-text">Historial</span>
               </button>
               <button class="btn btn-delete" data-id="${p.id_producto}">
                 <span class="btn-icon">🗑️</span>
@@ -404,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function () {
           </div>
           <div class="form-group">
             <label>Observación (opcional)</label>
-            <textarea name="observacion" rows="2" placeholder="Ej: Llegada semanal proveedor X"></textarea>
+            <textarea name="observacion" rows="3" maxlength="255" placeholder="Ej: Llegada semanal proveedor X" style="resize:none; height:80px; min-height:80px; max-height:80px; width:100%; overflow:auto;"></textarea>
           </div>
           <div style="display:flex;gap:10px;align-items:center;margin-top:10px;">
             <button type="submit" class="btn btn-primary">Agregar al inventario</button>
@@ -420,6 +497,34 @@ document.addEventListener('DOMContentLoaded', function () {
     cerrar.addEventListener('click', () => { document.body.removeChild(overlay); });
     cancelar.addEventListener('click', () => { document.body.removeChild(overlay); });
     const form = panel.querySelector('#form-agregar-stock');
+    const cajasAg = form.querySelector('input[name="cajas_agregar"]');
+    const sueltasAg = form.querySelector('input[name="unidades_sueltas_agregar"]');
+    const obs = form.querySelector('textarea[name="observacion"]');
+    if (cajasAg) {
+      cajasAg.addEventListener('input', (e) => {
+        const v = toIntOnly(e.target.value);
+        if (v !== e.target.value) e.target.value = v;
+      });
+      cajasAg.addEventListener('blur', (e) => {
+        const n = parseInt(e.target.value || '0', 10);
+        e.target.value = isNaN(n) ? '0' : Math.max(0, n);
+      });
+    }
+    if (sueltasAg) {
+      sueltasAg.addEventListener('input', (e) => {
+        const v = toIntOnly(e.target.value);
+        if (v !== e.target.value) e.target.value = v;
+      });
+      sueltasAg.addEventListener('blur', (e) => {
+        const n = parseInt(e.target.value || '0', 10);
+        e.target.value = isNaN(n) ? '0' : Math.max(0, n);
+      });
+    }
+    if (obs) {
+      obs.addEventListener('blur', (e) => {
+        e.target.value = capitalizeFirst(e.target.value);
+      });
+    }
     form.addEventListener('submit', async (ev) => {
       ev.preventDefault();
       const fd = new FormData(form);
@@ -449,16 +554,16 @@ document.addEventListener('DOMContentLoaded', function () {
       const overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
       const panel = document.createElement('div');
-      panel.style.cssText = 'background:#fff;border-radius:10px;width:94%;max-width:720px;box-shadow:0 10px 25px rgba(0,0,0,.2);overflow:hidden;';
+      panel.style.cssText = 'background:#fff;border-radius:10px;width:96%;max-width:1000px;box-shadow:0 10px 25px rgba(0,0,0,.2);overflow:hidden;';
       const header = document.createElement('div');
       header.style.cssText = 'background:#222;color:#fff;padding:12px 16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;';
-      header.innerHTML = '<span>Detalles / Historial del producto</span><button id="cerrar-historial" style="background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer;">✖</button>';
+      header.innerHTML = '<span>Historial del producto</span><button id="cerrar-historial" style="background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer;">✖</button>';
       const body = document.createElement('div');
       body.style.cssText = 'padding:16px;color:#333;line-height:1.5;max-height:70vh;overflow:auto;';
       if (data.success && Array.isArray(data.historial) && data.historial.length) {
         const rows = data.historial.map(h => `
           <tr>
-            <td>${h.fecha_registro}</td>
+            <td style="white-space:nowrap">${h.fecha_registro}</td>
             <td>${h.cajas_agregar}</td>
             <td>${h.unidades_por_caja}</td>
             <td>${h.unidades_sueltas_agregar}</td>
@@ -468,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function () {
           </tr>
         `).join('');
         body.innerHTML = `
-          <table class="table" style="width:100%;border-collapse:collapse;">
+          <table class="table" style="width:100%;border-collapse:collapse;table-layout:auto;">
             <thead>
               <tr>
                 <th>Fecha</th>

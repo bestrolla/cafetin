@@ -59,7 +59,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
             }
             
-            $conexion->commit();
+            if ($conexion->inTransaction()) {
+                $conexion->commit();
+            }
             
             echo json_encode([
                 'success' => true,
@@ -83,7 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
             }
             
-            $conexion->commit();
+            if ($conexion->inTransaction()) {
+                $conexion->commit();
+            }
             
             echo json_encode([
                 'success' => true,
@@ -96,7 +100,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
     } catch (Exception $e) {
-        $conexion->rollBack();
+        if ($conexion && $conexion->inTransaction()) {
+            $conexion->rollBack();
+        }
         echo json_encode([
             'success' => false,
             'message' => 'Error al guardar factura: ' . $e->getMessage()
