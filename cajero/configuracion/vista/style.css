@@ -171,10 +171,12 @@ h2 {
 }
 
 /* Ojito mostrar/ocultar contraseña */
+.form-group .input-wrapper { position: relative; }
 .toggle-password {
     position: absolute;
     right: 12px;
-    top: 36px; /* alineado vertical con input estándar de 12px padding */
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
     width: 32px;
     height: 32px;

@@ -31,7 +31,14 @@ const elementos = {
 
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    inicializarApp();
+    // Precargar tasa oficial desde Configuración y bloquear si falla
+    cargarTasaDesdeConfiguracionCajeroLobby()
+        .then(() => {
+            inicializarApp();
+        })
+        .catch((e) => {
+            try { mostrarAlerta('error', 'No se pudo cargar la tasa oficial. Verifique la Configuración en Admin.'); } catch(_) {}
+        });
 });
 
 function inicializarApp() {
@@ -143,6 +150,15 @@ function configurarEventListeners() {
             this.style.transform = 'translateY(0)';
         });
     });
+
+    // Botón toggle de moneda
+    const btnToggleMoneda = document.getElementById('btn-toggle-moneda');
+    if (btnToggleMoneda) {
+        btnToggleMoneda.addEventListener('click', toggleMoneda);
+    }
+
+    // Inicializar estado visual de moneda en tablas/encabezados al cargar
+    aplicarMonedaEnUI();
 }
 
 // Configurar validación en tiempo real
@@ -492,6 +508,38 @@ function debounce(func, wait) {
 
 // Array para almacenar los productos de la factura
 let productosFactura = [];
+// Moneda actual para visualización: 'USD' o 'VES'
+let monedaActual = 'USD';
+// Tasa de cambio única (USD -> Bs)
+let tasaCambio = parseFloat(localStorage.getItem('tasaCambio')) || 36;
+// Leer preferencia guardada de moneda
+const monedaGuardadaInit = localStorage.getItem('monedaActual');
+if (monedaGuardadaInit === 'USD' || monedaGuardadaInit === 'VES') {
+    monedaActual = monedaGuardadaInit;
+}
+
+// Cargar tasa oficial desde Configuración (lectura de BD)
+async function cargarTasaDesdeConfiguracionCajeroLobby() {
+    try {
+        const resp = await fetch('../logica/obtener_tasa_cambio.php');
+        const data = await resp.json();
+        if (data && data.success && data.tasa_cambio) {
+            const tasa = parseFloat(data.tasa_cambio);
+            if (Number.isFinite(tasa) && tasa > 0) {
+                localStorage.setItem('tasaCambio', tasa.toString());
+                tasaCambio = tasa; // sincronizar variable local
+                try { aplicarMonedaEnUI(); } catch(_) {}
+                try { actualizarTablaFactura(); } catch(_) {}
+                try { calcularTotalFactura(); } catch(_) {}
+                return; // éxito
+            }
+        }
+        throw new Error('Tasa de cambio inválida o no disponible');
+    } catch (err) {
+        console.warn('No se pudo cargar la tasa desde configuración (Cajero Lobby):', err);
+        throw err;
+    }
+}
 
 function agregarProductoAFactura(boton) {
     console.log('Agregando producto a la factura...');
@@ -779,7 +827,7 @@ function actualizarTablaFactura() {
         console.log(`Procesando producto ${index}:`, producto);
         
         const subtotalUSD = producto.precio * producto.cantidad;
-        const subtotalBs = subtotalUSD * 36; // Tasa de cambio aproximada
+        const subtotalBs = subtotalUSD * tasaCambio;
         
         console.log(`Subtotal USD: ${subtotalUSD}, Subtotal Bs: ${subtotalBs}`);
         
@@ -807,8 +855,8 @@ function actualizarTablaFactura() {
                 </div>
             </td>
             <td>$${producto.precio.toFixed(2)}</td>
-            <td>Bs. ${(producto.precio * 36).toFixed(2)}</td>
-            <td>$${subtotalUSD.toFixed(2)} | Bs. ${subtotalBs.toFixed(2)}</td>
+            <td>Bs. ${(producto.precio * tasaCambio).toFixed(2)}</td>
+            <td>${monedaActual === 'USD' ? `$${subtotalUSD.toFixed(2)}` : `Bs ${subtotalBs.toFixed(2)}`}</td>
             <td>
                 <button onclick="eliminarProductoFactura(${index})" 
                         class="btn-eliminar">
@@ -820,6 +868,13 @@ function actualizarTablaFactura() {
     });
     
     console.log('Tabla actualizada');
+
+    // Aplicar clase de moneda a la tabla para ocultar columnas
+    const tabla = document.querySelector('.tabla-factura');
+    if (tabla) {
+        tabla.classList.toggle('moneda-usd', monedaActual === 'USD');
+        tabla.classList.toggle('moneda-ves', monedaActual !== 'USD');
+    }
 }
 
 // Cambiar cantidad de un producto en la factura
@@ -862,20 +917,21 @@ function calcularTotalFactura() {
         return sum + (producto.precio * producto.cantidad);
     }, 0);
     
-    const totalBs = totalUSD * 36; // Tasa de cambio aproximada
+    const totalBs = totalUSD * tasaCambio; // Tasa de cambio
     
     console.log('Total USD:', totalUSD);
     console.log('Total Bs:', totalBs);
     console.log('Elemento totalText:', elementos.totalText);
     
     if (elementos.totalText) {
+        const totalMostrar = monedaActual === 'USD' 
+            ? `$${totalUSD.toFixed(2)} USD`
+            : `Bs ${totalBs.toFixed(2)}`;
         elementos.totalText.innerHTML = `
             <div class="total-container">
                 <div class="total-label">TOTAL A PAGAR</div>
                 <div class="total-amounts">
-                    <div class="total-usd">$${totalUSD.toFixed(2)} USD</div>
-                    <div class="total-separator">|</div>
-                    <div class="total-bs">Bs ${totalBs.toFixed(2)}</div>
+                    <div class="total-moneda">${totalMostrar}</div>
                 </div>
             </div>
         `;
@@ -885,6 +941,49 @@ function calcularTotalFactura() {
     }
     
     return totalUSD;
+}
+
+// Toggle de moneda y actualización de UI
+function toggleMoneda() {
+    monedaActual = (monedaActual === 'USD') ? 'VES' : 'USD';
+    // Persistir preferencia
+    localStorage.setItem('monedaActual', monedaActual);
+    const btn = document.getElementById('btn-toggle-moneda');
+    if (btn) {
+        btn.textContent = monedaActual === 'USD' ? 'USD' : 'Bs';
+    }
+    aplicarMonedaEnUI();
+    actualizarTablaFactura();
+    calcularTotalFactura();
+    // Refrescar la tabla de productos según la moneda actual
+    try {
+        const termino = elementos.busquedaProducto?.value?.trim();
+        if (termino) {
+            filtrarProductos();
+        } else {
+            cargarTodosLosProductos();
+        }
+    } catch(_) {}
+}
+
+// Aplica moneda a encabezados y tablas
+function aplicarMonedaEnUI() {
+    // Encabezado de la lista de productos
+    const thPrecioProducto = document.getElementById('th-precio-producto');
+    if (thPrecioProducto) {
+        thPrecioProducto.textContent = monedaActual === 'USD' ? 'Precio ($)' : 'Precio (Bs)';
+    }
+    // Texto del botón de moneda
+    const btn = document.getElementById('btn-toggle-moneda');
+    if (btn) {
+        btn.textContent = monedaActual === 'USD' ? 'USD' : 'Bs';
+    }
+    // Clase en tabla de factura para ocultar columnas
+    const tabla = document.querySelector('.tabla-factura');
+    if (tabla) {
+        tabla.classList.toggle('moneda-usd', monedaActual === 'USD');
+        tabla.classList.toggle('moneda-ves', monedaActual !== 'USD');
+    }
 }
 function actualizarResumenCliente() {
     console.log('Ejecutando actualizarResumenCliente()');
@@ -995,9 +1094,13 @@ function actualizarTablaProductos(productos) {
         console.log('Procesando producto para tabla:', producto);
         
         const fila = document.createElement('tr');
+        const precioUSD = parseFloat(producto.precio_venta);
+        const precioMostrar = monedaActual === 'USD' 
+            ? `$${precioUSD.toFixed(2)}` 
+            : `Bs ${ (precioUSD * tasaCambio).toFixed(2) }`;
         fila.innerHTML = `
             <td>${producto.nombre_produc}</td>
-            <td>$${parseFloat(producto.precio_venta).toFixed(2)}</td>
+            <td>${precioMostrar}</td>
             <td>${producto.stock_disponible !== undefined ? producto.stock_disponible : (producto.cantidad_total ?? 0)}</td>
             <td>
                 <button class="btn-agregar-producto modern-btn" 
@@ -1924,7 +2027,7 @@ function calcularTotalDolares() {
 // Función auxiliar para calcular total en bolívares
 function calcularTotalBolivares() {
     const totalDolares = calcularTotalDolares();
-    return totalDolares * 36; // Tasa de cambio aproximada
+    return totalDolares * tasaCambio; // Tasa de cambio única
 }
 
 // Función para limpiar la factura completa después de procesar

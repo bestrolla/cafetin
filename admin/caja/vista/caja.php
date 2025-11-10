@@ -19,7 +19,10 @@ protegerPagina(['admin']);
 
     <main class="container">
         <div class="cash-container">
-            <h1>Reporte de Caja</h1>
+            <div class="cash-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                <h1 style="margin:0;">Reporte de Caja</h1>
+                <button id="btn-toggle-moneda" class="btn btn-toggle-moneda" title="Cambiar moneda">USD</button>
+            </div>
 
             <!-- Pestañas de navegación -->
             <div class="tabs-container">
@@ -104,6 +107,7 @@ protegerPagina(['admin']);
         <div class="modal-content modal-detalle">
             <div class="modal-header">
                 <h2>Detalles de la Deuda</h2>
+                <button id="btnToggleMonedaAdminCajaDetalle" type="button" class="btn-toggle-moneda">Moneda: USD</button>
                 <span class="close" onclick="cerrarModalDetalle()">&times;</span>
             </div>
             <div class="modal-body">

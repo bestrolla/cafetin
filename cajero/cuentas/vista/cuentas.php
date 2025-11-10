@@ -18,7 +18,10 @@ protegerPagina(['cajero']);
     <?php require_once '../../../acces/nav_cajero/nav_cajero.php'; ?>
     <div class="container">
         <div class="accounts-container">
-            <h1>Gestión de Facturas</h1>
+            <div class="accounts-header">
+                <h1>Gestión de Facturas</h1>
+                <button id="btnToggleMonedaCuentas" type="button" class="btn-toggle-moneda">Moneda: USD</button>
+            </div>
 
             <!-- Filtros y búsqueda -->
             <div class="filters-container">
@@ -92,6 +95,7 @@ protegerPagina(['cajero']);
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Detalle de Factura</h2>
+                <button id="btnToggleMonedaCajeroDetalle" type="button" class="btn-toggle-moneda">Moneda: USD</button>
                 <span class="close" onclick="cerrarModalDetalle()">&times;</span>
             </div>
             <div class="modal-body">
@@ -105,6 +109,7 @@ protegerPagina(['cajero']);
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Abonar por Total</h2>
+                <button id="btnToggleMonedaCajeroAbono" type="button" class="btn-toggle-moneda">Moneda: USD</button>
                 <span class="close" onclick="cerrarModalAbono()">&times;</span>
             </div>
             <div class="modal-body">
@@ -124,8 +129,21 @@ protegerPagina(['cajero']);
                         <input type="text" id="saldoAbono" readonly>
                     </div>
                     <div class="form-group">
-                        <label for="montoAbono">Monto a Abonar:</label>
-                        <input type="number" id="montoAbono" step="0.01" min="0" required>
+                        <label>Montos a Abonar</label>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:200px;">
+                                <label for="montoAbonoUsd">USD</label>
+                                <input type="number" id="montoAbonoUsd" step="0.01" min="0" placeholder="0.00">
+                            </div>
+                            <div style="flex:1; min-width:200px;">
+                                <label for="montoAbonoBs">Bs</label>
+                                <input type="number" id="montoAbonoBs" step="0.01" min="0" placeholder="0.00">
+                            </div>
+                        </div>
+                        <small>Puede abonar una parte en USD y otra en Bs.</small>
+                        <div id="equivalenteAbono" style="margin-top:6px; font-size: 0.95em; color:#333;">
+                            Total equivalente: USD $0.00 | Bs 0.00
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="metodoPago">Método de Pago:</label>

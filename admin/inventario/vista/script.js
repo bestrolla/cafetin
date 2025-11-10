@@ -201,9 +201,13 @@ document.addEventListener('DOMContentLoaded', function () {
           <td><span class="status ${p.activo ? 'active' : 'inactive'}">${estado}</span></td>
           <td>
             <div class="actions">
-              <button class="btn btn-edit" data-id="${p.id_producto}">
-                <span class="btn-icon">✏️</span>
-                <span class="btn-text">Editar</span>
+              <button class="btn btn-add-stock" data-id="${p.id_producto}" title="Agregar llegada de producto">
+                <span class="btn-icon">➕</span>
+                <span class="btn-text">Agregar</span>
+              </button>
+              <button class="btn btn-history" data-id="${p.id_producto}" title="Ver detalles / historial de llegadas">
+                <span class="btn-icon">📜</span>
+                <span class="btn-text">Detalles/Historial</span>
               </button>
               <button class="btn btn-delete" data-id="${p.id_producto}">
                 <span class="btn-icon">🗑️</span>
@@ -331,11 +335,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (table) {
     table.addEventListener('click', async function(e) {
-      if (e.target.classList.contains('btn-edit')) {
-        const id = e.target.getAttribute('data-id');
-        abrirModalEditar(id);
-      } else if (e.target.classList.contains('btn-delete')) {
-        const id = e.target.getAttribute('data-id');
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      if (btn.classList.contains('btn-add-stock')) {
+        const id = btn.getAttribute('data-id');
+        abrirModalAgregarStock(id);
+      } else if (btn.classList.contains('btn-history')) {
+        const id = btn.getAttribute('data-id');
+        abrirModalHistorial(id);
+      } else if (btn.classList.contains('btn-delete')) {
+        const id = btn.getAttribute('data-id');
         const confirmado = await confirmarAccion('¿Estás seguro de que quieres eliminar este producto?', {
           titulo: 'Eliminar producto',
           textoConfirmar: 'Eliminar',
@@ -365,6 +374,128 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+
+  // Modal dinámico para agregar stock
+  window.abrirModalAgregarStock = function(id) {
+    const productos = JSON.parse(sessionStorage.getItem('productos_actuales') || '[]');
+    const producto = productos.find(p => p.id_producto == id);
+    if (!producto) return;
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+    const panel = document.createElement('div');
+    panel.style.cssText = 'background:#fff;border-radius:10px;width:92%;max-width:520px;box-shadow:0 10px 25px rgba(0,0,0,.2);overflow:hidden;';
+    panel.innerHTML = `
+      <div style="background:#222;color:#fff;padding:12px 16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;">
+        <span>Agregar llegada de producto</span>
+        <button id="cerrar-agregar" style="background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer;">✖</button>
+      </div>
+      <div style="padding:16px;color:#333;line-height:1.5;">
+        <div style="margin-bottom:10px;">
+          <strong>Producto:</strong> ${producto.nombre_produc}
+        </div>
+        <form id="form-agregar-stock">
+          <div class="form-group">
+            <label>Cajas a agregar</label>
+            <input type="number" name="cajas_agregar" min="0" step="1" value="0" required />
+          </div>
+          <div class="form-group">
+            <label>Unidades sueltas a agregar</label>
+            <input type="number" name="unidades_sueltas_agregar" min="0" step="1" value="0" required />
+          </div>
+          <div class="form-group">
+            <label>Observación (opcional)</label>
+            <textarea name="observacion" rows="2" placeholder="Ej: Llegada semanal proveedor X"></textarea>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:10px;">
+            <button type="submit" class="btn btn-primary">Agregar al inventario</button>
+            <button type="button" id="cancelar-agregar" class="btn">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    `;
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+    const cerrar = panel.querySelector('#cerrar-agregar');
+    const cancelar = panel.querySelector('#cancelar-agregar');
+    cerrar.addEventListener('click', () => { document.body.removeChild(overlay); });
+    cancelar.addEventListener('click', () => { document.body.removeChild(overlay); });
+    const form = panel.querySelector('#form-agregar-stock');
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(form);
+      fd.append('id_producto', producto.id_producto);
+      try {
+        const res = await fetch('../logica/agregar_stock.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          mostrarToast('success', 'Stock agregado y historial registrado');
+          document.body.removeChild(overlay);
+          loadData();
+        } else {
+          mostrarToast('error', 'Error: ' + (data.message || 'No se pudo agregar stock'));
+        }
+      } catch (err) {
+        console.error(err);
+        mostrarToast('error', 'Error de conexión al agregar stock');
+      }
+    });
+  };
+
+  // Modal dinámico para ver historial
+  window.abrirModalHistorial = async function(id) {
+    try {
+      const res = await fetch('../logica/obtener_historial.php?id_producto=' + encodeURIComponent(id));
+      const data = await res.json();
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+      const panel = document.createElement('div');
+      panel.style.cssText = 'background:#fff;border-radius:10px;width:94%;max-width:720px;box-shadow:0 10px 25px rgba(0,0,0,.2);overflow:hidden;';
+      const header = document.createElement('div');
+      header.style.cssText = 'background:#222;color:#fff;padding:12px 16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;';
+      header.innerHTML = '<span>Detalles / Historial del producto</span><button id="cerrar-historial" style="background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer;">✖</button>';
+      const body = document.createElement('div');
+      body.style.cssText = 'padding:16px;color:#333;line-height:1.5;max-height:70vh;overflow:auto;';
+      if (data.success && Array.isArray(data.historial) && data.historial.length) {
+        const rows = data.historial.map(h => `
+          <tr>
+            <td>${h.fecha_registro}</td>
+            <td>${h.cajas_agregar}</td>
+            <td>${h.unidades_por_caja}</td>
+            <td>${h.unidades_sueltas_agregar}</td>
+            <td>${h.unidades_agregadas_total}</td>
+            <td>$${parseFloat(h.precio_venta_usd).toFixed(2)}</td>
+            <td>Bs ${(parseFloat(h.precio_venta_bs)).toFixed(2)}</td>
+          </tr>
+        `).join('');
+        body.innerHTML = `
+          <table class="table" style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cajas</th>
+                <th>Unid/Caja</th>
+                <th>Sueltas</th>
+                <th>Total Unid Agregadas</th>
+                <th>Precio USD</th>
+                <th>Precio Bs</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      } else {
+        body.textContent = 'No hay historial disponible para este producto.';
+      }
+      panel.appendChild(header);
+      panel.appendChild(body);
+      overlay.appendChild(panel);
+      document.body.appendChild(overlay);
+      overlay.querySelector('#cerrar-historial').addEventListener('click', () => { document.body.removeChild(overlay); });
+    } catch (err) {
+      console.error(err);
+      mostrarToast('error', 'Error al cargar historial');
+    }
+  };
 
   // Event delegation para paginación
   if (pagination) {
@@ -459,8 +590,6 @@ document.addEventListener('DOMContentLoaded', function () {
       editCajas.addEventListener('input', calcularTotalModal);
     }
 
-    calcularTotalModal();
-    
     // Mostrar el modal
     document.getElementById('modal-editar').style.display = 'block';
   };

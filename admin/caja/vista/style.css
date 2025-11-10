@@ -38,6 +38,27 @@ h1 {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Cabecera de caja con botón de moneda */
+.cash-header {
+    margin-bottom: 20px;
+}
+
+.btn-toggle-moneda {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-toggle-moneda:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
 /* Estilos para las pestañas */
 .tabs-container {
     margin-bottom: 30px;

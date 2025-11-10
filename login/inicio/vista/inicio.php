@@ -42,20 +42,18 @@ $csrf = csrfEnsureToken();
       </span>
     </div>
     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8'); ?>">
+    <div id="alert-container" class="alert-container">
+      <?php if (isset($_GET['error'])): ?>
+        <div id="error-message" class="alert alert-error"><?php echo htmlspecialchars($_GET['error']); ?></div>
+      <?php elseif (isset($_GET['mensaje'])): ?>
+        <div id="success-message" class="alert alert-success"><?php echo htmlspecialchars($_GET['mensaje']); ?></div>
+      <?php endif; ?>
+    </div>
+
     <div class="links">
       <a href="../../recuperacion/vista/solicitar.php">¿Olvidaste tu contraseña?</a>
       <!-- <a href="#">Registrate</a> -->
     </div>
-    
-    <?php
-    // Mostrar mensajes de error o información
-    if (isset($_GET['error'])) {
-        echo '<div class="error-message" style="color: #ff4444; text-align: center; margin: 10px 0; padding: 10px; background: rgba(255,68,68,0.1); border-radius: 5px;">' . htmlspecialchars($_GET['error']) . '</div>';
-    }
-    if (isset($_GET['mensaje'])) {
-        echo '<div class="success-message" style="color: #44ff44; text-align: center; margin: 10px 0; padding: 10px; background: rgba(68,255,68,0.1); border-radius: 5px;">' . htmlspecialchars($_GET['mensaje']) . '</div>';
-    }
-    ?>
     
     <input class="button" type="submit" value="Iniciar Sesion">
   </form>

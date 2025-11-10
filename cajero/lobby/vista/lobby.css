@@ -661,8 +661,8 @@ body, html {
         0 2px 8px rgba(102, 126, 234, 0.3),
         0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
 }
 
 .modern-btn:hover, .btn-agregar-producto:hover {
@@ -692,15 +692,15 @@ body, html {
 
 /* Mejoras para las tablas siguiendo el patrón moderno */
 .tabla-factura, .tabla-productos {
-    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .tabla-factura th, .tabla-productos th {
     background: linear-gradient(135deg, #667eea, #764ba2);
-    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
 }
 
 /* Animaciones de carga para botones */
@@ -718,15 +718,15 @@ body, html {
 
 /* Efectos de glassmorphism para contenedores */
 .container_cliente, .container_factura {
-    backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.85);
 }
 
 .factura-panel, .agregar-panel {
-    backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -1185,6 +1185,56 @@ body, html {
     margin: 0;
     flex-grow: 1;
     text-align: center;
+}
+
+/* Botón toggle de moneda (USD/Bs) */
+.btn-toggle-moneda {
+    margin-left: auto;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-toggle-moneda::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -40%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(120deg, rgba(255,255,255,0.6), rgba(255,255,255,0));
+    transform: skewX(-20deg);
+    transition: left 0.6s ease;
+}
+
+.btn-toggle-moneda:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.4);
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.btn-toggle-moneda:hover::before {
+    left: 140%;
+}
+
+/* Ocultar columnas según moneda seleccionada en factura */
+.tabla-factura.moneda-usd th.th-precio-bs,
+.tabla-factura.moneda-usd td:nth-child(4) { /* 4ta columna = Precio (Bs) */
+    display: none;
+}
+
+.tabla-factura.moneda-ves th.th-precio-usd,
+.tabla-factura.moneda-ves td:nth-child(3) { /* 3ra columna = Precio ($) */
+    display: none;
 }
 
 /* Botón eliminar factura */

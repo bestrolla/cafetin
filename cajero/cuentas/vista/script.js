@@ -2,6 +2,46 @@
 let facturas = [];
 let facturasFiltradas = [];
 
+// Utilidades de moneda
+function getMonedaActual() {
+    return localStorage.getItem('monedaActual') || 'USD';
+}
+
+function getTasaCambio() {
+    const valor = parseFloat(localStorage.getItem('tasaCambio'));
+    return Number.isFinite(valor) && valor > 0 ? valor : 36;
+}
+
+// Cargar tasa de cambio desde Configuración (fuente: BD configuraciones)
+async function cargarTasaDesdeConfiguracionCajero() {
+    try {
+        // Endpoint que lee 'configuraciones.tasa_dolar' sin restricción de rol
+        const resp = await fetch('../lobby/logica/obtener_tasa_cambio.php');
+        const data = await resp.json();
+        if (data && data.success && data.tasa_cambio) {
+            const tasa = parseFloat(data.tasa_cambio);
+            if (Number.isFinite(tasa) && tasa > 0) {
+                localStorage.setItem('tasaCambio', tasa.toString());
+                // Actualizar vistas si están abiertas
+                try { actualizarEquivalenteAbono(); } catch (_) {}
+                try { mostrarCuentas(); actualizarResumen(); } catch (_) {}
+            }
+        }
+    } catch (err) {
+        console.warn('No se pudo cargar tasa desde configuración (cajero):', err);
+    }
+}
+
+function formatMonto(monto) {
+    const moneda = getMonedaActual();
+    const tasa = getTasaCambio();
+    const num = parseFloat(monto) || 0;
+    if (moneda === 'USD') {
+        return '$' + num.toFixed(2);
+    }
+    return 'Bs ' + (num * tasa).toFixed(2);
+}
+
 // Función para cargar las facturas
 function cargarCuentas() {
     fetch('../logica/obtener_cuentas.php')
@@ -24,6 +64,22 @@ function cargarCuentas() {
         });
 }
 
+// Actualiza el total equivalente (USD y Bs) en el modal de Abono
+function actualizarEquivalenteAbono() {
+    const el = document.getElementById('equivalenteAbono');
+    if (!el) return;
+    const tasa = getTasaCambio();
+    if (!(tasa > 0)) {
+        el.textContent = 'Configura la tasa de cambio para ver el total equivalente';
+        return;
+    }
+    const usd = parseFloat(document.getElementById('montoAbonoUsd')?.value || '0') || 0;
+    const bs = parseFloat(document.getElementById('montoAbonoBs')?.value || '0') || 0;
+    const totalUsd = usd + (bs / tasa);
+    const totalBs = (usd * tasa) + bs;
+    el.textContent = `Total equivalente: USD $${totalUsd.toFixed(2)} | Bs ${totalBs.toFixed(2)}`;
+}
+
 // Función para mostrar las facturas en la tabla
 function mostrarCuentas() {
     const tbody = document.querySelector('#tablaCuentas tbody');
@@ -38,6 +94,7 @@ function mostrarCuentas() {
     // Orden alfabético por nombre del cliente
     facturasFiltradas.sort((a, b) => (a.cliente || '').localeCompare((b.cliente || ''), 'es', { sensitivity: 'base' }));
 
+    const moneda = getMonedaActual();
     facturasFiltradas.forEach(factura => {
         const saldo = parseFloat(factura.saldo_pendiente);
         const estado = factura.estado_factura;
@@ -47,9 +104,9 @@ function mostrarCuentas() {
         row.innerHTML = `
             <td>${factura.cliente}</td>
             <td>${factura.total_productos} factura(s)</td>
-            <td>$${parseFloat(factura.total_factura).toFixed(2)}</td>
-            <td>$${parseFloat(factura.total_abonado).toFixed(2)}</td>
-            <td>$${saldo.toFixed(2)}</td>
+            <td>${formatMonto(factura.total_factura)}</td>
+            <td>${formatMonto(factura.total_abonado)}</td>
+            <td>${formatMonto(saldo)}</td>
             <td>
                 <span class="badge ${estado === 'pagado' ? 'bg-success' : estado === 'parcial' ? 'bg-warning' : 'bg-danger'}">
                     ${estadoTexto}
@@ -120,8 +177,8 @@ function actualizarResumen() {
 
     document.getElementById('totalCuentas').textContent = totalFacturas;
     document.getElementById('cuentasPendientes').textContent = facturasPendientes;
-    document.getElementById('totalAdeudado').textContent = '$' + totalAdeudado.toFixed(2);
-    document.getElementById('totalAbonado').textContent = '$' + totalAbonado.toFixed(2);
+    document.getElementById('totalAdeudado').textContent = formatMonto(totalAdeudado);
+    document.getElementById('totalAbonado').textContent = formatMonto(totalAbonado);
 }
 
 // Abrir modal para abonar
@@ -224,6 +281,8 @@ function verHistorialCliente(idCliente) {
                 mostrarMensaje('Error al cargar el historial: ' + historial.error, 'error');
                 return;
             }
+            window.modalDetalleContext = 'historial';
+            window.ultimoHistorialCuentas = historial;
             mostrarModalHistorial(historial);
         })
         .catch(error => {
@@ -235,6 +294,7 @@ function verHistorialCliente(idCliente) {
 function mostrarModalHistorial(historial) {
     const modal = document.getElementById('modalDetalle');
     const modalBody = modal.querySelector('.modal-body');
+    const monedaLabel = getMonedaActual() === 'USD' ? 'USD' : 'Bs';
 
     let contenido = '';
     if (!historial || historial.length === 0) {
@@ -247,7 +307,7 @@ function mostrarModalHistorial(historial) {
                     <tr>
                         <td>${p.producto}</td>
                         <td>${p.cantidad}</td>
-                        <td>$${parseFloat(p.subtotal).toFixed(2)}</td>
+                        <td>${formatMonto(p.subtotal)}</td>
                     </tr>
                 `;
             });
@@ -255,7 +315,7 @@ function mostrarModalHistorial(historial) {
                 <div class="mb-4">
                     <h6 class="bg-light p-2 rounded">
                         <strong>Fecha:</strong> ${h.fecha}
-                        <span class="float-right">Saldo: $${parseFloat(h.saldo_pendiente).toFixed(2)}</span>
+                        <span class="float-right">Saldo (${monedaLabel}): ${formatMonto(h.saldo_pendiente)}</span>
                     </h6>
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered">
@@ -263,7 +323,7 @@ function mostrarModalHistorial(historial) {
                                 <tr>
                                     <th>Producto</th>
                                     <th>Cantidad</th>
-                                    <th>Subtotal</th>
+                                    <th>Subtotal (${monedaLabel})</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -272,9 +332,9 @@ function mostrarModalHistorial(historial) {
                         </table>
                     </div>
                     <div class="row text-center">
-                        <div class="col-md-4"><strong>Total:</strong> $${parseFloat(h.total_factura).toFixed(2)}</div>
-                        <div class="col-md-4"><strong>Abonado:</strong> $${parseFloat(h.total_abonado).toFixed(2)}</div>
-                        <div class="col-md-4"><strong>Pendiente:</strong> $${parseFloat(h.saldo_pendiente).toFixed(2)}</div>
+                        <div class="col-md-4"><strong>Total (${monedaLabel}):</strong> ${formatMonto(h.total_factura)}</div>
+                        <div class="col-md-4"><strong>Abonado (${monedaLabel}):</strong> ${formatMonto(h.total_abonado)}</div>
+                        <div class="col-md-4"><strong>Pendiente (${monedaLabel}):</strong> ${formatMonto(h.saldo_pendiente)}</div>
                     </div>
                 </div>
             `;
@@ -289,6 +349,13 @@ function mostrarModalHistorial(historial) {
         ${contenido}
     `;
     modal.style.display = 'block';
+    window.modalDetalleContext = 'historial';
+    // Sincronizar texto del botón de moneda en el encabezado del modal
+    const btnToggleModalDetalle = document.getElementById('btnToggleMonedaCajeroDetalle');
+    if (btnToggleModalDetalle) {
+        const m = getMonedaActual();
+        btnToggleModalDetalle.textContent = 'Moneda: ' + (m === 'USD' ? 'USD' : 'Bs');
+    }
 }
 
 // Función para cerrar el modal de detalles
@@ -314,7 +381,7 @@ function mostrarModalDetalle(data) {
                 <div class="fecha-grupo mb-4">
                     <h6 class="fecha-header bg-light p-2 rounded">
                         <strong>Fecha de Compra: ${new Date(grupoFecha.fecha).toLocaleDateString('es-ES')}</strong>
-                        <span class="float-right">Total: $${parseFloat(grupoFecha.total_fecha).toFixed(2)}</span>
+                        <span class="float-right">Total (${(localStorage.getItem('monedaActual')||'USD')==='USD' ? 'USD' : 'Bs'}): ${((localStorage.getItem('monedaActual')||'USD')==='USD' ? `$${parseFloat(grupoFecha.total_fecha).toFixed(2)}` : `Bs ${(parseFloat(grupoFecha.total_fecha)*(parseFloat(localStorage.getItem('tasaCambio'))||36)).toFixed(2)}`)}</span>
                     </h6>
                     <table class="table table-sm table-bordered">
                         <thead class="table-secondary">
@@ -322,7 +389,7 @@ function mostrarModalDetalle(data) {
                                  <th>Fecha y Hora</th>
                                  <th>Producto</th>
                                  <th>Cantidad</th>
-                                 <th>Subtotal</th>
+                                 <th>Subtotal (${(localStorage.getItem('monedaActual')||'USD')==='USD' ? 'USD' : 'Bs'})</th>
                              </tr>
                          </thead>
                         <tbody>
@@ -338,7 +405,7 @@ function mostrarModalDetalle(data) {
                          <td>${fechaFormateada}</td>
                          <td>${producto.producto}</td>
                          <td>${producto.cantidad}</td>
-                         <td>$${parseFloat(producto.subtotal).toFixed(2)}</td>
+                         <td>${((localStorage.getItem('monedaActual')||'USD')==='USD' ? `$${parseFloat(producto.subtotal).toFixed(2)}` : `Bs ${(parseFloat(producto.subtotal)*(parseFloat(localStorage.getItem('tasaCambio'))||36)).toFixed(2)}`)}</td>
                      </tr>
                  `;
              });
@@ -356,7 +423,7 @@ function mostrarModalDetalle(data) {
             abonosHtml += `
                 <tr>
                     <td>${new Date(abono.fecha_abono).toLocaleDateString()}</td>
-                    <td>$${parseFloat(abono.monto).toFixed(2)}</td>
+                    <td>${((localStorage.getItem('monedaActual')||'USD')==='USD' ? `$${parseFloat(abono.monto).toFixed(2)}` : `Bs ${(parseFloat(abono.monto)*(parseFloat(localStorage.getItem('tasaCambio'))||36)).toFixed(2)}`)}</td>
                     <td>${abono.metodo_pago}</td>
                     <td>${abono.observaciones || '-'}</td>
                 </tr>
@@ -407,20 +474,20 @@ function mostrarModalDetalle(data) {
             <div class="row">
                 <div class="col-md-4">
                     <div class="summary-card text-center" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
-                        <h6>Total Factura</h6>
-                        <h4>$${parseFloat(data.resumen.total_factura).toFixed(2)}</h4>
+                        <h6>Total Factura (${(localStorage.getItem('monedaActual')||'USD')==='USD' ? 'USD' : 'Bs'})</h6>
+                        <h4>${((localStorage.getItem('monedaActual')||'USD')==='USD' ? `$${parseFloat(data.resumen.total_factura).toFixed(2)}` : `Bs ${(parseFloat(data.resumen.total_factura)*(parseFloat(localStorage.getItem('tasaCambio'))||36)).toFixed(2)}`)}</h4>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="summary-card text-center" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%);">
-                        <h6>Total Abonado</h6>
-                        <h4>$${parseFloat(data.resumen.total_abonado).toFixed(2)}</h4>
+                        <h6>Total Abonado (${(localStorage.getItem('monedaActual')||'USD')==='USD' ? 'USD' : 'Bs'})</h6>
+                        <h4>${((localStorage.getItem('monedaActual')||'USD')==='USD' ? `$${parseFloat(data.resumen.total_abonado).toFixed(2)}` : `Bs ${(parseFloat(data.resumen.total_abonado)*(parseFloat(localStorage.getItem('tasaCambio'))||36)).toFixed(2)}`)}</h4>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="summary-card text-center" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
-                        <h6>Saldo Pendiente</h6>
-                        <h4>$${parseFloat(data.resumen.saldo_pendiente).toFixed(2)}</h4>
+                        <h6>Saldo Pendiente (${(localStorage.getItem('monedaActual')||'USD')==='USD' ? 'USD' : 'Bs'})</h6>
+                        <h4>${((localStorage.getItem('monedaActual')||'USD')==='USD' ? `$${parseFloat(data.resumen.saldo_pendiente).toFixed(2)}` : `Bs ${(parseFloat(data.resumen.saldo_pendiente)*(parseFloat(localStorage.getItem('tasaCambio'))||36)).toFixed(2)}`)}</h4>
                     </div>
                 </div>
             </div>
@@ -428,6 +495,14 @@ function mostrarModalDetalle(data) {
     `;
     
     modal.style.display = 'block';
+    window.modalDetalleContext = 'detalle';
+    window.ultimoDetalleCuentasData = data;
+    // Sincronizar texto del botón de moneda en el encabezado del modal
+    const btnToggleModalDetalle2 = document.getElementById('btnToggleMonedaCajeroDetalle');
+    if (btnToggleModalDetalle2) {
+        const m = getMonedaActual();
+        btnToggleModalDetalle2.textContent = 'Moneda: ' + (m === 'USD' ? 'USD' : 'Bs');
+    }
     
     // Cerrar modal al hacer clic fuera de él
     modal.onclick = function(event) {
@@ -461,6 +536,8 @@ function mostrarMensaje(mensaje, tipo) {
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
+    // Precargar tasa desde configuración
+    cargarTasaDesdeConfiguracionCajero();
     cargarCuentas();
     
     // Filtros
@@ -470,6 +547,68 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Botón limpiar filtros
     document.getElementById('btn-limpiar-filtros').addEventListener('click', limpiarFiltros);
+
+    // Toggle de moneda en cabecera
+    const btnToggle = document.getElementById('btnToggleMonedaCuentas');
+    if (btnToggle) {
+        const syncBtnText = () => {
+            const m = getMonedaActual();
+            btnToggle.textContent = 'Moneda: ' + (m === 'USD' ? 'USD' : 'Bs');
+        };
+        syncBtnText();
+        btnToggle.addEventListener('click', () => {
+            const actual = getMonedaActual();
+            const nuevo = actual === 'USD' ? 'Bs' : 'USD';
+            localStorage.setItem('monedaActual', nuevo);
+            syncBtnText();
+            mostrarCuentas();
+            actualizarResumen();
+        });
+    }
+
+    // Toggle de moneda en modal Detalle/Historial
+    const btnToggleModalDetalle = document.getElementById('btnToggleMonedaCajeroDetalle');
+    if (btnToggleModalDetalle) {
+        const syncBtnTextDetalle = () => {
+            const m = getMonedaActual();
+            btnToggleModalDetalle.textContent = 'Moneda: ' + (m === 'USD' ? 'USD' : 'Bs');
+        };
+        syncBtnTextDetalle();
+        btnToggleModalDetalle.addEventListener('click', () => {
+            const actual = getMonedaActual();
+            const nuevo = actual === 'USD' ? 'Bs' : 'USD';
+            localStorage.setItem('monedaActual', nuevo);
+            syncBtnTextDetalle();
+            if (window.modalDetalleContext === 'detalle' && window.ultimoDetalleCuentasData) {
+                mostrarModalDetalle(window.ultimoDetalleCuentasData);
+            } else if (window.modalDetalleContext === 'historial' && window.ultimoHistorialCuentas) {
+                mostrarModalHistorial(window.ultimoHistorialCuentas);
+            } else if (window.modalDetalleContext === 'combinado' && window.ultimoDetalleCuentasData && window.ultimoHistorialCuentas) {
+                mostrarModalDetalleCombinado(window.ultimoDetalleCuentasData, window.ultimoHistorialCuentas);
+            }
+        });
+    }
+
+    // Toggle de moneda en modal Abono
+    const btnToggleModalAbono = document.getElementById('btnToggleMonedaCajeroAbono');
+    if (btnToggleModalAbono) {
+        const syncBtnTextAbono = () => {
+            const m = getMonedaActual();
+            btnToggleModalAbono.textContent = 'Moneda: ' + (m === 'USD' ? 'USD' : 'Bs');
+        };
+        syncBtnTextAbono();
+        btnToggleModalAbono.addEventListener('click', () => {
+            const actual = getMonedaActual();
+            const nuevo = actual === 'USD' ? 'Bs' : 'USD';
+            localStorage.setItem('monedaActual', nuevo);
+            syncBtnTextAbono();
+            const saldoInput = document.getElementById('saldoAbono');
+            if (saldoInput) {
+                const num = parseFloat(saldoInput.dataset.saldoNumerico || document.getElementById('modalAbono').dataset.totalSaldo || '0');
+                saldoInput.value = formatMonto(num);
+            }
+        });
+    }
 });
 function verDetalleCliente(idCliente) {
     Promise.all([
@@ -479,55 +618,69 @@ function verDetalleCliente(idCliente) {
     .then(([data, historial]) => {
         if (data.error) { mostrarMensaje(data.error, 'error'); return; }
         if (historial.error) { mostrarMensaje(historial.error, 'error'); return; }
-
-        const modal = document.getElementById('modalDetalle');
-        const body = modal.querySelector('.modal-body');
-
-        const resumenHtml = `
-            <div class="p-2">
-                <h4>Resumen de Cuenta</h4>
-                <p><strong>Total a pagar:</strong> $${parseFloat(data.total_factura).toFixed(2)}</p>
-                <p><strong>Total abonado:</strong> $${parseFloat(data.total_abonado).toFixed(2)}</p>
-                <p><strong>Saldo pendiente:</strong> $${parseFloat(data.saldo_pendiente).toFixed(2)}</p>
-                <h5>Fechas de abono</h5>
-                ${data.fechas_abono && data.fechas_abono.length ?
-                    `<ul>` + data.fechas_abono.map(f => `<li>${f.fecha} - $${parseFloat(f.monto).toFixed(2)}</li>`).join('') + `</ul>`
-                    : '<p>Sin abonos registrados.</p>'}
-            </div>`;
-
-        const facturasHtml = `
-            <div class="p-2">
-                <h4>Facturas por fecha</h4>
-                ${Array.isArray(historial) && historial.length ? `
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Total</th>
-                                    <th>Abonado</th>
-                                    <th>Saldo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${historial.map(h => `
-                                    <tr>
-                                        <td>${h.fecha}</td>
-                                        <td>$${parseFloat(h.total_factura).toFixed(2)}</td>
-                                        <td>$${parseFloat(h.total_abonado).toFixed(2)}</td>
-                                        <td>$${parseFloat(h.saldo_pendiente).toFixed(2)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                ` : '<p>No hay facturas registradas.</p>'}
-            </div>`;
-
-        body.innerHTML = resumenHtml + facturasHtml;
-        modal.style.display = 'block';
+        // Guardar contexto combinado y re-renderizar con función dedicada
+        window.modalDetalleContext = 'combinado';
+        window.ultimoDetalleCuentasData = data;
+        window.ultimoHistorialCuentas = historial;
+        mostrarModalDetalleCombinado(data, historial);
     })
     .catch(e => { console.error(e); mostrarMensaje('Error al cargar el detalle del cliente', 'error'); });
+}
+
+// Render del modal con vista combinada (resumen + historial) con moneda dinámica
+function mostrarModalDetalleCombinado(data, historial) {
+    const modal = document.getElementById('modalDetalle');
+    const body = modal.querySelector('.modal-body');
+    const monedaLabel = getMonedaActual() === 'USD' ? 'USD' : 'Bs';
+
+    const resumenHtml = `
+        <div class="p-2">
+            <h4>Resumen de Cuenta</h4>
+            <p><strong>Total a pagar (${monedaLabel}):</strong> ${formatMonto(data.total_factura)}</p>
+            <p><strong>Total abonado (${monedaLabel}):</strong> ${formatMonto(data.total_abonado)}</p>
+            <p><strong>Saldo pendiente (${monedaLabel}):</strong> ${formatMonto(data.saldo_pendiente)}</p>
+            <h5>Fechas de abono</h5>
+            ${data.fechas_abono && data.fechas_abono.length ?
+                `<ul>` + data.fechas_abono.map(f => `<li>${f.fecha} - ${formatMonto(f.monto)}</li>`).join('') + `</ul>`
+                : '<p>Sin abonos registrados.</p>'}
+        </div>`;
+
+    const facturasHtml = `
+        <div class="p-2">
+            <h4>Facturas por fecha</h4>
+            ${Array.isArray(historial) && historial.length ? `
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Total (${monedaLabel})</th>
+                                <th>Abonado (${monedaLabel})</th>
+                                <th>Saldo (${monedaLabel})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${historial.map(h => `
+                                <tr>
+                                    <td>${h.fecha}</td>
+                                    <td>${formatMonto(h.total_factura)}</td>
+                                    <td>${formatMonto(h.total_abonado)}</td>
+                                    <td>${formatMonto(h.saldo_pendiente)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            ` : '<p>No hay facturas registradas.</p>'}
+        </div>`;
+
+    body.innerHTML = resumenHtml + facturasHtml;
+    modal.style.display = 'block';
+    const btnToggleModalDetalle = document.getElementById('btnToggleMonedaCajeroDetalle');
+    if (btnToggleModalDetalle) {
+        const m = getMonedaActual();
+        btnToggleModalDetalle.textContent = 'Moneda: ' + (m === 'USD' ? 'USD' : 'Bs');
+    }
 }
 
 function abrirModalAbonoCliente(idCliente, nombreCliente) {
@@ -552,26 +705,41 @@ function abrirModalAbonoCliente(idCliente, nombreCliente) {
             modal.dataset.totalSaldo = totalSaldo.toFixed(2);
             // Mostrar saldo total en el campo visual
             const saldoInput = document.getElementById('saldoAbono');
-            saldoInput.value = `$${totalSaldo.toFixed(2)}`;
+            saldoInput.value = `${formatMonto(totalSaldo)}`;
             saldoInput.dataset.saldoNumerico = totalSaldo;
             select.onchange = function() {
                 const sel = select.options[select.selectedIndex];
                 document.getElementById('idCreditoAbono').value = sel.value;
                 const saldoNumerico = sel.dataset.saldo ? parseFloat(sel.dataset.saldo) : 0;
                 const saldoInput = document.getElementById('saldoAbono');
-                saldoInput.value = sel.dataset.saldo ? `$${saldoNumerico.toFixed(2)}` : '';
+                saldoInput.value = sel.dataset.saldo ? `${formatMonto(saldoNumerico)}` : '';
                 saldoInput.dataset.saldoNumerico = saldoNumerico;
-                const montoInput = document.getElementById('montoAbono');
-                if (sel.dataset.saldo) {
-                    montoInput.max = saldoNumerico;
-                } else {
-                    montoInput.max = totalSaldo.toFixed(2);
+                const montoUsdInput = document.getElementById('montoAbonoUsd');
+                const montoBsInput = document.getElementById('montoAbonoBs');
+                if (montoUsdInput) {
+                    montoUsdInput.max = sel.dataset.saldo ? saldoNumerico : totalSaldo.toFixed(2);
                 }
+                if (montoBsInput) {
+                    const tasa = getTasaCambio();
+                    const maxBs = (sel.dataset.saldo ? saldoNumerico : totalSaldo) * tasa;
+                    montoBsInput.max = maxBs.toFixed(2);
+                }
+                actualizarEquivalenteAbono();
             };
-            const montoInput = document.getElementById('montoAbono');
-            montoInput.value = '';
-            // Establecer máximo inicial al saldo total para abono general
-            montoInput.max = totalSaldo.toFixed(2);
+            const montoUsdInput = document.getElementById('montoAbonoUsd');
+            const montoBsInput = document.getElementById('montoAbonoBs');
+            if (montoUsdInput) {
+                montoUsdInput.value = '';
+                montoUsdInput.max = totalSaldo.toFixed(2);
+                montoUsdInput.addEventListener('input', actualizarEquivalenteAbono);
+            }
+            if (montoBsInput) {
+                montoBsInput.value = '';
+                const tasa = getTasaCambio();
+                montoBsInput.max = (totalSaldo * tasa).toFixed(2);
+                montoBsInput.addEventListener('input', actualizarEquivalenteAbono);
+            }
+            actualizarEquivalenteAbono();
             document.getElementById('metodoPago').value = '';
             document.getElementById('observacionesAbono').value = '';
             document.getElementById('idCreditoAbono').value = '';
@@ -582,39 +750,72 @@ function abrirModalAbonoCliente(idCliente, nombreCliente) {
 
 async function procesarAbono() {
     const idCredito = document.getElementById('idCreditoAbono').value;
-    const montoAbono = parseFloat(document.getElementById('montoAbono').value);
+    const montoUsd = parseFloat(document.getElementById('montoAbonoUsd')?.value || '0') || 0;
+    const montoBs = parseFloat(document.getElementById('montoAbonoBs')?.value || '0') || 0;
+    const tasa = getTasaCambio();
+    if (!(tasa > 0)) { mostrarMensaje('Configura la tasa de cambio en localStorage.tasaCambio', 'error'); return; }
+    const montoBsEnUsd = montoBs > 0 ? (montoBs / tasa) : 0;
+    const montoTotalUsd = montoUsd + montoBsEnUsd;
     const metodoPago = document.getElementById('metodoPago').value;
     const observaciones = document.getElementById('observacionesAbono').value;
-    if (!(montoAbono > 0)) { mostrarMensaje('Monto inválido', 'error'); return; }
+    if (!(montoTotalUsd > 0)) { mostrarMensaje('Ingrese monto en USD o Bs', 'error'); return; }
     const modal = document.getElementById('modalAbono');
     const totalSaldoCliente = parseFloat(modal.dataset.totalSaldo || '0');
     try {
         if (idCredito) {
             const saldoNumerico = parseFloat(document.getElementById('saldoAbono').dataset.saldoNumerico || '0');
-            if (montoAbono > saldoNumerico) { mostrarMensaje('El monto del abono excede el saldo pendiente', 'error'); return; }
-            const formData = new FormData();
-            formData.append('id_credito', idCredito);
-            formData.append('monto_abono', montoAbono);
-            formData.append('metodo_pago', metodoPago);
-            formData.append('observaciones', observaciones);
-            const response = await fetch('../logica/procesar_abono.php', { method: 'POST', body: formData });
-            const data = await response.json();
-            if (data.success) { mostrarMensaje('Abono procesado', 'success'); cerrarModalAbono(); cargarCuentas(); }
-            else { mostrarMensaje(data.message || 'Error al procesar el abono', 'error'); }
+            if (montoTotalUsd > saldoNumerico) { mostrarMensaje('El total del abono excede el saldo pendiente', 'error'); return; }
+            // Registrar parte USD
+            if (montoUsd > 0) {
+                const fdUsd = new FormData();
+                fdUsd.append('id_credito', idCredito);
+                fdUsd.append('monto_abono', montoUsd.toFixed(2));
+                fdUsd.append('metodo_pago', metodoPago);
+                fdUsd.append('observaciones', (observaciones ? observaciones + ' ' : '') + '(Parte en USD)');
+                const r1 = await fetch('../logica/procesar_abono.php', { method: 'POST', body: fdUsd });
+                const d1 = await r1.json();
+                if (!d1.success) { mostrarMensaje(d1.message || 'Error al procesar abono USD', 'error'); return; }
+            }
+            // Registrar parte Bs (convertida a USD)
+            if (montoBsEnUsd > 0) {
+                const fdBs = new FormData();
+                fdBs.append('id_credito', idCredito);
+                fdBs.append('monto_abono', montoBsEnUsd.toFixed(2));
+                fdBs.append('metodo_pago', metodoPago);
+                fdBs.append('observaciones', (observaciones ? observaciones + ' ' : '') + `(Parte en Bs: Bs ${montoBs.toFixed(2)} a tasa ${tasa})`);
+                const r2 = await fetch('../logica/procesar_abono.php', { method: 'POST', body: fdBs });
+                const d2 = await r2.json();
+                if (!d2.success) { mostrarMensaje(d2.message || 'Error al procesar abono en Bs', 'error'); return; }
+            }
+            mostrarMensaje('Abono procesado', 'success');
+            cerrarModalAbono();
+            cargarCuentas();
         } else {
-            // Abono general a la cuenta del cliente
             const idCliente = modal.dataset.idCliente;
             if (!idCliente) { mostrarMensaje('No se pudo identificar el cliente para el abono general', 'error'); return; }
-            if (montoAbono > totalSaldoCliente) { mostrarMensaje('El monto del abono excede el saldo pendiente total', 'error'); return; }
-            const formData = new FormData();
-            formData.append('id_cliente', idCliente);
-            formData.append('monto_abono', montoAbono);
-            formData.append('metodo_pago', metodoPago);
-            formData.append('observaciones', observaciones);
-            const response = await fetch('../logica/procesar_abono_general.php', { method: 'POST', body: formData });
-            const data = await response.json();
-            if (data.success) { cerrarModalAbono(); cargarCuentas(); }
-            else { mostrarMensaje(data.message || 'Error al procesar el abono general', 'error'); }
+            if (montoTotalUsd > totalSaldoCliente) { mostrarMensaje('El total del abono excede el saldo pendiente', 'error'); return; }
+            if (montoUsd > 0) {
+                const fdUsd = new FormData();
+                fdUsd.append('id_cliente', idCliente);
+                fdUsd.append('monto_abono', montoUsd.toFixed(2));
+                fdUsd.append('metodo_pago', metodoPago);
+                fdUsd.append('observaciones', (observaciones ? observaciones + ' ' : '') + '(Parte en USD)');
+                const r1 = await fetch('../logica/procesar_abono_general.php', { method: 'POST', body: fdUsd });
+                const d1 = await r1.json();
+                if (!d1.success) { mostrarMensaje(d1.message || 'Error al procesar abono USD', 'error'); return; }
+            }
+            if (montoBsEnUsd > 0) {
+                const fdBs = new FormData();
+                fdBs.append('id_cliente', idCliente);
+                fdBs.append('monto_abono', montoBsEnUsd.toFixed(2));
+                fdBs.append('metodo_pago', metodoPago);
+                fdBs.append('observaciones', (observaciones ? observaciones + ' ' : '') + `(Parte en Bs: Bs ${montoBs.toFixed(2)} a tasa ${tasa})`);
+                const r2 = await fetch('../logica/procesar_abono_general.php', { method: 'POST', body: fdBs });
+                const d2 = await r2.json();
+                if (!d2.success) { mostrarMensaje(d2.message || 'Error al procesar abono en Bs', 'error'); return; }
+            }
+            cerrarModalAbono();
+            cargarCuentas();
         }
     } catch (err) { console.error(err); mostrarMensaje('Error de conexión al procesar abono', 'error'); }
 }

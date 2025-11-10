@@ -54,10 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['usuario_rol'] = $user['nombre_rol'];
             $_SESSION['ultimo_acceso'] = time();
 
-            // Actualizar la cantidad_total en el inventario
-            $sqlUpdateInventario = "UPDATE inventario SET cantidad_total = (caja_produc * cantidad_caja) + unidades_sueltas";
-            $stmtUpdate = $conexion->prepare($sqlUpdateInventario);
-            $stmtUpdate->execute();
+            // Nota: No recalcular inventario en login.
+            // Antes se hacía: cantidad_total = (caja_produc * cantidad_caja) + unidades_sueltas
+            // Esto provocaba inconsistencias al sobrescribir la cantidad_total ajustada por ventas.
+            // El inventario debe actualizarse solo en operaciones de inventario/venta.
 
             $response['success'] = true;
             $response['message'] = 'Inicio de sesión exitoso.';

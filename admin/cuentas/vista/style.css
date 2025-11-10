@@ -35,6 +35,40 @@ h1 {
   font-size: 2.5em;
 }
 
+/* Cabecera de cuentas con botón de moneda (Admin) */
+.accounts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.btn-toggle-moneda {
+  appearance: none;
+  border: none;
+  border-radius: 24px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  box-shadow: 0 4px 12px rgba(68, 160, 141, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.btn-toggle-moneda:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(68, 160, 141, 0.45);
+  filter: brightness(1.05);
+}
+
+.btn-toggle-moneda:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(68, 160, 141, 0.35);
+}
+
 /* Filtros */
 .filters-container {
     background: #f8f9fa;

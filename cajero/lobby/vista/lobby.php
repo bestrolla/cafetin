@@ -51,6 +51,7 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
           Eliminar Factura
         </button>
         <h2>Factura</h2>
+        <button id="btn-toggle-moneda" class="btn-toggle-moneda" type="button" aria-label="Cambiar entre USD y Bs">USD</button>
       </div>
       <hr>
       <div class="cliente-resumen">
@@ -62,17 +63,17 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
         <!-- 🧾 Factura actual -->
         <div class="factura-panel">
           <h3>Productos agregados</h3>
-          <table class="tabla-factura">
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio ($)</th>
-                <th>Precio (Bs)</th>
-                <th>Total</th>
-                <th>Eliminar</th>
-              </tr>
-            </thead>
+            <table class="tabla-factura">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Cantidad</th>
+                  <th class="th-precio-usd">Precio ($)</th>
+                  <th class="th-precio-bs">Precio (Bs)</th>
+                  <th>Total</th>
+                  <th>Eliminar</th>
+                </tr>
+              </thead>
             <tbody id="tabla-factura-body">
               <!-- Filas dinámicas -->
             </tbody>
@@ -98,7 +99,7 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
               <thead>
                 <tr>
                   <th>Nombre</th>
-                  <th>Precio ($)</th>
+                  <th id="th-precio-producto">Precio ($)</th>
                   <th>Disponible</th>
                   <th>Agregar</th>
                 </tr>

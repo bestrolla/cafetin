@@ -1,9 +1,53 @@
+// Estado de moneda y tasa de cambio
+let monedaActual = 'USD';
+let tasaCambio = parseFloat(localStorage.getItem('tasaCambio')) || 36;
+const monedaGuardada = localStorage.getItem('monedaActual');
+if (monedaGuardada === 'USD' || monedaGuardada === 'VES') {
+    monedaActual = monedaGuardada;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Cargar tasa desde Configuración (Admin) y sincronizar vista
+    (async function cargarTasaDesdeConfiguracionAdminCaja(){
+        try {
+            const resp = await fetch('../configuracion/logica/obtener_configuraciones.php');
+            const data = await resp.json();
+            if (data && data.success && data.configuraciones && data.configuraciones.tasa_dolar) {
+                const tasa = parseFloat(data.configuraciones.tasa_dolar);
+                if (Number.isFinite(tasa) && tasa > 0) {
+                    localStorage.setItem('tasaCambio', tasa.toString());
+                    tasaCambio = tasa; // actualizar variable local
+                    try { aplicarMonedaEnUI(); } catch(_) {}
+                }
+            }
+        } catch(err) {
+            console.warn('No se pudo cargar la tasa desde configuración (Admin Caja):', err);
+        }
+    })();
     // Inicializar pestañas
     initializeTabs();
     
     // Cargar datos iniciales
     cargarVentas();
+    aplicarMonedaEnUI();
+    const btnToggleMoneda = document.getElementById('btn-toggle-moneda');
+    if (btnToggleMoneda) {
+        btnToggleMoneda.addEventListener('click', toggleMoneda);
+    }
+    // Toggle de moneda en modal de detalle (Admin Caja)
+    const btnToggleModalDetalle = document.getElementById('btnToggleMonedaAdminCajaDetalle');
+    if (btnToggleModalDetalle) {
+        const syncBtnText = () => {
+            btnToggleModalDetalle.textContent = 'Moneda: ' + (monedaActual === 'USD' ? 'USD' : 'Bs');
+        };
+        syncBtnText();
+        btnToggleModalDetalle.addEventListener('click', () => {
+            toggleMoneda();
+            if (window.ultimoDetalleCaja) {
+                mostrarModalDetalle(window.ultimoDetalleCaja);
+            }
+        });
+    }
     
     // Event listeners para filtros
     document.getElementById('filtrar').addEventListener('click', function() {
@@ -64,13 +108,15 @@ function cargarVentas() {
             
             data.forEach(venta => {
                 const row = document.createElement('tr');
+                const totalUSD = parseFloat(venta.total);
+                const totalBs = totalUSD * tasaCambio;
                 row.innerHTML = `
                     <td>${venta.id_venta}</td>
                     <td>${venta.cliente_nombre} ${venta.cliente_apellido}</td>
                     <td>${venta.cajero_nombre}</td>
                     <td>${venta.producto_nombre}</td>
                     <td>${venta.cantidad}</td>
-                    <td>$${parseFloat(venta.total).toFixed(2)}</td>
+                    <td>${monedaActual === 'USD' ? `$${totalUSD.toFixed(2)}` : `Bs ${totalBs.toFixed(2)}`}</td>
                     <td>${new Date(venta.fecha_venta).toLocaleDateString()}</td>
                 `;
                 tbody.appendChild(row);
@@ -149,14 +195,20 @@ function cargarDeudas() {
                 
                 const row = document.createElement('tr');
                 const fechaMostrar = deuda.fecha_factura ? new Date(deuda.fecha_factura).toLocaleDateString() : '';
+                const totalUSD = parseFloat(deuda.total_factura);
+                const abonadoUSD = parseFloat(deuda.total_abonado);
+                const saldoUSD = parseFloat(saldo);
+                const totalBs = totalUSD * tasaCambio;
+                const abonadoBs = abonadoUSD * tasaCambio;
+                const saldoBs = saldoUSD * tasaCambio;
                 row.innerHTML = `
                     <td>${deuda.id_credito}</td>
                     <td>${deuda.cliente}</td>
                     <td>${fechaMostrar}</td>
                     <td>${deuda.total_productos} producto(s)</td>
-                    <td>$${parseFloat(deuda.total_factura).toFixed(2)}</td>
-                    <td>$${parseFloat(deuda.total_abonado).toFixed(2)}</td>
-                    <td>$${saldo.toFixed(2)}</td>
+                    <td>${monedaActual === 'USD' ? `$${totalUSD.toFixed(2)}` : `Bs ${totalBs.toFixed(2)}`}</td>
+                    <td>${monedaActual === 'USD' ? `$${abonadoUSD.toFixed(2)}` : `Bs ${abonadoBs.toFixed(2)}`}</td>
+                    <td>${monedaActual === 'USD' ? `$${saldoUSD.toFixed(2)}` : `Bs ${saldoBs.toFixed(2)}`}</td>
                     <td><span class="estado ${estadoClass}">${estadoTexto}</span></td>
                     <td>
                         <button class="btn-detalle" onclick="verDetalleDeuda(${deuda.id_cliente}, '${deuda.fecha_factura}')">
@@ -216,7 +268,7 @@ function mostrarModalDetalle(data) {
                 <tr>
                     <td>${producto.producto || 'N/A'}</td>
                     <td>${producto.cantidad || 0}</td>
-                    <td>$${parseFloat(producto.subtotal || 0).toFixed(2)}</td>
+                    <td>${monedaActual === 'USD' ? `$${parseFloat(producto.subtotal || 0).toFixed(2)}` : `Bs ${(parseFloat(producto.subtotal || 0)*tasaCambio).toFixed(2)}`}</td>
                     <td>${producto.fecha_compra || ''} ${producto.hora_compra || ''}</td>
                 </tr>
             `;
@@ -247,7 +299,7 @@ function mostrarModalDetalle(data) {
             abonosHtml += `
                 <tr>
                     <td>${new Date(abono.fecha_abono).toLocaleDateString()}</td>
-                    <td>$${parseFloat(abono.monto || 0).toFixed(2)}</td>
+                    <td>${monedaActual === 'USD' ? `$${parseFloat(abono.monto || 0).toFixed(2)}` : `Bs ${(parseFloat(abono.monto || 0)*tasaCambio).toFixed(2)}`}</td>
                     <td>${abono.metodo_pago || 'N/A'}</td>
                     <td>${abono.observaciones || '-'}</td>
                 </tr>
@@ -268,6 +320,9 @@ function mostrarModalDetalle(data) {
     const total = data.resumen ? data.resumen.total_factura : (data.total || 0);
     const abonado = data.resumen ? data.resumen.total_abonado : (data.abonado || 0);
     const saldo = data.resumen ? data.resumen.saldo_pendiente : (data.saldo || 0);
+    const totalBs = parseFloat(total) * tasaCambio;
+    const abonadoBs = parseFloat(abonado) * tasaCambio;
+    const saldoBs = parseFloat(saldo) * tasaCambio;
     
     modalBody.innerHTML = `
         <div class="deuda-section">
@@ -297,21 +352,42 @@ function mostrarModalDetalle(data) {
             <div class="totales-grid">
                 <div class="total-item">
                     <div class="total-label">Total</div>
-                    <div class="total-value total">$${parseFloat(total).toFixed(2)}</div>
+                    <div class="total-value total">${monedaActual === 'USD' ? `$${parseFloat(total).toFixed(2)}` : `Bs ${totalBs.toFixed(2)}`}</div>
                 </div>
                 <div class="total-item">
                     <div class="total-label">Abonado</div>
-                    <div class="total-value abonado">$${parseFloat(abonado).toFixed(2)}</div>
+                    <div class="total-value abonado">${monedaActual === 'USD' ? `$${parseFloat(abonado).toFixed(2)}` : `Bs ${abonadoBs.toFixed(2)}`}</div>
                 </div>
                 <div class="total-item">
                     <div class="total-label">Saldo Pendiente</div>
-                    <div class="total-value saldo">$${parseFloat(saldo).toFixed(2)}</div>
+                    <div class="total-value saldo">${monedaActual === 'USD' ? `$${parseFloat(saldo).toFixed(2)}` : `Bs ${saldoBs.toFixed(2)}`}</div>
                 </div>
             </div>
         </div>
     `;
     
     modal.style.display = 'block';
+    // Guardar último payload para re-render tras toggle
+    window.ultimoDetalleCaja = data;
+}
+
+function toggleMoneda() {
+    monedaActual = (monedaActual === 'USD') ? 'VES' : 'USD';
+    localStorage.setItem('monedaActual', monedaActual);
+    aplicarMonedaEnUI();
+    const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+    if (activeTab === 'ventas') {
+        cargarVentas();
+    } else if (activeTab === 'deudas') {
+        cargarDeudas();
+    }
+}
+
+function aplicarMonedaEnUI() {
+    const btn = document.getElementById('btn-toggle-moneda');
+    if (btn) {
+        btn.textContent = monedaActual === 'USD' ? 'USD' : 'Bs';
+    }
 }
 
 function cerrarModal() {
