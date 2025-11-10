@@ -81,6 +81,7 @@ h2 {
 .form-group {
     flex: 1;
     margin-bottom: 20px;
+    position: relative; /* Permite posicionar el ojito dentro del grupo */
 }
 
 .form-group label {
@@ -94,6 +95,7 @@ h2 {
 .form-group select {
     width: 100%;
     padding: 12px;
+    padding-right: 50px; /* espacio para el ojito */
     border: 2px solid #ddd;
     border-radius: 6px;
     font-size: 14px;
@@ -166,6 +168,29 @@ h2 {
     background: linear-gradient(135deg, #7f8c8d, #6c7b7d);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(149, 165, 166, 0.3);
+}
+
+/* Ojito mostrar/ocultar contraseña */
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 36px; /* alineado vertical con input estándar de 12px padding */
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8e8e93;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.toggle-password svg { width: 20px; height: 20px; }
+.toggle-password:hover {
+    color: #3498db;
+    background: rgba(52, 152, 219, 0.12);
+    border-color: rgba(52, 152, 219, 0.24);
 }
 
 /* Grid de información */
@@ -250,4 +275,32 @@ h2 {
         width: 100%;
         justify-content: center;
     }
+}
+
+
+
+
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
 }

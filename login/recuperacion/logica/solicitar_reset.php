@@ -18,12 +18,11 @@ if (!csrfVerifyFromPost('csrf_token')) {
 }
 
 $usuario = isset($_POST['usuario']) ? trim($_POST['usuario']) : '';
-$cedula = isset($_POST['cedula']) ? trim($_POST['cedula']) : '';
 $respuesta = isset($_POST['respuesta']) ? trim($_POST['respuesta']) : '';
 $idPregunta = isset($_POST['id_pregunta']) ? (int)$_POST['id_pregunta'] : 0;
 
-if ($usuario === '' || $cedula === '' || !preg_match('/^[0-9]{5,}$/', $cedula)) {
-  header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode('Datos inválidos. Verifique usuario y cédula.'));
+if ($usuario === '') {
+  header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode('Ingrese su usuario.'));
   exit;
 }
 
@@ -43,17 +42,16 @@ try {
     KEY id_usuario (id_usuario)
   ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4");
 
-  // Buscar usuario y validar cédula
+  // Buscar usuario por nombre
   $stmt = $conexion->prepare("SELECT u.id_usuario
                               FROM usuario u
-                              JOIN persona p ON u.id_persona = p.id_persona
-                              WHERE u.usuario = :usuario AND p.cedula = :cedula
+                              WHERE u.usuario = :usuario
                               LIMIT 1");
-  $stmt->execute([':usuario' => $usuario, ':cedula' => $cedula]);
+  $stmt->execute([':usuario' => $usuario]);
   $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
   if (!$row) {
-    header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode('No se encontró coincidencia de usuario y cédula.'));
+    header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode('Usuario no encontrado.'));
     exit;
   }
 

@@ -22,10 +22,25 @@ function configurarEventos() {
     });
 
     // Formulario de contraseña
-    document.getElementById('form-password').addEventListener('submit', function(e) {
+document.getElementById('form-password').addEventListener('submit', function(e) {
         e.preventDefault();
         cambiarContrasena();
-    });
+});
+
+// Mostrar/Ocultar contraseña para campos en configuración (global)
+window.toggleConfigPassword = function(id, trigger) {
+  const input = document.getElementById(id);
+  if (!input) return;
+  const eyeOpen = trigger.querySelector('.icon-eye');
+  const eyeOff = trigger.querySelector('.icon-eye-off');
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (eyeOpen && eyeOff) { eyeOpen.style.display = 'none'; eyeOff.style.display = 'block'; }
+  } else {
+    input.type = 'password';
+    if (eyeOpen && eyeOff) { eyeOpen.style.display = 'block'; eyeOff.style.display = 'none'; }
+  }
+};
 
     // Formulario de preferencias
     document.getElementById('form-preferencias').addEventListener('submit', function(e) {

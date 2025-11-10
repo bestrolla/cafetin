@@ -31,8 +31,8 @@ if ($nueva !== $confirmar) {
   exit;
 }
 
-if (strlen($nueva) < 6 || strlen($nueva) > 64) {
-  header('Location: /cafetin/login/recuperacion/vista/restablecer.php?error=' . urlencode('La contraseña debe tener entre 6 y 64 caracteres'));
+if (strlen($nueva) < 6 || strlen($nueva) > 12) {
+  header('Location: /cafetin/login/recuperacion/vista/restablecer.php?error=' . urlencode('La contraseña debe tener entre 6 y 12 caracteres'));
   exit;
 }
 
