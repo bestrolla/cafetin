@@ -9,8 +9,10 @@ $endDate = $_GET['end_date'] ?? null;
 try {
     $sql = "SELECT 
                 v.id_venta, 
-                p_cli.nombre as cliente_nombre, 
-                p_caj.nombre as cajero_nombre, 
+                p_cli.nombre as cliente_nombre,
+                p_cli.apellido as cliente_apellido,
+                p_caj.nombre as cajero_nombre,
+                p_caj.apellido as cajero_apellido, 
                 i.nombre_produc as producto_nombre, 
                 v.cantidad, 
                 v.total, 

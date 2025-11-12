@@ -343,7 +343,6 @@ function mostrarModalHistorial(historial) {
     modalBody.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5>Historial de Facturas por Fecha</h5>
-            <button class="btn btn-sm btn-secondary" onclick="cerrarModalDetalle()">Cerrar</button>
         </div>
         ${contenido}
     `;
@@ -538,6 +537,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Precargar tasa desde Configuración (Admin)
     cargarTasaDesdeConfiguracionAdmin();
     cargarCuentas();
+    // Limitar fechas a hoy en los inputs date (evitar futuro)
+    const hoyDate = new Date();
+    const pad2 = n => String(n).padStart(2, '0');
+    const hoyStr = `${hoyDate.getFullYear()}-${pad2(hoyDate.getMonth()+1)}-${pad2(hoyDate.getDate())}`;
+    document.querySelectorAll('input[type="date"]').forEach(el => {
+        el.max = hoyStr;
+        if (el.value && el.value > hoyStr) {
+            el.value = hoyStr;
+        }
+    });
     
     // Filtros
     document.getElementById('filtroCliente').addEventListener('input', filtrarCuentas);

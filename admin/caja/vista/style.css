@@ -153,6 +153,35 @@ h1 {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* Select mejorado (alineado al estilo de Caja) */
+.filters select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding: 10px 38px 10px 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    background-color: #fff;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><polygon points="5,7 10,12 15,7" fill="%23667eea"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filters select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filters select:hover {
+    border-color: #c5c5c5;
+}
+
 /* Los estilos de inputs ahora se manejan desde main.css */
 
 /* Modern Button Styles - Siguiendo el patrón del inventario */
@@ -316,7 +345,7 @@ tbody tr:last-child td {
 .modal {
     display: none;
     position: fixed;
-    z-index: 1000;
+    z-index: 1200;
     left: 0;
     top: 0;
     width: 100%;

@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success) {
                     // Redirección basada en el rol
                     if (data.role === 'admin') {
-                        window.location.href = '../../../admin/agregar_cajero/vista/agregar_cajero.php';
+                        window.location.href = '../../../admin/inventario/vista/inventario.php';
                     } else if (data.role === 'cajero') {
                         window.location.href = '../../../cajero/lobby/vista/lobby.php';
                     } else {

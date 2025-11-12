@@ -35,6 +35,14 @@ protegerPagina(['admin']);
                         <span class="tab-icon">📋</span>
                         Deudas
                     </button>
+                    <button class="tab-button" data-tab="reportes">
+                        <span class="tab-icon">📊</span>
+                        Reportes
+                    </button>
+                    <button class="tab-button" data-tab="graficos">
+                        <span class="tab-icon">📈</span>
+                        Gráficos
+                    </button>
                 </div>
             </div>
 
@@ -47,11 +55,26 @@ protegerPagina(['admin']);
                     <input type="date" id="fecha_fin" name="fecha_fin">
                 </div>
                 <div class="search-group" style="display:flex; gap:8px; align-items:center; margin-top:8px;">
-                    <input type="text" id="buscar_nombre" placeholder="Buscar por nombre">
-                    <input type="text" id="buscar_apellido" placeholder="Buscar por apellido">
-                    <input type="text" id="buscar_cedula" placeholder="Buscar por cédula">
+                    <input type="text" id="buscar_general" placeholder="Buscar por nombre, apellido, cédula u hora">
                 </div>
-                <button id="filtrar" class="btn">Filtrar</button>
+                <div class="mode-group" style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+                    <label for="ventas_modo">Modo:</label>
+                    <select id="ventas_modo">
+                        <option value="producto">Por producto</option>
+                        <option value="venta">Por venta</option>
+                    </select>
+                    <label for="ventas_ventana">Ventana:</label>
+                    <select id="ventas_ventana">
+                        <option value="dia">Día completo</option>
+                        <option value="60">60 min</option>
+                        <option value="30">30 min</option>
+                        <option value="10">10 min</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <button id="filtrar" class="btn">Filtrar</button>
+                    <button id="limpiar_filtros" class="btn btn-secondary">Borrar filtros</button>
+                </div>
             </div>
 
             <!-- Contenido de Ventas -->
@@ -60,13 +83,12 @@ protegerPagina(['admin']);
                     <table id="tabla-ventas">
                         <thead>
                             <tr>
-                                <th>ID Venta</th>
+                                <!-- Cabecera dinámica según modo -->
                                 <th>Cliente</th>
                                 <th>Cajero</th>
-                                <th>Producto</th>
-                                <th>Cantidad</th>
                                 <th>Total</th>
                                 <th>Fecha</th>
+                                <th>Ver</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -78,6 +100,27 @@ protegerPagina(['admin']);
 
             <!-- Contenido de Deudas -->
             <div id="deudas" class="tab-content">
+                <!-- Filtros específicos de Deudas -->
+                <div class="filters" id="deudas-filtros" style="margin-bottom:12px;">
+                    <div class="search-group" style="display:flex; gap:8px; align-items:center;">
+                        <input type="text" id="deudas_buscar" placeholder="Buscar por nombre, apellido o cédula">
+                        <label for="deudas_estado" style="margin-left:8px;">Estado:</label>
+                        <select id="deudas_estado">
+                            <option value="todos">Todos</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="parcial">Parcial</option>
+                        </select>
+                        <label for="deudas_orden" style="margin-left:8px;">Orden:</label>
+                        <select id="deudas_orden">
+                            <option value="mas">Quien debe más</option>
+                            <option value="menos">Quien debe menos</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button id="deudas_filtrar" class="btn">Filtrar</button>
+                        <button id="deudas_limpiar" class="btn btn-secondary">Borrar filtros</button>
+                    </div>
+                </div>
                 <div class="table-container">
                     <table id="tabla-deudas">
                         <thead>
@@ -99,6 +142,97 @@ protegerPagina(['admin']);
                     </table>
                 </div>
             </div>
+
+            <!-- Contenido de Reportes -->
+            <div id="reportes" class="tab-content">
+                <!-- Controles de Reportes (alineados con estilos de Caja) -->
+                <div class="filters" style="margin-top:12px;">
+                    <div class="date-group" style="gap:12px; align-items:center;">
+                        <label for="reporte_periodo">Periodo:</label>
+                        <select id="reporte_periodo" name="reporte_periodo">
+                            <option value="dia">Diario</option>
+                            <option value="semana">Semanal</option>
+                            <option value="mes">Mensual</option>
+                            <option value="anio">Anual</option>
+                        </select>
+                        <label for="reporte_fecha">Fecha base:</label>
+                        <input type="date" id="reporte_fecha" name="reporte_fecha" />
+
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button id="reporte_actualizar" class="btn">Filtrar</button>
+                        <button id="reporte_limpiar" class="btn btn-secondary">Borrar filtros</button>
+                    </div>
+                </div>
+                <div class="reportes-resumen" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+                    <div class="card">
+                        <h3>Total Vendido</h3>
+                        <div><strong>USD:</strong> <span id="reporte-total-usd">$0.00</span></div>
+                        <div><strong>Bs:</strong> <span id="reporte-total-bs">Bs 0.00</span></div>
+                    </div>
+                    <div class="card">
+                        <h3>Más Vendido</h3>
+                        <div id="reporte-top">—</div>
+                    </div>
+                    <div class="card">
+                        <h3>Menos Vendido</h3>
+                        <div id="reporte-bottom">—</div>
+                    </div>
+                </div>
+                <div class="table-container" style="margin-top:16px;">
+                    <table id="tabla-reporte-productos">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th id="reporte-col-total-label">Total (USD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Top productos por periodo -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Contenido de Gráficos -->
+            <div id="graficos" class="tab-content">
+                <!-- Controles de Gráficos -->
+                <div class="filters" style="margin-top:12px;">
+                    <div class="date-group" style="gap:12px; align-items:center;">
+                        <label for="grafico_periodo">Periodo:</label>
+                        <select id="grafico_periodo" name="grafico_periodo">
+                            <option value="dia">Diario</option>
+                            <option value="semana">Semanal</option>
+                            <option value="mes">Mensual</option>
+                            <option value="anio">Anual</option>
+                        </select>
+                        <label for="grafico_fecha">Fecha base:</label>
+                        <input type="date" id="grafico_fecha" name="grafico_fecha" />
+                        <label for="grafico_producto">Producto:</label>
+                        <select id="grafico_producto" name="grafico_producto">
+                            <option value="">Todos los productos</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button id="grafico_actualizar" class="btn">Actualizar gráfico</button>
+                        <button id="grafico_limpiar" class="btn btn-secondary">Borrar filtros</button>
+                    </div>
+                </div>
+                <!-- Área del gráfico -->
+                <div id="grafico_contenedor" style="margin-top:16px;">
+                    <div id="grafico_resumen" class="card" style="margin-bottom:12px;">
+                        <h3>Resumen</h3>
+                        <div><strong>Total unidades vendidas:</strong> <span id="grafico_total_unidades">0</span></div>
+                    </div>
+                    <div id="grafico_barras" style="display:flex; align-items:flex-end; gap:8px; height:260px; padding:12px; border:1px solid #ddd; border-radius:8px; overflow-x:auto;">
+                        <!-- Barras del gráfico se renderizan aquí -->
+                    </div>
+                    <div id="grafico_etiquetas" style="display:flex; gap:8px; justify-content:flex-start; align-items:center; margin-top:8px; font-size:12px; color:#555; overflow-x:auto;">
+                        <!-- Etiquetas del eje X -->
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -114,6 +248,32 @@ protegerPagina(['admin']);
                 <div id="contenido-detalle-deuda">
                     <!-- El contenido se cargará dinámicamente -->
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalle de Venta -->
+    <div id="modal-detalle-venta" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detalle de Venta</h2>
+                <span class="close" onclick="cerrarModalVenta()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="contenido-detalle-venta"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalle por Producto -->
+    <div id="modal-detalle-producto" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detalle por Producto</h2>
+                <span class="close" onclick="cerrarModalProducto()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="contenido-detalle-producto"></div>
             </div>
         </div>
     </div>

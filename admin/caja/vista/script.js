@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar tasa desde Configuración (Admin) y sincronizar vista
     (async function cargarTasaDesdeConfiguracionAdminCaja(){
         try {
-            const resp = await fetch('../configuracion/logica/obtener_configuraciones.php');
+            const resp = await fetch('../../configuracion/logica/obtener_configuraciones.php');
             const data = await resp.json();
             if (data && data.success && data.configuraciones && data.configuraciones.tasa_dolar) {
                 const tasa = parseFloat(data.configuraciones.tasa_dolar);
@@ -26,7 +26,30 @@ document.addEventListener('DOMContentLoaded', function() {
     })();
     // Inicializar pestañas
     initializeTabs();
-    
+    // Ajustar visibilidad de filtros según pestaña inicial
+    const initialTab = document.querySelector('.tab-button.active')?.dataset.tab;
+    const filters = document.querySelector('.filters');
+    if (filters && (initialTab === 'reportes' || initialTab === 'graficos')) {
+        filters.style.display = 'none';
+    }
+
+    // Limitar inputs de fecha a hoy (no permitir fechas futuras)
+    const hoyDate = new Date();
+    const pad2 = n => String(n).padStart(2, '0');
+    const hoyStr = `${hoyDate.getFullYear()}-${pad2(hoyDate.getMonth() + 1)}-${pad2(hoyDate.getDate())}`;
+    document.querySelectorAll('input[type="date"]').forEach(el => {
+        el.max = hoyStr;
+        if (el.value && el.value > hoyStr) {
+            el.value = hoyStr;
+        }
+    });
+
+    // Establecer por defecto el rango de fechas generales a hoy
+    const fechaInicioEl = document.getElementById('fecha_inicio');
+    const fechaFinEl = document.getElementById('fecha_fin');
+    if (fechaInicioEl && !fechaInicioEl.value) fechaInicioEl.value = hoyStr;
+    if (fechaFinEl && !fechaFinEl.value) fechaFinEl.value = hoyStr;
+
     // Cargar datos iniciales
     cargarVentas();
     aplicarMonedaEnUI();
@@ -58,6 +81,77 @@ document.addEventListener('DOMContentLoaded', function() {
             cargarDeudas();
         }
     });
+
+    // Botón para borrar filtros (fechas y búsqueda)
+    const btnLimpiar = document.getElementById('limpiar_filtros');
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', function() {
+            const fechaInicioEl = document.getElementById('fecha_inicio');
+            const fechaFinEl = document.getElementById('fecha_fin');
+            const buscarEl = document.getElementById('buscar_general');
+            if (fechaInicioEl) fechaInicioEl.value = '';
+            if (fechaFinEl) fechaFinEl.value = '';
+            if (buscarEl) buscarEl.value = '';
+
+            const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+            if (activeTab === 'ventas') {
+                cargarVentas();
+            } else if (activeTab === 'deudas') {
+                cargarDeudas();
+            }
+        });
+    }
+
+    // Filtros específicos de Deudas
+    const dFiltrar = document.getElementById('deudas_filtrar');
+    if (dFiltrar) {
+        dFiltrar.addEventListener('click', function() {
+            cargarDeudas();
+        });
+    }
+    const dLimpiar = document.getElementById('deudas_limpiar');
+    if (dLimpiar) {
+        dLimpiar.addEventListener('click', function() {
+            const dBuscar = document.getElementById('deudas_buscar');
+            const dEst = document.getElementById('deudas_estado');
+            const dOrd = document.getElementById('deudas_orden');
+            if (dBuscar) dBuscar.value = '';
+            if (dEst) dEst.value = 'todos';
+            if (dOrd) dOrd.value = 'mas';
+            cargarDeudas();
+        });
+    }
+
+    // Controles Reportes (default y listeners)
+    const rpPeriodo = document.getElementById('reporte_periodo');
+    const rpFecha = document.getElementById('reporte_fecha');
+    const rpBtn = document.getElementById('reporte_actualizar');
+    const rpClear = document.getElementById('reporte_limpiar');
+    // Setear fecha base por defecto = hoy si está vacío
+    if (rpFecha && !rpFecha.value) {
+        const hoy = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        rpFecha.value = `${hoy.getFullYear()}-${pad(hoy.getMonth()+1)}-${pad(hoy.getDate())}`;
+    }
+    if (rpBtn) rpBtn.addEventListener('click', cargarReportes);
+    if (rpClear) rpClear.addEventListener('click', function(){
+        if (rpPeriodo) rpPeriodo.value = 'dia';
+        if (rpFecha) rpFecha.value = '';
+        const desdeEl = document.getElementById('reporte_rango_desde');
+        const hastaEl = document.getElementById('reporte_rango_hasta');
+        if (desdeEl) desdeEl.textContent = '—';
+        if (hastaEl) hastaEl.textContent = '—';
+        const totalUsdEl = document.getElementById('reporte-total-usd');
+        const totalBsEl = document.getElementById('reporte-total-bs');
+        const topEl = document.getElementById('reporte-top');
+        const bottomEl = document.getElementById('reporte-bottom');
+        const tbody = document.querySelector('#tabla-reporte-productos tbody');
+        if (totalUsdEl) totalUsdEl.textContent = '$0.00';
+        if (totalBsEl) totalBsEl.textContent = 'Bs 0.00';
+        if (topEl) topEl.textContent = '—';
+        if (bottomEl) bottomEl.textContent = '—';
+        if (tbody) tbody.innerHTML = '';
+    });
 });
 
 function initializeTabs() {
@@ -76,19 +170,105 @@ function initializeTabs() {
             this.classList.add('active');
             document.getElementById(targetTab).classList.add('active');
             
+            // Ocultar/mostrar filtros generales según la pestaña
+            const filters = document.querySelector('.filters');
+            if (filters) {
+                filters.style.display = (targetTab === 'reportes' || targetTab === 'graficos' || targetTab === 'deudas') ? 'none' : '';
+            }
+
             // Cargar datos según la pestaña seleccionada
             if (targetTab === 'ventas') {
                 cargarVentas();
             } else if (targetTab === 'deudas') {
                 cargarDeudas();
+            } else if (targetTab === 'reportes') {
+                cargarReportes();
+            } else if (targetTab === 'graficos') {
+                if (!window.graficosInicializado) {
+                    initGraficosControls();
+                    window.graficosInicializado = true;
+                }
+                actualizarGrafico();
             }
         });
     });
 }
 
+// --- Ventas: controles de modo y cabecera dinámica ---
+function getVentasModo() {
+    const sel = document.getElementById('ventas_modo');
+    const stored = localStorage.getItem('ventas_modo');
+    const value = sel ? sel.value : (stored || 'producto');
+    return value === 'venta' ? 'venta' : 'producto';
+}
+
+function getVentasVentana() {
+    const sel = document.getElementById('ventas_ventana');
+    const stored = localStorage.getItem('ventas_ventana') || 'dia';
+    const value = sel ? sel.value : stored;
+    return value; // 'dia' | '60' | '30' | '10'
+}
+
+function actualizarCabeceraVentas() {
+    const modo = getVentasModo();
+    const theadRow = document.querySelector('#tabla-ventas thead tr');
+    if (!theadRow) return;
+    if (modo === 'producto') {
+        theadRow.innerHTML = `
+            <th>Producto</th>
+            <th>Clientes</th>
+            <th>Cantidad total</th>
+            <th>Total</th>
+            <th>Última venta</th>
+            <th>Acción</th>
+        `;
+    } else {
+        theadRow.innerHTML = `
+            <th>Cliente</th>
+            <th>Cajero</th>
+            <th>Productos</th>
+            <th>Cantidad total</th>
+            <th>Total</th>
+            <th>Fecha</th>
+            <th>Ver</th>
+        `;
+    }
+}
+
+function initVentasControls() {
+    const modoSel = document.getElementById('ventas_modo');
+    const ventSel = document.getElementById('ventas_ventana');
+    // Inicializar valores desde localStorage
+    const storedModo = localStorage.getItem('ventas_modo');
+    const storedVent = localStorage.getItem('ventas_ventana');
+    if (modoSel) modoSel.value = storedModo || 'item';
+    if (ventSel) ventSel.value = storedVent || 'dia';
+    actualizarCabeceraVentas();
+    // Eventos
+    if (modoSel) modoSel.addEventListener('change', () => {
+        localStorage.setItem('ventas_modo', modoSel.value);
+        actualizarCabeceraVentas();
+        cargarVentas();
+    });
+    if (ventSel) ventSel.addEventListener('change', () => {
+        localStorage.setItem('ventas_ventana', ventSel.value);
+        if (getVentasModo() === 'venta') {
+            cargarVentas();
+        }
+    });
+}
+
+// Llamar init de controles al cargar pestañas o DOM
+document.addEventListener('DOMContentLoaded', function() {
+    initVentasControls();
+});
+
 function cargarVentas() {
     const fechaInicio = document.getElementById('fecha_inicio').value;
     const fechaFin = document.getElementById('fecha_fin').value;
+    const buscarGeneral = document.getElementById('buscar_general')?.value || '';
+    const modo = getVentasModo();
+    const ventana = getVentasVentana();
     
     let url = '../logica/obtener_ventas.php';
     if (fechaInicio && fechaFin) {
@@ -100,86 +280,238 @@ function cargarVentas() {
         .then(data => {
             const tbody = document.querySelector('#tabla-ventas tbody');
             tbody.innerHTML = '';
-            
+
             if (data.error) {
-                tbody.innerHTML = '<tr><td colspan="7">Error: ' + data.error + '</td></tr>';
+                const colSpan = modo === 'producto' ? 6 : 7;
+                tbody.innerHTML = `<tr><td colspan="${colSpan}">Error: ${data.error}</td></tr>`;
                 return;
             }
-            
-            data.forEach(venta => {
-                const row = document.createElement('tr');
-                const totalUSD = parseFloat(venta.total);
-                const totalBs = totalUSD * tasaCambio;
-                row.innerHTML = `
-                    <td>${venta.id_venta}</td>
-                    <td>${venta.cliente_nombre} ${venta.cliente_apellido}</td>
-                    <td>${venta.cajero_nombre}</td>
-                    <td>${venta.producto_nombre}</td>
-                    <td>${venta.cantidad}</td>
-                    <td>${monedaActual === 'USD' ? `$${totalUSD.toFixed(2)}` : `Bs ${totalBs.toFixed(2)}`}</td>
-                    <td>${new Date(venta.fecha_venta).toLocaleDateString()}</td>
-                `;
-                tbody.appendChild(row);
-            });
+
+            // Filtro texto único (nombre, apellido, fecha/hora, cajero, producto, id)
+            const query = buscarGeneral.trim().toLowerCase();
+            const ventasFiltradas = query ? data.filter(venta => {
+                const nombreCompleto = `${venta.cliente_nombre || ''} ${venta.cliente_apellido || ''}`.trim().toLowerCase();
+                const fechaStr = new Date(venta.fecha_venta).toLocaleString('es-ES').toLowerCase();
+                const cajeroCompleto = `${venta.cajero_nombre || ''} ${venta.cajero_apellido || ''}`.trim().toLowerCase();
+                const productoStr = (venta.producto_nombre || '').toLowerCase();
+                const idStr = String(venta.id_venta || '').toLowerCase();
+                return (
+                    nombreCompleto.includes(query) ||
+                    fechaStr.includes(query) ||
+                    cajeroCompleto.includes(query) ||
+                    productoStr.includes(query) ||
+                    idStr.includes(query)
+                );
+            }) : data;
+            actualizarCabeceraVentas();
+
+            if (modo === 'producto') {
+                // Agrupar por producto
+                const byProducto = new Map();
+                ventasFiltradas.forEach(v => {
+                    const prod = v.producto_nombre || 'N/A';
+                    const fecha = new Date(v.fecha_venta);
+                    const key = prod;
+                    const entry = byProducto.get(key) || {
+                        producto: prod,
+                        clientes: new Set(),
+                        cantidadTotal: 0,
+                        totalUSD: 0,
+                        ultimaFecha: fecha
+                    };
+                    const clienteNombre = `${v.cliente_nombre || ''}${v.cliente_apellido ? ' ' + v.cliente_apellido : ''}`.trim();
+                    if (clienteNombre) entry.clientes.add(clienteNombre);
+                    entry.cantidadTotal += parseInt(v.cantidad || 0, 10);
+                    entry.totalUSD += parseFloat(v.total || 0);
+                    if (fecha > entry.ultimaFecha) entry.ultimaFecha = fecha;
+                    byProducto.set(key, entry);
+                });
+                const grupos = Array.from(byProducto.values())
+                    .sort((a,b) => b.ultimaFecha - a.ultimaFecha);
+
+                grupos.forEach(g => {
+                    const row = document.createElement('tr');
+                    const totalBs = g.totalUSD * tasaCambio;
+                    const productoArg = (g.producto || '').replace(/'/g, "\\'");
+                    row.innerHTML = `
+                        <td>${g.producto}</td>
+                        <td>${g.clientes.size}</td>
+                        <td>${g.cantidadTotal}</td>
+                        <td>${monedaActual === 'USD' ? `$${g.totalUSD.toFixed(2)}` : `Bs ${totalBs.toFixed(2)}`}</td>
+                        <td>${g.ultimaFecha.toLocaleString('es-ES')}</td>
+                        <td><button class="btn" onclick="verDetalleProducto('${productoArg}')">Acción</button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                if (grupos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#666;">Sin resultados</td></tr>';
+                }
+            } else {
+                // Agrupar por ventana de tiempo dentro del mismo día y cliente
+                const pad = n => String(n).padStart(2, '0');
+                const toYMD = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+                const windowMinutes = ventana === 'dia' ? null : parseInt(ventana, 10);
+                const windowMs = windowMinutes ? windowMinutes * 60 * 1000 : null;
+                // Agrupar primero por cliente y día
+                const byClientDay = new Map();
+                ventasFiltradas.forEach(v => {
+                    const nombre = `${v.cliente_nombre || ''}${v.cliente_apellido ? ' ' + v.cliente_apellido : ''}`.trim();
+                    const fecha = new Date(v.fecha_venta);
+                    const key = `${nombre}|${toYMD(fecha)}`;
+                    const arr = byClientDay.get(key) || [];
+                    arr.push({
+                        id_venta: v.id_venta,
+                        cliente: nombre,
+                        cajero: `${v.cajero_nombre || ''}${v.cajero_apellido ? ' ' + v.cajero_apellido : ''}`.trim(),
+                        cantidad: parseInt(v.cantidad || 0, 10),
+                        totalUSD: parseFloat(v.total || 0),
+                        fecha: fecha
+                    });
+                    byClientDay.set(key, arr);
+                });
+
+                const grupos = [];
+                byClientDay.forEach(arr => {
+                    // Ordenar por fecha asc para construir ventanas
+                    arr.sort((a,b) => a.fecha - b.fecha);
+                    if (!arr.length) return;
+                    let current = {
+                        idVentaRef: arr[0].id_venta,
+                        cliente: arr[0].cliente,
+                        cajero: arr[0].cajero,
+                        productos: 0,
+                        cantidadTotal: 0,
+                        totalUSD: 0,
+                        fechaInicio: arr[0].fecha,
+                        fechaFin: arr[0].fecha
+                    };
+                    let lastTime = arr[0].fecha.getTime();
+                    arr.forEach((it, idx) => {
+                        if (idx === 0) {
+                            current.productos += 1;
+                            current.cantidadTotal += it.cantidad;
+                            current.totalUSD += it.totalUSD;
+                            return;
+                        }
+                        const t = it.fecha.getTime();
+                        const diff = t - lastTime;
+                        const sameWindow = windowMs === null || diff <= windowMs; // null => todo el día
+                        if (!sameWindow) {
+                            // cerrar grupo y abrir otro
+                            grupos.push(current);
+                            current = {
+                                idVentaRef: it.id_venta,
+                                cliente: it.cliente,
+                                cajero: it.cajero,
+                                productos: 1,
+                                cantidadTotal: it.cantidad,
+                                totalUSD: it.totalUSD,
+                                fechaInicio: it.fecha,
+                                fechaFin: it.fecha
+                            };
+                        } else {
+                            current.productos += 1;
+                            current.cantidadTotal += it.cantidad;
+                            current.totalUSD += it.totalUSD;
+                            current.fechaFin = it.fecha;
+                        }
+                        lastTime = t;
+                    });
+                    // push el último grupo
+                    grupos.push(current);
+                });
+
+                const rows = grupos.sort((a,b) => b.fechaInicio - a.fechaInicio);
+                rows.forEach(g => {
+                    const row = document.createElement('tr');
+                    const totalBs = g.totalUSD * tasaCambio;
+                    const fechaStr = ventana === 'dia'
+                        ? g.fechaInicio.toLocaleDateString('es-ES')
+                        : `${g.fechaInicio.toLocaleTimeString('es-ES')} - ${g.fechaFin.toLocaleTimeString('es-ES')}`;
+                    row.innerHTML = `
+                        <td>${g.cliente}</td>
+                        <td>${g.cajero}</td>
+                        <td>${g.productos}</td>
+                        <td>${g.cantidadTotal}</td>
+                        <td>${monedaActual === 'USD' ? `$${g.totalUSD.toFixed(2)}` : `Bs ${totalBs.toFixed(2)}`}</td>
+                        <td>${fechaStr}</td>
+                        <td><button class="btn" onclick="verDetalleVenta(${g.idVentaRef})">Ver</button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                if (rows.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#666;">Sin resultados</td></tr>';
+                }
+            }
         })
         .catch(error => {
             console.error('Error:', error);
             const tbody = document.querySelector('#tabla-ventas tbody');
-            tbody.innerHTML = '<tr><td colspan="7">Error al cargar los datos</td></tr>';
+            const modo = getVentasModo();
+            const colSpan = modo === 'producto' ? 6 : 7;
+            tbody.innerHTML = `<tr><td colspan="${colSpan}">Error al cargar los datos</td></tr>`;
         });
 }
 
 function cargarDeudas() {
-    const fechaInicio = document.getElementById('fecha_inicio').value;
-    const fechaFin = document.getElementById('fecha_fin').value;
-    const buscarNombre = document.getElementById('buscar_nombre')?.value || '';
-    const buscarApellido = document.getElementById('buscar_apellido')?.value || '';
-    const buscarCedula = document.getElementById('buscar_cedula')?.value || '';
-    
-    let url = '../logica/obtener_deudas.php';
-    if (fechaInicio && fechaFin) {
-        url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
-    }
-    // Agregar filtros de texto
+    // Deudas: usar filtros dedicados del módulo Deudas
+    const buscarGeneral = document.getElementById('deudas_buscar')?.value.trim() || '';
+    const filtroEstado = document.getElementById('deudas_estado')?.value || 'todos';
+    const orden = document.getElementById('deudas_orden')?.value || 'mas';
+
     const params = new URLSearchParams();
-    if (fechaInicio && fechaFin) {
-        // ya agregados arriba en la URL, no repetir
-    } else {
-        // si no se incluyó fecha en la URL base, usaremos params
-        if (fechaInicio) params.set('fecha_inicio', fechaInicio);
-        if (fechaFin) params.set('fecha_fin', fechaFin);
+    // Unifica búsqueda: si es todo dígitos, buscar por cédula; si no, aplica a nombre y apellido
+    if (buscarGeneral) {
+        const soloDigitos = /^\d+$/.test(buscarGeneral);
+        if (soloDigitos) {
+            params.append('buscar_cedula', buscarGeneral);
+        } else {
+            params.append('buscar_nombre', buscarGeneral);
+            params.append('buscar_apellido', buscarGeneral);
+        }
     }
-    if (buscarNombre) params.set('buscar_nombre', buscarNombre);
-    if (buscarApellido) params.set('buscar_apellido', buscarApellido);
-    if (buscarCedula) params.set('buscar_cedula', buscarCedula);
-    const queryString = params.toString();
-    if (queryString) {
-        url += (url.includes('?') ? '&' : '?') + queryString;
-    }
-    
+
+    const url = `../logica/obtener_deudas.php${params.toString() ? '?' + params.toString() : ''}`;
+
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            if (data.error) {
-                console.error('Error:', data.error);
+            if (!Array.isArray(data)) {
+                console.error('Error:', data && data.error ? data.error : 'Respuesta inválida');
+                const tbody = document.querySelector('#tabla-deudas tbody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="text-center">Error al cargar deudas</td></tr>';
                 return;
             }
-            
+
+            // Filtrado por estado (pendiente/parcial/todos)
+            let lista = data;
+            if (filtroEstado !== 'todos') {
+                lista = lista.filter(d => (d.estado || '').toLowerCase() === filtroEstado);
+            }
+
+            // Ordenar por saldo pendiente (más/menos deuda)
+            lista.sort((a, b) => {
+                const sa = parseFloat(a.saldo_pendiente || 0);
+                const sb = parseFloat(b.saldo_pendiente || 0);
+                return orden === 'menos' ? sa - sb : sb - sa;
+            });
+
             const tbody = document.querySelector('#tabla-deudas tbody');
+            if (!tbody) return;
             tbody.innerHTML = '';
-            
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay deudas registradas</td></tr>';
+
+            if (lista.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center">No hay deudas registradas</td></tr>';
                 return;
             }
-            
-            data.forEach(deuda => {
+
+            lista.forEach(deuda => {
                 const saldo = parseFloat(deuda.saldo_pendiente);
                 const estado = deuda.estado;
                 let estadoClass = '';
                 let estadoTexto = '';
-                
-                switch(estado) {
+
+                switch (estado) {
                     case 'pagado':
                         estadoClass = 'estado-pagado';
                         estadoTexto = 'Pagado';
@@ -192,7 +524,7 @@ function cargarDeudas() {
                         estadoClass = 'estado-pendiente';
                         estadoTexto = 'Pendiente';
                 }
-                
+
                 const row = document.createElement('tr');
                 const fechaMostrar = deuda.fecha_factura ? new Date(deuda.fecha_factura).toLocaleDateString() : '';
                 const totalUSD = parseFloat(deuda.total_factura);
@@ -211,9 +543,7 @@ function cargarDeudas() {
                     <td>${monedaActual === 'USD' ? `$${saldoUSD.toFixed(2)}` : `Bs ${saldoBs.toFixed(2)}`}</td>
                     <td><span class="estado ${estadoClass}">${estadoTexto}</span></td>
                     <td>
-                        <button class="btn-detalle" onclick="verDetalleDeuda(${deuda.id_cliente}, '${deuda.fecha_factura}')">
-                            Ver Detalle
-                        </button>
+                        <button class="btn" onclick="verDetalleDeuda(${deuda.id_cliente}, '${deuda.fecha_factura}')">Ver Detalle</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -221,7 +551,265 @@ function cargarDeudas() {
         })
         .catch(error => {
             console.error('Error:', error);
+            const tbody = document.querySelector('#tabla-deudas tbody');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="text-center">Error al cargar deudas</td></tr>';
         });
+}
+
+// ===== Reportes =====
+function calcularRangoPorPeriodo(periodo, fechaBaseStr) {
+    const hoy = new Date();
+    let base = fechaBaseStr ? new Date(fechaBaseStr + 'T00:00:00') : hoy;
+    // Si la fecha base es futura, usar hoy
+    if (base > hoy) base = new Date(hoy);
+    const pad = n => String(n).padStart(2, '0');
+    const toYMD = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+    let start = new Date(base);
+    let end = new Date(base);
+
+    switch (periodo) {
+        case 'dia':
+            break;
+        case 'semana': {
+            const day = base.getDay();
+            const diffToMonday = (day === 0 ? -6 : 1 - day);
+            start = new Date(base);
+            start.setDate(base.getDate() + diffToMonday);
+            end = new Date(start);
+            end.setDate(start.getDate() + 6);
+            break;
+        }
+        case 'mes':
+            start = new Date(base.getFullYear(), base.getMonth(), 1);
+            end = new Date(base.getFullYear(), base.getMonth()+1, 0);
+            break;
+        case 'anio':
+            start = new Date(base.getFullYear(), 0, 1);
+            end = new Date(base.getFullYear(), 11, 31);
+            break;
+        default:
+            break;
+    }
+    // No permitir rangos que terminen en el futuro
+    if (end > hoy) end = new Date(hoy);
+    return { start: toYMD(start), end: toYMD(end) };
+}
+
+async function cargarReportes() {
+    try {
+        const periodo = document.getElementById('reporte_periodo')?.value || 'dia';
+        const fechaBase = document.getElementById('reporte_fecha')?.value || '';
+        const { start, end } = calcularRangoPorPeriodo(periodo, fechaBase);
+        // Mostrar rango calculado
+        const desdeEl = document.getElementById('reporte_rango_desde');
+        const hastaEl = document.getElementById('reporte_rango_hasta');
+        if (desdeEl) desdeEl.textContent = start;
+        if (hastaEl) hastaEl.textContent = end;
+        // Actualizar etiqueta de columna Total según moneda
+        const colLabel = document.getElementById('reporte-col-total-label');
+        if (colLabel) {
+            colLabel.textContent = (monedaActual === 'USD') ? 'Total (USD)' : 'Total (Bs)';
+        }
+
+        const resp = await fetch(`../logica/obtener_reporte_ventas.php?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}`);
+        const data = await resp.json();
+        if (!data || !data.success) {
+            console.warn('No se pudo cargar el reporte:', data && data.error);
+            return;
+        }
+
+        const totalUSD = parseFloat(data.total_usd || 0);
+        const totalBs = totalUSD * tasaCambio;
+        const totalUsdEl = document.getElementById('reporte-total-usd');
+        const totalBsEl = document.getElementById('reporte-total-bs');
+        if (totalUsdEl) totalUsdEl.textContent = `$${totalUSD.toFixed(2)}`;
+        if (totalBsEl) totalBsEl.textContent = `Bs ${totalBs.toFixed(2)}`;
+
+        const topEl = document.getElementById('reporte-top');
+        const bottomEl = document.getElementById('reporte-bottom');
+        if (topEl) {
+            if (data.top_producto) {
+                const t = data.top_producto;
+                const tUSD = parseFloat(t.total_usd || 0);
+                const tBs = tUSD * tasaCambio;
+                const tStr = (monedaActual === 'USD') ? `$${tUSD.toFixed(2)}` : `Bs ${tBs.toFixed(2)}`;
+                topEl.textContent = `${t.nombre_produc || '—'} · Cant: ${t.cantidad} · ${tStr}`;
+            } else {
+                topEl.textContent = '—';
+            }
+        }
+        if (bottomEl) {
+            if (data.bottom_producto) {
+                const b = data.bottom_producto;
+                const bUSD = parseFloat(b.total_usd || 0);
+                const bBs = bUSD * tasaCambio;
+                const bStr = (monedaActual === 'USD') ? `$${bUSD.toFixed(2)}` : `Bs ${bBs.toFixed(2)}`;
+                bottomEl.textContent = `${b.nombre_produc || '—'} · Cant: ${b.cantidad} · ${bStr}`;
+            } else {
+                bottomEl.textContent = '—';
+            }
+        }
+
+        const tbody = document.querySelector('#tabla-reporte-productos tbody');
+        if (tbody) {
+            tbody.innerHTML = '';
+            const lista = (data.productos || []).sort((a,b) => parseFloat(b.cantidad||0) - parseFloat(a.cantidad||0));
+            lista.slice(0, 50).forEach(p => {
+                const tr = document.createElement('tr');
+                const totalUSD = parseFloat(p.total_usd || 0);
+                const totalBs = totalUSD * tasaCambio;
+                const totalStr = (monedaActual === 'USD') ? `$${totalUSD.toFixed(2)}` : `Bs ${totalBs.toFixed(2)}`;
+                tr.innerHTML = `
+                    <td>${p.nombre_produc || '—'}</td>
+                    <td>${p.cantidad}</td>
+                    <td>${totalStr}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    } catch (err) {
+        console.error('Error cargando reportes:', err);
+    }
+}
+
+// =============================
+// Gráficos: funciones y lógica
+// =============================
+
+function initGraficosControls() {
+    const fechaEl = document.getElementById('grafico_fecha');
+    const periodoEl = document.getElementById('grafico_periodo');
+    const productoEl = document.getElementById('grafico_producto');
+    const btnActualizar = document.getElementById('grafico_actualizar');
+    const btnLimpiar = document.getElementById('grafico_limpiar');
+
+    const hoy = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const hoyStr = `${hoy.getFullYear()}-${pad(hoy.getMonth()+1)}-${pad(hoy.getDate())}`;
+    if (fechaEl) {
+        fechaEl.max = hoyStr;
+        if (!fechaEl.value) fechaEl.value = hoyStr;
+        if (fechaEl.value > hoyStr) fechaEl.value = hoyStr;
+    }
+    if (periodoEl && !periodoEl.value) periodoEl.value = 'dia';
+
+    cargarProductosGrafico();
+
+    if (btnActualizar) btnActualizar.addEventListener('click', actualizarGrafico);
+    if (btnLimpiar) btnLimpiar.addEventListener('click', () => {
+        if (periodoEl) periodoEl.value = 'dia';
+        if (fechaEl) fechaEl.value = '';
+        if (productoEl) productoEl.value = '';
+        limpiarGrafico();
+    });
+}
+
+async function cargarProductosGrafico() {
+    try {
+        const resp = await fetch('../logica/obtener_productos.php');
+        const data = await resp.json();
+        const select = document.getElementById('grafico_producto');
+        if (select) {
+            select.innerHTML = '';
+            const optTodos = document.createElement('option');
+            optTodos.value = '';
+            optTodos.textContent = 'Todos los productos';
+            select.appendChild(optTodos);
+
+            const productos = Array.isArray(data) ? data
+                              : (data && data.success && Array.isArray(data.productos)) ? data.productos
+                              : [];
+            productos.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id_producto;
+                opt.textContent = p.nombre_produc;
+                select.appendChild(opt);
+            });
+        }
+    } catch(err) {
+        console.error('No se pudieron cargar productos:', err);
+    }
+}
+
+function limpiarGrafico() {
+    const contBarras = document.getElementById('grafico_barras');
+    const contEtiquetas = document.getElementById('grafico_etiquetas');
+    const totalEl = document.getElementById('grafico_total_unidades');
+    if (contBarras) contBarras.innerHTML = '';
+    if (contEtiquetas) contEtiquetas.innerHTML = '';
+    if (totalEl) totalEl.textContent = '0';
+}
+
+async function actualizarGrafico() {
+    try {
+        const periodo = document.getElementById('grafico_periodo')?.value || 'dia';
+        const fechaBase = document.getElementById('grafico_fecha')?.value || '';
+        const producto = document.getElementById('grafico_producto')?.value || '';
+
+        // Calcular rango por periodo usando helper existente
+        const rango = calcularRangoPorPeriodo(periodo, fechaBase);
+        const start = rango?.start || '';
+        const end = rango?.end || '';
+
+        let url = `../logica/obtener_grafico_ventas.php?period=${encodeURIComponent(periodo)}`;
+        if (start && end) {
+            url += `&start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}`;
+        }
+        if (producto) url += `&producto_id=${encodeURIComponent(producto)}`;
+
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data.error || data.success === false) {
+            const msg = data.error || 'Respuesta inválida en gráfico';
+            console.error('Error gráfico:', msg);
+            limpiarGrafico();
+            return;
+        }
+        // Adaptar a respuesta del backend existente
+        const adapted = (data.labels && data.series) ? { labels: data.labels, datasets: { cantidad: data.series } } : data;
+        renderBarChart(adapted);
+    } catch(err) {
+        console.error('Error al actualizar gráfico:', err);
+    }
+}
+
+function renderBarChart(data) {
+    const contBarras = document.getElementById('grafico_barras');
+    const contEtiquetas = document.getElementById('grafico_etiquetas');
+    const totalEl = document.getElementById('grafico_total_unidades');
+    if (!contBarras || !contEtiquetas || !totalEl) return;
+
+    const labels = Array.isArray(data.labels) ? data.labels : [];
+    const valores = (data.datasets && Array.isArray(data.datasets.cantidad)) ? data.datasets.cantidad : [];
+    const maxVal = Math.max(1, ...valores.map(v => Number(v) || 0));
+    const total = valores.reduce((acc, v) => acc + (Number(v) || 0), 0);
+
+    contBarras.innerHTML = '';
+    contEtiquetas.innerHTML = '';
+    totalEl.textContent = String(total);
+
+    labels.forEach((lbl, idx) => {
+        const val = Number(valores[idx]) || 0;
+        const altura = Math.round((val / maxVal) * 100);
+        const barra = document.createElement('div');
+        barra.style.height = altura + '%';
+        barra.style.width = '28px';
+        barra.style.background = '#4C8BF5';
+        barra.style.borderRadius = '4px 4px 0 0';
+        barra.style.display = 'inline-block';
+        barra.style.minHeight = '2px';
+        barra.title = `${lbl}: ${val}`;
+
+        const etiqueta = document.createElement('div');
+        etiqueta.textContent = lbl;
+        etiqueta.style.width = '28px';
+        etiqueta.style.textAlign = 'center';
+        etiqueta.style.whiteSpace = 'nowrap';
+
+        contBarras.appendChild(barra);
+        contEtiquetas.appendChild(etiqueta);
+    });
 }
 
 function verDetalleDeuda(idCliente, fechaFactura) {
@@ -380,6 +968,10 @@ function toggleMoneda() {
         cargarVentas();
     } else if (activeTab === 'deudas') {
         cargarDeudas();
+    } else if (activeTab === 'reportes') {
+        cargarReportes();
+    } else if (activeTab === 'graficos') {
+        actualizarGrafico();
     }
 }
 
@@ -398,10 +990,198 @@ function cerrarModalDetalle() {
     document.getElementById('modal-detalle-deuda').style.display = 'none';
 }
 
-// Cerrar modal al hacer clic fuera de él
-window.onclick = function(event) {
-    const modal = document.getElementById('modal-detalle-deuda');
-    if (event.target === modal) {
-        modal.style.display = 'none';
+// Detalle de Venta (modal)
+async function verDetalleVenta(idVenta) {
+    try {
+        const resp = await fetch(`../logica/obtener_detalle_venta.php?id_venta=${idVenta}`);
+        const data = await resp.json();
+        if (data.error) { console.error(data.error); return; }
+        mostrarModalDetalleVenta(data);
+    } catch (e) {
+        console.error('Error al cargar detalle de venta:', e);
     }
 }
+
+function mostrarModalDetalleVenta(data) {
+    const modal = document.getElementById('modal-detalle-venta');
+    const body = document.getElementById('contenido-detalle-venta');
+    const fechaStr = data.fecha_venta ? new Date(data.fecha_venta).toLocaleString('es-ES') : '';
+    const cajeroFull = (data.cajero && data.cajero.trim().length)
+        ? data.cajero
+        : `${data.cajero_nombre || ''}${data.cajero_apellido ? ' ' + data.cajero_apellido : ''}`.trim();
+
+    let rows = '';
+    let totalUSD = 0;
+    (data.items || []).forEach(item => {
+        const subtotalUsd = parseFloat(item.subtotal || 0);
+        const subtotalBs = subtotalUsd * tasaCambio;
+        totalUSD += subtotalUsd;
+        rows += `
+            <tr>
+                <td>${item.producto || 'N/A'}</td>
+                <td>${item.cantidad || 0}</td>
+                <td>$${subtotalUsd.toFixed(2)}</td>
+                <td>Bs ${subtotalBs.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    const totalBs = totalUSD * tasaCambio;
+
+    body.innerHTML = `
+        <div class="venta-section">
+            <h3>Información de la Venta</h3>
+            <p><strong>ID Venta:</strong> ${data.id_venta}</p>
+            <p><strong>Cliente:</strong> ${data.cliente || ''}</p>
+            <p><strong>Cajero:</strong> ${cajeroFull || ''}</p>
+            <p><strong>Fecha/Hora:</strong> ${fechaStr}</p>
+            <h4>Productos</h4>
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal (USD)</th>
+                        <th>Equivalente (Bs)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+            <div class="venta-totales" style="margin-top:8px; display:flex; gap:16px;">
+                <div><strong>Total (USD):</strong> $${totalUSD.toFixed(2)}</div>
+                <div><strong>Equivalente (Bs):</strong> Bs ${totalBs.toFixed(2)}</div>
+            </div>
+            <p style="font-size:0.9em;color:#555;">Equivalencia en bolívares calculada con la tasa actual configurada.</p>
+        </div>
+    `;
+
+    modal.style.display = 'block';
+}
+
+function cerrarModalVenta() {
+    document.getElementById('modal-detalle-venta').style.display = 'none';
+}
+
+// Detalle por Producto (modal)
+async function verDetalleProducto(nombreProducto) {
+    try {
+        const fechaInicio = document.getElementById('fecha_inicio')?.value || '';
+        const fechaFin = document.getElementById('fecha_fin')?.value || '';
+        let url = '../logica/obtener_ventas.php';
+        if (fechaInicio && fechaFin) {
+            url += `?start_date=${fechaInicio}&end_date=${fechaFin}`;
+        }
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data.error) {
+            mostrarModalDetalleProducto({ nombreProducto, grupos: [], totalUSD: 0, totalUnidades: 0, error: data.error });
+            return;
+        }
+        // Filtrar por producto y agrupar por cliente
+        const registros = data.filter(v => (v.producto_nombre || '') === nombreProducto);
+        const byCliente = new Map();
+        registros.forEach(v => {
+            const cliente = `${v.cliente_nombre || ''}${v.cliente_apellido ? ' ' + v.cliente_apellido : ''}`.trim() || 'N/A';
+            const fecha = new Date(v.fecha_venta);
+            const entry = byCliente.get(cliente) || { cliente, cantidadTotal: 0, totalUSD: 0, ultimaFecha: fecha };
+            entry.cantidadTotal += parseInt(v.cantidad || 0, 10);
+            entry.totalUSD += parseFloat(v.total || 0);
+            if (fecha > entry.ultimaFecha) entry.ultimaFecha = fecha;
+            byCliente.set(cliente, entry);
+        });
+        const grupos = Array.from(byCliente.values()).sort((a,b)=> b.ultimaFecha - a.ultimaFecha);
+        const totalUSD = grupos.reduce((acc,g)=> acc + g.totalUSD, 0);
+        const totalUnidades = grupos.reduce((acc,g)=> acc + g.cantidadTotal, 0);
+        mostrarModalDetalleProducto({ nombreProducto, grupos, totalUSD, totalUnidades });
+    } catch (e) {
+        console.error('Error al cargar detalle por producto:', e);
+        mostrarModalDetalleProducto({ nombreProducto, grupos: [], totalUSD: 0, totalUnidades: 0, error: 'Error al cargar detalle' });
+    }
+}
+
+function mostrarModalDetalleProducto(payload) {
+    const modal = document.getElementById('modal-detalle-producto');
+    const body = document.getElementById('contenido-detalle-producto');
+    const totalBs = (payload.totalUSD || 0) * tasaCambio;
+    const header = `
+        <div class="venta-section">
+            <h3>Producto: ${payload.nombreProducto || 'N/A'}</h3>
+            <div style="display:flex; gap:16px; margin:8px 0;">
+                <div><strong>Total unidades:</strong> ${payload.totalUnidades || 0}</div>
+                <div><strong>Total USD:</strong> $${(payload.totalUSD || 0).toFixed(2)}</div>
+                <div><strong>Total Bs:</strong> Bs ${totalBs.toFixed(2)}</div>
+            </div>
+        </div>
+    `;
+    let rows = '';
+    (payload.grupos || []).forEach(g => {
+        const totalBsFila = g.totalUSD * tasaCambio;
+        rows += `
+            <tr>
+                <td>${g.cliente}</td>
+                <td>${g.cantidadTotal}</td>
+                <td>$${g.totalUSD.toFixed(2)}</td>
+                <td>Bs ${totalBsFila.toFixed(2)}</td>
+                <td>${g.ultimaFecha.toLocaleString('es-ES')}</td>
+            </tr>
+        `;
+    });
+    const table = `
+        <table class="table table-sm table-bordered">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Cantidad total</th>
+                    <th>Total (USD)</th>
+                    <th>Equivalente (Bs)</th>
+                    <th>Última venta</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows || '<tr><td colspan="5" style="text-align:center; color:#666;">Sin resultados</td></tr>'}
+            </tbody>
+        </table>
+    `;
+    const errorMsg = payload.error ? `<div style="color:#b00; margin-top:8px;">${payload.error}</div>` : '';
+    body.innerHTML = header + table + errorMsg;
+    modal.style.display = 'block';
+}
+
+function cerrarModalProducto() {
+    document.getElementById('modal-detalle-producto').style.display = 'none';
+}
+
+// Cerrar modales al hacer clic fuera de ellos
+window.onclick = function(event) {
+    const modalDeuda = document.getElementById('modal-detalle-deuda');
+    const modalVenta = document.getElementById('modal-detalle-venta');
+    const modalProducto = document.getElementById('modal-detalle-producto');
+    if (event.target === modalDeuda) {
+        modalDeuda.style.display = 'none';
+    }
+    if (event.target === modalVenta) {
+        modalVenta.style.display = 'none';
+    }
+    if (event.target === modalProducto) {
+        modalProducto.style.display = 'none';
+    }
+}
+
+// Inicialización de controles de Reportes
+document.addEventListener('DOMContentLoaded', function() {
+    const btnActualizar = document.getElementById('reporte_actualizar');
+    if (btnActualizar) {
+        btnActualizar.addEventListener('click', cargarReportes);
+    }
+    const initialTab = document.querySelector('.tab-button.active')?.dataset.tab;
+    if (initialTab === 'reportes') {
+        cargarReportes();
+    } else if (initialTab === 'graficos') {
+        if (!window.graficosInicializado) {
+            initGraficosControls();
+            window.graficosInicializado = true;
+        }
+        actualizarGrafico();
+    }
+});
