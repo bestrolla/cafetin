@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputNombre = document.getElementById('nombre');
     const inputApellido = document.getElementById('apellido');
     const inputTelefono = document.getElementById('telefono');
+    const inputContrasena = document.getElementById('contrasena');
+    const inputContrasenaConfirmar = document.getElementById('contrasena_confirmar');
+    const passwordHint = document.getElementById('password-hint');
 
     // Utilidades de validación/sanitización
     const toLettersOnly = (str) => (str || '').replace(/[^a-zA-ZÁÉÍÓÚÜÑáéíóúüñ\s]/g, '').replace(/\s{2,}/g, ' ');
@@ -44,6 +47,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const updatePasswordHintVisibility = () => {
+        if (!passwordHint) return;
+        const active = (document.activeElement === inputContrasena) || (document.activeElement === inputContrasenaConfirmar);
+        if (active) passwordHint.classList.add('show');
+        else passwordHint.classList.remove('show');
+    };
+    if (inputContrasena) {
+        inputContrasena.addEventListener('focus', updatePasswordHintVisibility);
+        inputContrasena.addEventListener('blur', updatePasswordHintVisibility);
+    }
+    if (inputContrasenaConfirmar) {
+        inputContrasenaConfirmar.addEventListener('focus', updatePasswordHintVisibility);
+        inputContrasenaConfirmar.addEventListener('blur', updatePasswordHintVisibility);
+    }
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -51,6 +69,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (inputNombre) inputNombre.value = capitalizeFirst(toLettersOnly(inputNombre.value));
         if (inputApellido) inputApellido.value = capitalizeFirst(toLettersOnly(inputApellido.value));
         if (inputTelefono) inputTelefono.value = toIntOnly(inputTelefono.value);
+
+        if (inputContrasena && inputContrasenaConfirmar && inputContrasena.value !== inputContrasenaConfirmar.value) {
+            responseMessage.textContent = 'Las contraseñas no coinciden.';
+            responseMessage.classList.remove('hidden', 'success');
+            responseMessage.classList.add('error');
+            return;
+        }
 
         const formData = new FormData(form);
 
@@ -77,4 +102,30 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
         });
     });
+    window.toggleAgregarCajeroPassword = function(trigger) {
+        const input = document.getElementById('contrasena');
+        if (!input) return;
+        const eyeOpen = trigger.querySelector('.icon-eye');
+        const eyeOff = trigger.querySelector('.icon-eye-off');
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (eyeOpen && eyeOff) { eyeOpen.style.display = 'none'; eyeOff.style.display = 'block'; }
+        } else {
+            input.type = 'password';
+            if (eyeOpen && eyeOff) { eyeOpen.style.display = 'block'; eyeOff.style.display = 'none'; }
+        }
+    };
+    window.toggleAgregarCajeroPasswordConfirm = function(trigger) {
+        const input = document.getElementById('contrasena_confirmar');
+        if (!input) return;
+        const eyeOpen = trigger.querySelector('.icon-eye');
+        const eyeOff = trigger.querySelector('.icon-eye-off');
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (eyeOpen && eyeOff) { eyeOpen.style.display = 'none'; eyeOff.style.display = 'block'; }
+        } else {
+            input.type = 'password';
+            if (eyeOpen && eyeOff) { eyeOpen.style.display = 'block'; eyeOff.style.display = 'none'; }
+        }
+    };
 });

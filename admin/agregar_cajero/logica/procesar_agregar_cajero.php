@@ -12,9 +12,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $telefono = $_POST['telefono'] ?? null;
     $usuario = $_POST['usuario'] ?? null;
     $contrasena = $_POST['contrasena'] ?? null;
+    $contrasena_confirmar = $_POST['contrasena_confirmar'] ?? null;
 
     if (!$nombre || !$apellido || !$usuario || !$contrasena) {
         $response['message'] = 'Nombre, apellido, usuario y contraseña son obligatorios.';
+        echo json_encode($response);
+        exit;
+    }
+
+    if (!$contrasena_confirmar) {
+        $response['message'] = 'Confirmar contraseña es obligatoria.';
+        echo json_encode($response);
+        exit;
+    }
+
+    if ($contrasena !== $contrasena_confirmar) {
+        $response['message'] = 'Las contraseñas no coinciden.';
         echo json_encode($response);
         exit;
     }
