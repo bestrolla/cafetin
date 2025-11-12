@@ -17,6 +17,11 @@ document.addEventListener('DOMContentLoaded', function() {
         cargarPreguntasSeguridadAdmin();
         formSeguridad.addEventListener('submit', guardarPreguntaSeguridadAdmin);
     }
+
+    // Inicializar notificaciones de inventario solo si no está el global
+    if (!window.__globalNotifInitialized) {
+        initInventarioNotificaciones();
+    }
 });
 
 // Funciones para tabs
@@ -83,6 +88,14 @@ function actualizarInterfaz() {
     }
     if (configuraciones.descuento_maximo) {
         document.getElementById('descuento-maximo').value = configuraciones.descuento_maximo;
+    }
+    if (configuraciones.inventario_umbral_bajo) {
+        document.getElementById('inventario-umbral-bajo').value = configuraciones.inventario_umbral_bajo;
+    } else {
+        const umbralInput = document.getElementById('inventario-umbral-bajo');
+        if (umbralInput && !umbralInput.value) {
+            umbralInput.value = 50;
+        }
     }
     if (configuraciones.backup_automatico) {
         document.getElementById('backup-automatico').checked = configuraciones.backup_automatico === 'true';
@@ -174,6 +187,7 @@ async function guardarConfiguracionSistema(e) {
         moneda_principal: document.getElementById('moneda-principal').value,
         iva_porcentaje: document.getElementById('iva-porcentaje').value,
         descuento_maximo: document.getElementById('descuento-maximo').value,
+        inventario_umbral_bajo: document.getElementById('inventario-umbral-bajo').value || '50',
         backup_automatico: document.getElementById('backup-automatico').checked ? 'true' : 'false',
         notificaciones_email: document.getElementById('notificaciones-email').checked ? 'true' : 'false'
     };
@@ -250,6 +264,99 @@ function formatearFecha(fecha) {
         hour: '2-digit',
         minute: '2-digit'
     });
+}
+
+// =====================
+// Notificaciones Inventario
+// =====================
+let notifTimer = null;
+let lastNotifCount = 0;
+let lastItemsHash = '';
+
+function initInventarioNotificaciones() {
+    const btn = document.getElementById('btn-notificaciones');
+    if (btn) {
+        btn.addEventListener('click', () => toggleNotifPanel());
+    }
+    // Primera carga inmediata y luego polling
+    fetchInventarioNotificaciones(true);
+    notifTimer = setInterval(() => fetchInventarioNotificaciones(false), 30000);
+}
+
+async function fetchInventarioNotificaciones(isFirstLoad = false) {
+    try {
+        const resp = await fetch('../logica/obtener_notificaciones_inventario.php');
+        const data = await resp.json();
+        if (!data.success) return;
+        updateNotifUI(data);
+
+        // Detectar cambios para sonido
+        const hash = JSON.stringify(data.items);
+        const hasNew = data.count > lastNotifCount || (hash !== lastItemsHash && data.count > 0);
+        if (!isFirstLoad && hasNew) {
+            playNotifSound();
+        }
+        lastNotifCount = data.count;
+        lastItemsHash = hash;
+    } catch (e) {
+        // Silencioso: no interrumpir la página si hay error de red
+        console.error('Error notificaciones inventario:', e);
+    }
+}
+
+function updateNotifUI(data) {
+    const dot = document.getElementById('notif-dot');
+    const list = document.getElementById('notif-list');
+    const summary = document.getElementById('notif-summary');
+    if (!dot || !list || !summary) return;
+
+    if (data.count > 0) {
+        dot.hidden = false;
+        summary.textContent = `${data.count} producto(s) bajo stock (≤ ${data.threshold})`;
+        list.innerHTML = '';
+        data.items.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'notif-item';
+            row.innerHTML = `
+                <span class="name">${item.nombre_produc}</span>
+                <span class="qty">Stock: ${item.cantidad_total}</span>
+                <span class="badge">Bajo</span>
+            `;
+            list.appendChild(row);
+        });
+    } else {
+        dot.hidden = true;
+        summary.textContent = 'Sin alertas';
+        list.innerHTML = `<div class="notif-empty">No hay productos con stock bajo.</div>`;
+    }
+}
+
+function toggleNotifPanel(force) {
+    const panel = document.getElementById('notif-panel');
+    if (!panel) return;
+    const open = force === undefined ? !panel.classList.contains('open') : !!force;
+    panel.classList.toggle('open', open);
+    panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+}
+
+// Sonido simple (beep) sin archivos externos
+function playNotifSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.value = 880; // beep agudo
+        g.gain.setValueAtTime(0.001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.1, ctx.currentTime + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.25);
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.start();
+        o.stop(ctx.currentTime + 0.25);
+    } catch (e) {
+        // Sin sonido si el navegador bloquea reproducción
+    }
 }
 
 function mostrarAlerta(mensaje, tipo) {

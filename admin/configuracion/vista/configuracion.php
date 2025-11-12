@@ -17,6 +17,26 @@ protegerPagina(['admin']);
 <body>
     <?php include '../../../acces/nav_admin/nav_admin.php'; ?>
     
+    <!-- Botón flotante de notificaciones de inventario -->
+    <button id="btn-notificaciones" class="notif-button" title="Notificaciones de inventario" aria-label="Notificaciones de inventario">
+        <span class="notif-icon">🔔</span>
+        <span id="notif-dot" class="notif-dot" hidden></span>
+    </button>
+    
+    <!-- Panel lateral de notificaciones -->
+    <div id="notif-panel" class="notif-panel" aria-hidden="true">
+        <div class="notif-header">
+            <h3>Alertas de Inventario</h3>
+            <button class="close" onclick="toggleNotifPanel(false)" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="notif-subheader">
+            <span id="notif-summary">Sin alertas</span>
+        </div>
+        <div id="notif-list" class="notif-body">
+            <!-- Se llena dinámicamente -->
+        </div>
+    </div>
+    
     <div class="container">
         <div class="content-wrapper">
             <h1>Configuración del Sistema</h1>
@@ -112,6 +132,11 @@ protegerPagina(['admin']);
                         <div class="form-group">
                             <label for="descuento-maximo">Descuento Máximo (%):</label>
                             <input type="number" id="descuento-maximo" step="0.01" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="inventario-umbral-bajo">Umbral de inventario bajo (unidades):</label>
+                            <input type="number" id="inventario-umbral-bajo" step="1" min="0" placeholder="50">
+                            <small>Se mostrará alerta cuando el stock sea menor o igual al umbral.</small>
                         </div>
                         <div class="form-group checkbox-group">
                             <label>

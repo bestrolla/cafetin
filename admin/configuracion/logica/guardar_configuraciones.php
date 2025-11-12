@@ -33,11 +33,15 @@ try {
     // Iniciar transacción
     $pdo->beginTransaction();
     
-    // Preparar statement para actualizar configuraciones
-    $stmt = $pdo->prepare("
+    // Preparar statements para actualizar o insertar configuraciones
+    $stmtUpdate = $pdo->prepare("
         UPDATE configuraciones 
         SET valor = ?, fecha_actualizacion = NOW(), usuario_actualizacion = ? 
         WHERE clave = ?
+    ");
+    $stmtInsert = $pdo->prepare("
+        INSERT INTO configuraciones (clave, valor, descripcion, tipo, fecha_creacion, usuario_actualizacion, activo)
+        VALUES (?, ?, '', 'texto', NOW(), ?, 1)
     ");
     
     $configuraciones_actualizadas = 0;
@@ -49,7 +53,11 @@ try {
         $stmt_check->execute([$clave]);
         
         if ($stmt_check->fetchColumn()) {
-            $stmt->execute([$valor, $usuario, $clave]);
+            $stmtUpdate->execute([$valor, $usuario, $clave]);
+            $configuraciones_actualizadas++;
+        } else {
+            // Insertar nueva clave si no existe
+            $stmtInsert->execute([$clave, $valor, $usuario]);
             $configuraciones_actualizadas++;
         }
     }

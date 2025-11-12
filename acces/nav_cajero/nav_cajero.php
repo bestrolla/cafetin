@@ -92,6 +92,24 @@ section header .logo img {
   <button id="show-header-tab">Mostrar menú</button>
 </section>
 
+<!-- Notificaciones de Inventario (global) -->
+<button id="btn-notificaciones" class="notif-button" aria-label="Notificaciones" onclick="togglePanel()">
+  <span class="notif-icon">🔔</span>
+  <span id="notif-dot" class="notif-dot" hidden></span>
+</button>
+<aside id="notif-panel" class="notif-panel" aria-hidden="true">
+  <div class="notif-header">
+    <h3>Alertas de Inventario</h3>
+    <button class="close" aria-label="Cerrar" onclick="document.getElementById('notif-panel').classList.remove('open');document.getElementById('notif-panel').setAttribute('aria-hidden','true');">×</button>
+  </div>
+  <div class="notif-subheader">
+    <span id="notif-summary">Cargando...</span>
+  </div>
+  <div class="notif-body" id="notif-list"></div>
+</aside>
+
+<div id="notif-overlay" class="notif-overlay" onclick="closePanel()"></div>
+
 <script>
 const header = document.getElementById('header-cajero');
 const logo = document.getElementById('logo-cajero');
@@ -121,3 +139,37 @@ document.addEventListener('click', function(e) {
     }
 });
 </script>
+<script>
+  function togglePanel(){
+    const panel = document.getElementById('notif-panel');
+    const overlay = document.getElementById('notif-overlay');
+    if (!panel) return;
+    const open = !panel.classList.contains('open');
+    panel.classList.toggle('open', open);
+    panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+    if (overlay) overlay.style.display = open ? 'block' : 'none';
+  }
+  function closePanel(){
+    const panel = document.getElementById('notif-panel');
+    const overlay = document.getElementById('notif-overlay');
+    if (panel) {
+      panel.classList.remove('open');
+      panel.setAttribute('aria-hidden','true');
+    }
+    if (overlay) overlay.style.display = 'none';
+  }
+  const btnNotif = document.getElementById('btn-notificaciones');
+  if (btnNotif) btnNotif.addEventListener('click', togglePanel);
+  // Cerrar al hacer clic fuera del panel
+  document.addEventListener('click', function(e){
+    const panel = document.getElementById('notif-panel');
+    if (!panel || !panel.classList.contains('open')) return;
+    const isInsidePanel = panel.contains(e.target);
+    const isButton = btnNotif && (btnNotif === e.target || btnNotif.contains(e.target));
+    if (!isInsidePanel && !isButton) closePanel();
+  });
+  // Evitar cierre al interactuar dentro del panel
+  const panelEl = document.getElementById('notif-panel');
+  if (panelEl) panelEl.addEventListener('click', function(e){ e.stopPropagation(); });
+</script>
+<script src="/cafetin/acces/js/notifications.js"></script>
