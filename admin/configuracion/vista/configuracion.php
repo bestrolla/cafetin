@@ -134,34 +134,58 @@ protegerPagina(['admin']);
                         </div>
                         <hr>
                         <div class="form-group">
-                            <label>Días laborales:</label>
-                            <div class="checkbox-group" style="display:flex; gap:12px; flex-wrap:wrap;">
-                                <label><input type="checkbox" id="dias-laborales-1"> Lunes</label>
-                                <label><input type="checkbox" id="dias-laborales-2"> Martes</label>
-                                <label><input type="checkbox" id="dias-laborales-3"> Miércoles</label>
-                                <label><input type="checkbox" id="dias-laborales-4"> Jueves</label>
-                                <label><input type="checkbox" id="dias-laborales-5"> Viernes</label>
-                                <label><input type="checkbox" id="dias-laborales-6"> Sábado</label>
-                                <label><input type="checkbox" id="dias-laborales-7"> Domingo</label>
+                            <label class="config-subtitle">Días laborales</label>
+                            <div class="day-chips">
+                                <label class="day-chip">
+                                    <input type="checkbox" id="dias-laborales-1">
+                                    <span>Lunes</span>
+                                </label>
+                                <label class="day-chip">
+                                    <input type="checkbox" id="dias-laborales-2">
+                                    <span>Martes</span>
+                                </label>
+                                <label class="day-chip">
+                                    <input type="checkbox" id="dias-laborales-3">
+                                    <span>Miércoles</span>
+                                </label>
+                                <label class="day-chip">
+                                    <input type="checkbox" id="dias-laborales-4">
+                                    <span>Jueves</span>
+                                </label>
+                                <label class="day-chip">
+                                    <input type="checkbox" id="dias-laborales-5">
+                                    <span>Viernes</span>
+                                </label>
+                                <label class="day-chip">
+                                    <input type="checkbox" id="dias-laborales-6">
+                                    <span>Sábado</span>
+                                </label>
+                                <label class="day-chip">
+                                    <input type="checkbox" id="dias-laborales-7">
+                                    <span>Domingo</span>
+                                </label>
                             </div>
-                            <small>Selecciona los días en que se trabaja. Los otros se consideran no laborables.</small>
+                            <small class="help-text">Selecciona los días en que se trabaja. Los otros se consideran no laborables.</small>
                         </div>
-                        <div class="form-group checkbox-group">
-                            <label>
-                                <input type="checkbox" id="incluir-dias-sin-ventas">
-                                Incluir días sin ventas en los gráficos
-                            </label>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="grafico-grid-max">Líneas del gráfico: Máximo referencia</label>
-                                <input type="number" id="grafico-grid-max" step="1" min="10" placeholder="100">
-                                <small>Valor máximo para líneas horizontales (ej: 100).</small>
+
+                        <div class="settings-card">
+                            <div class="form-group checkbox-group">
+                                <label>
+                                    <input type="checkbox" id="incluir-dias-sin-ventas">
+                                    Incluir días sin ventas en los gráficos
+                                </label>
                             </div>
-                            <div class="form-group">
-                                <label for="grafico-grid-step">Líneas del gráfico: Paso</label>
-                                <input type="number" id="grafico-grid-step" step="1" min="1" placeholder="10">
-                                <small>Intervalo entre líneas (ej: 10).</small>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="grafico-grid-max">Líneas del gráfico: Máximo referencia</label>
+                                    <input type="number" id="grafico-grid-max" step="1" min="10" placeholder="100">
+                                    <small class="help-text">Valor máximo para líneas horizontales (ej: 100).</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="grafico-grid-step">Líneas del gráfico: Paso</label>
+                                    <input type="number" id="grafico-grid-step" step="1" min="1" placeholder="10">
+                                    <small class="help-text">Intervalo entre líneas (ej: 10).</small>
+                                </div>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Guardar Configuración</button>

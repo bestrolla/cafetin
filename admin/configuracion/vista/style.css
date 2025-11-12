@@ -206,6 +206,87 @@ h1 {
     transform: scale(1.2);
 }
 
+/* Subtítulos y ayudas */
+.config-subtitle {
+    font-weight: 700;
+    color: #2d3a8c;
+    margin-bottom: 10px;
+}
+
+.help-text {
+    display: block;
+    margin-top: 6px;
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+/* Card para agrupaciones de configuración */
+.settings-card {
+    background: #fff;
+    border: 2px solid #eef2ff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 10px;
+}
+
+/* Chips de días laborales */
+.day-chips {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+@media (max-width: 900px) {
+    .day-chips { grid-template-columns: repeat(4, minmax(100px, 1fr)); }
+}
+
+@media (max-width: 600px) {
+    .day-chips { grid-template-columns: repeat(3, minmax(100px, 1fr)); }
+}
+
+.day-chip {
+    cursor: pointer;
+}
+
+.day-chip input {
+    display: none;
+}
+
+.day-chip span {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 2px solid #ddd;
+    border-radius: 999px;
+    background: #fff;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.day-chip span::before {
+    content: "";
+    width: 16px;
+    height: 16px;
+    border: 2px solid #bbb;
+    border-radius: 4px;
+    background: #fff;
+    display: inline-block;
+}
+
+.day-chip input:checked + span {
+    border-color: #667eea;
+    background: #eef2ff;
+    color: #2d3a8c;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15) inset;
+}
+
+.day-chip input:checked + span::before {
+    background: #667eea;
+    border-color: #667eea;
+    box-shadow: inset 0 0 0 2px #fff;
+}
+
 /* Botones */
 .btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
