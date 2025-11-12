@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 11-11-2025 a las 09:27:24
+-- Tiempo de generación: 12-11-2025 a las 12:57:45
 -- Versión del servidor: 9.1.0
 -- Versión de PHP: 8.3.14
 
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `abonos` (
   `fecha_abono` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_abono`),
   KEY `id_credito` (`id_credito`)
-) ENGINE=MyISAM AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `abonos`
@@ -59,7 +59,12 @@ INSERT INTO `abonos` (`id_abono`, `id_credito`, `monto`, `metodo_pago`, `observa
 (13, 7, 1.00, '', '', '2025-11-07 14:25:32'),
 (14, 8, 1.00, '', '', '2025-11-07 14:25:32'),
 (15, 9, 50.00, 'transferencia', '', '2025-11-07 15:56:53'),
-(16, 12, 20.00, 'efectivo', '', '2025-11-07 15:57:43');
+(16, 12, 20.00, 'efectivo', '', '2025-11-07 15:57:43'),
+(17, 9, 50.00, 'ajuste', 'Ajuste automático al marcar como pagado', '2025-11-12 05:54:44'),
+(18, 10, 6.00, 'ajuste', 'Ajuste automático al marcar como pagado', '2025-11-12 05:54:44'),
+(19, 11, 1.00, 'ajuste', 'Ajuste automático al marcar como pagado', '2025-11-12 05:54:44'),
+(20, 12, 80.00, 'ajuste', 'Ajuste automático al marcar como pagado', '2025-11-12 05:54:44'),
+(21, 13, 3.00, 'ajuste', 'Ajuste automático al marcar como pagado', '2025-11-12 05:54:44');
 
 -- --------------------------------------------------------
 
@@ -81,6 +86,66 @@ CREATE TABLE IF NOT EXISTS `admin` (
 
 INSERT INTO `admin` (`id_admin`, `id_usuario`) VALUES
 (1, 7);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `backup_abonos_pendientes`
+--
+
+DROP TABLE IF EXISTS `backup_abonos_pendientes`;
+CREATE TABLE IF NOT EXISTS `backup_abonos_pendientes` (
+  `id_abono` int NOT NULL AUTO_INCREMENT,
+  `id_credito` int NOT NULL,
+  `monto` decimal(10,2) NOT NULL,
+  `metodo_pago` varchar(50) COLLATE utf8mb4_general_ci DEFAULT 'efectivo',
+  `observaciones` text COLLATE utf8mb4_general_ci,
+  `fecha_abono` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_abono`),
+  KEY `id_credito` (`id_credito`)
+) ENGINE=MyISAM AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `backup_abonos_pendientes`
+--
+
+INSERT INTO `backup_abonos_pendientes` (`id_abono`, `id_credito`, `monto`, `metodo_pago`, `observaciones`, `fecha_abono`) VALUES
+(15, 9, 50.00, 'transferencia', '', '2025-11-07 15:56:53'),
+(16, 12, 20.00, 'efectivo', '', '2025-11-07 15:57:43');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `backup_credito_pendientes`
+--
+
+DROP TABLE IF EXISTS `backup_credito_pendientes`;
+CREATE TABLE IF NOT EXISTS `backup_credito_pendientes` (
+  `id_credito` int NOT NULL AUTO_INCREMENT,
+  `id_cajero` int DEFAULT NULL,
+  `id_cliente` int DEFAULT NULL,
+  `id_producto` int DEFAULT NULL,
+  `cantidad` int NOT NULL,
+  `total` decimal(10,2) NOT NULL,
+  `fecha_cre` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `fecha_pago` datetime DEFAULT NULL,
+  `estado` enum('pendiente','pagado','parcial') COLLATE utf8mb4_general_ci DEFAULT 'pendiente',
+  PRIMARY KEY (`id_credito`),
+  KEY `id_cajero` (`id_cajero`),
+  KEY `id_cliente` (`id_cliente`),
+  KEY `id_producto` (`id_producto`)
+) ENGINE=MyISAM AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `backup_credito_pendientes`
+--
+
+INSERT INTO `backup_credito_pendientes` (`id_credito`, `id_cajero`, `id_cliente`, `id_producto`, `cantidad`, `total`, `fecha_cre`, `fecha_pago`, `estado`) VALUES
+(9, 1, 1, 2, 1, 100.00, '2025-11-07 10:26:55', NULL, 'parcial'),
+(10, 1, 1, 3, 2, 6.00, '2025-11-07 10:27:15', NULL, 'pendiente'),
+(11, 1, 1, 1, 1, 1.00, '2025-11-07 10:27:15', NULL, 'pendiente'),
+(12, 1, 2, 2, 1, 100.00, '2025-11-07 10:40:17', NULL, 'parcial'),
+(13, 1, 1, 3, 1, 3.00, '2025-11-07 10:43:22', NULL, 'pendiente');
 
 -- --------------------------------------------------------
 
@@ -154,7 +219,7 @@ CREATE TABLE IF NOT EXISTS `configuraciones` (
   `activo` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `clave` (`clave`)
-) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `configuraciones`
@@ -162,15 +227,23 @@ CREATE TABLE IF NOT EXISTS `configuraciones` (
 
 INSERT INTO `configuraciones` (`id`, `clave`, `valor`, `descripcion`, `tipo`, `fecha_creacion`, `fecha_actualizacion`, `usuario_actualizacion`, `activo`) VALUES
 (1, 'tasa_dolar', '300', 'Tasa de cambio del dólar estadounidense', 'decimal', '2025-10-29 09:42:03', '2025-10-29 17:12:30', 'admin', 1),
-(2, 'moneda_principal', 'BS', 'Moneda principal del sistema', 'texto', '2025-10-29 09:42:03', '2025-10-29 09:42:03', NULL, 1),
+(2, 'moneda_principal', 'BS', 'Moneda principal del sistema', 'texto', '2025-10-29 09:42:03', '2025-11-12 08:17:46', 'admin', 1),
 (3, 'nombre_empresa', 'Cafetín', 'Nombre de la empresa', 'texto', '2025-10-29 09:42:03', '2025-10-29 09:42:03', NULL, 1),
 (4, 'direccion_empresa', '', 'Dirección de la empresa', 'texto', '2025-10-29 09:42:03', '2025-10-29 09:42:03', NULL, 1),
 (5, 'telefono_empresa', '', 'Teléfono de la empresa', 'texto', '2025-10-29 09:42:03', '2025-10-29 09:42:03', NULL, 1),
 (6, 'email_empresa', '', 'Email de la empresa', 'texto', '2025-10-29 09:42:03', '2025-10-29 09:42:03', NULL, 1),
-(7, 'iva_porcentaje', '16.00', 'Porcentaje de IVA aplicable', 'decimal', '2025-10-29 09:42:03', '2025-10-29 09:42:03', NULL, 1),
+(7, 'iva_porcentaje', '16.00', 'Porcentaje de IVA aplicable', 'decimal', '2025-10-29 09:42:03', '2025-11-12 08:17:46', 'admin', 1),
 (8, 'formato_fecha', 'Y-m-d', 'Formato de fecha del sistema', 'texto', '2025-10-29 09:42:03', '2025-10-29 09:42:03', NULL, 1),
 (9, 'zona_horaria', 'America/Caracas', 'Zona horaria del sistema', 'texto', '2025-10-29 09:42:03', '2025-10-29 09:42:03', NULL, 1),
-(10, 'idioma_sistema', 'es', 'Idioma del sistema', 'texto', '2025-10-29 09:42:03', '2025-10-29 09:42:03', NULL, 1);
+(10, 'idioma_sistema', 'es', 'Idioma del sistema', 'texto', '2025-10-29 09:42:03', '2025-10-29 09:42:03', NULL, 1),
+(11, 'descuento_maximo', '', '', 'texto', '2025-11-12 06:39:08', '2025-11-12 08:17:46', 'admin', 1),
+(12, 'inventario_umbral_bajo', '20', '', 'texto', '2025-11-12 06:39:08', '2025-11-12 08:17:46', 'admin', 1),
+(13, 'backup_automatico', 'false', '', 'texto', '2025-11-12 06:39:08', '2025-11-12 08:17:46', 'admin', 1),
+(14, 'notificaciones_email', 'false', '', 'texto', '2025-11-12 06:39:08', '2025-11-12 08:17:46', 'admin', 1),
+(15, 'grafico_grid_max', '100', '', 'texto', '2025-11-12 07:30:45', '2025-11-12 08:17:46', 'admin', 1),
+(16, 'grafico_grid_step', '10', '', 'texto', '2025-11-12 07:30:45', '2025-11-12 08:17:46', 'admin', 1),
+(17, 'dias_laborales', '1,2,3,4,5', '', 'texto', '2025-11-12 07:30:45', '2025-11-12 08:17:46', 'admin', 1),
+(18, 'incluir_dias_sin_ventas', 'true', '', 'texto', '2025-11-12 07:30:45', '2025-11-12 08:17:46', 'admin', 1);
 
 -- --------------------------------------------------------
 
@@ -193,7 +266,7 @@ CREATE TABLE IF NOT EXISTS `credito` (
   KEY `id_cajero` (`id_cajero`),
   KEY `id_cliente` (`id_cliente`),
   KEY `id_producto` (`id_producto`)
-) ENGINE=MyISAM AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `credito`
@@ -208,11 +281,12 @@ INSERT INTO `credito` (`id_credito`, `id_cajero`, `id_cliente`, `id_producto`, `
 (6, 1, 1, 3, 1, 3.00, '2025-11-07 07:08:08', NULL, 'pagado'),
 (7, 1, 1, 3, 1, 3.00, '2025-11-07 10:24:34', NULL, 'pagado'),
 (8, 1, 1, 1, 1, 1.00, '2025-11-07 10:24:34', NULL, 'pagado'),
-(9, 1, 1, 2, 1, 100.00, '2025-11-07 10:26:55', NULL, 'parcial'),
-(10, 1, 1, 3, 2, 6.00, '2025-11-07 10:27:15', NULL, 'pendiente'),
-(11, 1, 1, 1, 1, 1.00, '2025-11-07 10:27:15', NULL, 'pendiente'),
-(12, 1, 2, 2, 1, 100.00, '2025-11-07 10:40:17', NULL, 'parcial'),
-(13, 1, 1, 3, 1, 3.00, '2025-11-07 10:43:22', NULL, 'pendiente');
+(9, 1, 1, 2, 1, 100.00, '2025-11-07 10:26:55', NULL, 'pagado'),
+(10, 1, 1, 3, 2, 6.00, '2025-11-07 10:27:15', NULL, 'pagado'),
+(11, 1, 1, 1, 1, 1.00, '2025-11-07 10:27:15', NULL, 'pagado'),
+(12, 1, 2, 2, 1, 100.00, '2025-11-07 10:40:17', NULL, 'pagado'),
+(13, 1, 1, 3, 1, 3.00, '2025-11-07 10:43:22', NULL, 'pagado'),
+(14, 1, 3, 5, 2, 4.00, '2025-11-12 01:56:25', NULL, 'pendiente');
 
 -- --------------------------------------------------------
 
@@ -288,14 +362,15 @@ CREATE TABLE IF NOT EXISTS `inventario` (
   `precio_venta` decimal(10,2) NOT NULL,
   `unidades_sueltas` int DEFAULT '0',
   PRIMARY KEY (`id_producto`)
-) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `inventario`
 --
 
 INSERT INTO `inventario` (`id_producto`, `nombre_produc`, `caja_produc`, `cantidad_caja`, `cantidad_total`, `precio_caja`, `precio_produc`, `activo`, `precio_venta`, `unidades_sueltas`) VALUES
-(4, 'pepsi', 4, 12, 48, 20.00, 1.67, 1, 2.00, 0);
+(5, 'Oreo', 1, 12, 18, 20.00, 1.67, 1, 2.00, 0),
+(4, 'pepsi', 1, 12, 19, 20.00, 1.67, 1, 2.00, 0);
 
 -- --------------------------------------------------------
 
@@ -384,7 +459,7 @@ CREATE TABLE IF NOT EXISTS `preferencias_usuario` (
 --
 
 INSERT INTO `preferencias_usuario` (`id`, `usuario`, `moneda_preferida`, `sonidos_notificacion`, `confirmacion_ventas`, `auto_imprimir`, `fecha_creacion`, `fecha_actualizacion`) VALUES
-(1, 'cajero1', 'BS', 1, 1, 0, '2025-10-29 10:45:12', '2025-10-29 10:45:12'),
+(1, 'cajero1', 'BS', 1, 0, 0, '2025-10-29 10:45:12', '2025-11-12 06:47:57'),
 (2, 'cajero2', 'BS', 1, 1, 0, '2025-11-07 11:04:45', '2025-11-07 11:04:45');
 
 -- --------------------------------------------------------
@@ -510,31 +585,18 @@ CREATE TABLE IF NOT EXISTS `ventas` (
   KEY `id_cliente` (`id_cliente`),
   KEY `id_cajero` (`id_cajero`),
   KEY `id_producto` (`id_producto`)
-) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `ventas`
 --
 
 INSERT INTO `ventas` (`id_venta`, `id_cliente`, `id_cajero`, `id_producto`, `cantidad`, `total`, `fecha_venta`) VALUES
-(1, 1, 1, 2, 1, 100.00, '2025-10-29 12:39:33'),
-(2, 1, 1, 3, 2, 6.00, '2025-10-29 12:39:33'),
-(3, 1, 1, 3, 1, 3.00, '2025-10-29 13:21:33'),
-(4, 1, 1, 2, 1, 100.00, '2025-10-29 13:21:33'),
-(5, 1, 1, 3, 1, 3.00, '2025-11-07 06:55:45'),
-(6, 1, 1, 3, 1, 3.00, '2025-11-07 06:58:13'),
-(7, 1, 1, 1, 1, 1.00, '2025-11-07 06:59:03'),
-(8, 1, 1, 2, 1, 100.00, '2025-11-07 07:00:51'),
-(9, 1, 1, 3, 1, 3.00, '2025-11-07 07:01:18'),
-(10, 1, 1, 3, 1, 3.00, '2025-11-07 07:03:07'),
-(11, 1, 1, 3, 1, 3.00, '2025-11-07 07:34:17'),
-(12, 1, 1, 3, 1, 3.00, '2025-11-07 07:34:33'),
-(13, 1, 1, 2, 1, 100.00, '2025-11-07 11:10:05'),
-(14, 1, 1, 3, 1, 3.00, '2025-11-07 11:17:15'),
-(15, 1, 1, 3, 1, 3.00, '2025-11-07 11:18:12'),
-(16, 2, 1, 1, 1, 1.00, '2025-11-07 11:18:29'),
-(17, 2, 1, 3, 2, 6.00, '2025-11-07 11:51:53'),
-(18, 2, 1, 3, 2, 6.00, '2025-11-07 12:04:06');
+(23, 2, 1, 4, 27, 54.00, '2025-11-12 02:40:47'),
+(22, 2, 1, 5, 1, 2.00, '2025-11-12 01:56:44'),
+(21, 3, 1, 4, 1, 2.00, '2025-11-11 08:21:39'),
+(20, 3, 1, 5, 3, 6.00, '2025-11-11 08:21:39'),
+(19, 1, 1, 4, 1, 2.00, '2025-11-11 06:50:13');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

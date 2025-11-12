@@ -1,6 +1,7 @@
 <?php
 // Incluir sistema de control de acceso
 require_once '../../../acces/auth_check.php';
+require_once '../../../BBDD/BBDD.php';
 
 // Verificar que el usuario sea administrador
 if (!esAdmin()) {
@@ -12,15 +13,7 @@ if (!esAdmin()) {
 
 header('Content-Type: application/json');
 
-// Configuración de la base de datos
-$host = 'localhost';
-$dbname = 'cafetin';
-$username = 'root';
-$password = '';
-
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Obtener parámetros
     $id_cliente = $_GET['id_cliente'] ?? null;
@@ -31,29 +24,11 @@ try {
         exit;
     }
 
-    // Consulta para obtener los productos de una factura específica
-    $sql = "
-        SELECT 
-            c.id_credito,
-            i.nombre_produc as producto,
-            c.cantidad,
-            c.total as subtotal,
-            DATE(c.fecha_cre) as fecha_compra,
-            TIME(c.fecha_cre) as hora_compra,
-            c.fecha_cre,
-            CONCAT(p.nombre, ' ', p.apellido) as cliente
-        FROM credito c
-        INNER JOIN cliente cl ON c.id_cliente = cl.id_cliente
-        INNER JOIN usuario u ON cl.id_usuario = u.id_usuario
-        INNER JOIN persona p ON u.id_persona = p.id_persona
-        INNER JOIN inventario i ON c.id_producto = i.id_producto
-        WHERE c.id_cliente = :id_cliente 
-        AND DATE(c.fecha_cre) = :fecha_factura
-        AND c.estado IN ('pendiente', 'parcial')
-        ORDER BY c.fecha_cre ASC, TIME(c.fecha_cre) ASC
-    ";
+    $driver = $conexion->getAttribute(PDO::ATTR_DRIVER_NAME);
+    $clienteExpr = $driver === 'sqlite' ? "(p.nombre || ' ' || p.apellido) as cliente" : "CONCAT(p.nombre, ' ', p.apellido) as cliente";
+    $sql = "SELECT c.id_credito, i.nombre_produc as producto, c.cantidad, c.total as subtotal, DATE(c.fecha_cre) as fecha_compra, TIME(c.fecha_cre) as hora_compra, c.fecha_cre, " . $clienteExpr . " FROM credito c INNER JOIN cliente cl ON c.id_cliente = cl.id_cliente INNER JOIN usuario u ON cl.id_usuario = u.id_usuario INNER JOIN persona p ON u.id_persona = p.id_persona INNER JOIN inventario i ON c.id_producto = i.id_producto WHERE c.id_cliente = :id_cliente AND DATE(c.fecha_cre) = :fecha_factura AND c.estado IN ('pendiente', 'parcial') ORDER BY c.fecha_cre ASC, TIME(c.fecha_cre) ASC";
 
-    $stmt = $pdo->prepare($sql);
+    $stmt = $conexion->prepare($sql);
     $stmt->bindParam(':id_cliente', $id_cliente, PDO::PARAM_INT);
     $stmt->bindParam(':fecha_factura', $fecha_factura, PDO::PARAM_STR);
     $stmt->execute();
@@ -91,7 +66,7 @@ try {
         ORDER BY a.fecha_abono DESC
     ";
 
-    $stmtAbonos = $pdo->prepare($sqlAbonos);
+    $stmtAbonos = $conexion->prepare($sqlAbonos);
     $stmtAbonos->bindParam(':id_cliente', $id_cliente, PDO::PARAM_INT);
     $stmtAbonos->bindParam(':fecha_factura', $fecha_factura, PDO::PARAM_STR);
     $stmtAbonos->execute();

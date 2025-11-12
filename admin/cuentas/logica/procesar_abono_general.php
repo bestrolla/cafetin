@@ -1,5 +1,6 @@
 <?php
 require_once '../../../acces/auth_check.php';
+require_once '../../../BBDD/BBDD.php';
 
 if (!esAdmin()) {
     echo json_encode([
@@ -28,15 +29,20 @@ try {
         throw new Exception('Debe seleccionar un método de pago válido');
     }
 
-    $host = 'localhost';
-    $dbname = 'cafetin';
-    $username = 'root';
-    $password = '';
+    $driver = $conexion->getAttribute(PDO::ATTR_DRIVER_NAME);
+    if ($driver === 'sqlite') {
+        $exists = $conexion->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='abonos'")->fetchColumn();
+        if (!$exists) {
+            $conexion->exec("CREATE TABLE IF NOT EXISTS abonos (id_abono INTEGER PRIMARY KEY AUTOINCREMENT, id_credito INTEGER NOT NULL, monto REAL NOT NULL, metodo_pago TEXT DEFAULT 'efectivo', observaciones TEXT, fecha_abono TEXT DEFAULT CURRENT_TIMESTAMP)");
+        }
+    } else {
+        $result = $conexion->query("SHOW TABLES LIKE 'abonos'");
+        if ($result->rowCount() == 0) {
+            $conexion->exec("CREATE TABLE abonos (id_abono INT AUTO_INCREMENT PRIMARY KEY, id_credito INT NOT NULL, monto DECIMAL(10,2) NOT NULL, metodo_pago VARCHAR(50) DEFAULT 'efectivo', observaciones TEXT, fecha_abono TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+        }
+    }
 
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    $pdo->beginTransaction();
+    $conexion->beginTransaction();
 
     // Obtener créditos pendientes/parciales del cliente con su saldo
     $sqlCreditos = "
@@ -48,7 +54,7 @@ try {
         GROUP BY c.id_credito
         ORDER BY c.fecha_cre ASC, c.id_credito ASC
     ";
-    $stmt = $pdo->prepare($sqlCreditos);
+    $stmt = $conexion->prepare($sqlCreditos);
     $stmt->bindParam(':id_cliente', $id_cliente, PDO::PARAM_INT);
     $stmt->execute();
     $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -75,25 +81,25 @@ try {
 
         // Insertar abono para este crédito
         $sqlAbono = "INSERT INTO abonos (id_credito, monto, metodo_pago, observaciones) VALUES (?, ?, ?, ?)";
-        $stmtAb = $pdo->prepare($sqlAbono);
+        $stmtAb = $conexion->prepare($sqlAbono);
         $stmtAb->execute([$c['id_credito'], $aplicar, $metodo_pago, $observaciones]);
 
         // Si se completó el crédito, marcar como pagado
         if ($aplicar >= $saldo_credito) {
             $sqlUpdate = "UPDATE credito SET estado = 'pagado' WHERE id_credito = ?";
-            $stmtUp = $pdo->prepare($sqlUpdate);
+            $stmtUp = $conexion->prepare($sqlUpdate);
             $stmtUp->execute([$c['id_credito']]);
         } else {
             // Asegurar estado parcial al menos
             $sqlUpdate = "UPDATE credito SET estado = 'parcial' WHERE id_credito = ? AND estado = 'pendiente'";
-            $stmtUp = $pdo->prepare($sqlUpdate);
+            $stmtUp = $conexion->prepare($sqlUpdate);
             $stmtUp->execute([$c['id_credito']]);
         }
 
         $restante -= $aplicar;
     }
 
-    $pdo->commit();
+    $conexion->commit();
 
     echo json_encode([
         'success' => true,
@@ -102,8 +108,8 @@ try {
     ]);
 
 } catch (Exception $e) {
-    if (isset($pdo) && $pdo->inTransaction()) {
-        $pdo->rollBack();
+    if (isset($conexion) && $conexion->inTransaction()) {
+        $conexion->rollBack();
     }
     echo json_encode([
         'success' => false,

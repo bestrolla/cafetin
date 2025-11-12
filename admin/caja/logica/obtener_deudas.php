@@ -4,23 +4,36 @@ header('Content-Type: application/json');
 require_once '../../../BBDD/BBDD.php';
 
 try {
-    // Verificar si la tabla abonos existe, si no, crearla
-    $checkTable = "SHOW TABLES LIKE 'abonos'";
-    $result = $conexion->query($checkTable);
-    
-    if ($result->rowCount() == 0) {
-        $createTable = "
-            CREATE TABLE abonos (
-                id_abono INT AUTO_INCREMENT PRIMARY KEY,
-                id_credito INT NOT NULL,
-                monto DECIMAL(10,2) NOT NULL,
-                metodo_pago VARCHAR(50) DEFAULT 'efectivo',
+    $driver = $conexion->getAttribute(PDO::ATTR_DRIVER_NAME);
+    if ($driver === 'sqlite') {
+        $exists = $conexion->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='abonos'")->fetchColumn();
+        if (!$exists) {
+            $conexion->exec("CREATE TABLE IF NOT EXISTS abonos (
+                id_abono INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_credito INTEGER NOT NULL,
+                monto REAL NOT NULL,
+                metodo_pago TEXT DEFAULT 'efectivo',
                 observaciones TEXT,
-                fecha_abono TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (id_credito) REFERENCES credito(id_credito)
-            )
-        ";
-        $conexion->exec($createTable);
+                fecha_abono TEXT DEFAULT CURRENT_TIMESTAMP
+            )");
+        }
+    } else {
+        $checkTable = "SHOW TABLES LIKE 'abonos'";
+        $result = $conexion->query($checkTable);
+        if ($result->rowCount() == 0) {
+            $createTable = "
+                CREATE TABLE abonos (
+                    id_abono INT AUTO_INCREMENT PRIMARY KEY,
+                    id_credito INT NOT NULL,
+                    monto DECIMAL(10,2) NOT NULL,
+                    metodo_pago VARCHAR(50) DEFAULT 'efectivo',
+                    observaciones TEXT,
+                    fecha_abono TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (id_credito) REFERENCES credito(id_credito)
+                )
+            ";
+            $conexion->exec($createTable);
+        }
     }
 
     // Obtener parámetros de fecha si se proporcionan

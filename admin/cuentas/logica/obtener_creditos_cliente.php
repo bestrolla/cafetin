@@ -1,5 +1,6 @@
 <?php
 require_once '../../../acces/auth_check.php';
+require_once '../../../BBDD/BBDD.php';
 
 if (!esAdmin()) {
     echo json_encode(['error' => 'Acceso denegado']);
@@ -8,14 +9,7 @@ if (!esAdmin()) {
 
 header('Content-Type: application/json');
 
-$host = 'localhost';
-$dbname = 'cafetin';
-$username = 'root';
-$password = '';
-
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $id_cliente = $_GET['id_cliente'] ?? null;
     if (!$id_cliente) {
@@ -36,7 +30,7 @@ try {
         GROUP BY c.id_credito
         ORDER BY c.fecha_cre DESC
     ";
-    $stmt = $pdo->prepare($sql);
+    $stmt = $conexion->prepare($sql);
     $stmt->bindParam(':id_cliente', $id_cliente, PDO::PARAM_INT);
     $stmt->execute();
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);

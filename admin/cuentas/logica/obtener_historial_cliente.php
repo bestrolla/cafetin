@@ -1,6 +1,7 @@
 <?php
 // Incluir sistema de control de acceso
 require_once '../../../acces/auth_check.php';
+require_once '../../../BBDD/BBDD.php';
 
 if (!esAdmin()) {
     echo json_encode(['error' => 'Acceso denegado']);
@@ -9,14 +10,7 @@ if (!esAdmin()) {
 
 header('Content-Type: application/json');
 
-$host = 'localhost';
-$dbname = 'cafetin';
-$username = 'root';
-$password = '';
-
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $id_cliente = $_GET['id_cliente'] ?? null;
     if (!$id_cliente) {
@@ -38,7 +32,7 @@ try {
           AND c.estado IN ('pendiente','parcial')
         ORDER BY c.fecha_cre ASC
     ";
-    $stmtProd = $pdo->prepare($sqlProd);
+    $stmtProd = $conexion->prepare($sqlProd);
     $stmtProd->bindParam(':id_cliente', $id_cliente, PDO::PARAM_INT);
     $stmtProd->execute();
     $rows = $stmtProd->fetchAll(PDO::FETCH_ASSOC);
@@ -75,7 +69,7 @@ try {
           AND c.estado IN ('pendiente','parcial')
         GROUP BY DATE(c.fecha_cre)
     ";
-    $stmtAb = $pdo->prepare($sqlAbonos);
+    $stmtAb = $conexion->prepare($sqlAbonos);
     $stmtAb->bindParam(':id_cliente', $id_cliente, PDO::PARAM_INT);
     $stmtAb->execute();
     $abRows = $stmtAb->fetchAll(PDO::FETCH_ASSOC);

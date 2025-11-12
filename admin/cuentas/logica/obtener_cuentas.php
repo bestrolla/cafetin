@@ -1,6 +1,7 @@
 <?php
 // Incluir sistema de control de acceso
 require_once '../../../acces/auth_check.php';
+require_once '../../../BBDD/BBDD.php';
 
 // Verificar que el usuario sea administrador
 if (!esAdmin()) {
@@ -12,33 +13,39 @@ if (!esAdmin()) {
 
 header('Content-Type: application/json');
 
-// Configuración de la base de datos
-$host = 'localhost';
-$dbname = 'cafetin';
-$username = 'root';
-$password = '';
-
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $driver = $conexion->getAttribute(PDO::ATTR_DRIVER_NAME);
 
     // Verificar si la tabla abonos existe, si no, crearla
-    $checkTable = "SHOW TABLES LIKE 'abonos'";
-    $result = $pdo->query($checkTable);
-    
-    if ($result->rowCount() == 0) {
-        $createTable = "
-            CREATE TABLE abonos (
-                id_abono INT AUTO_INCREMENT PRIMARY KEY,
-                id_credito INT NOT NULL,
-                monto DECIMAL(10,2) NOT NULL,
-                metodo_pago VARCHAR(50) DEFAULT 'efectivo',
+    if ($driver === 'sqlite') {
+        $exists = $conexion->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='abonos'")->fetchColumn();
+        if (!$exists) {
+            $conexion->exec("CREATE TABLE IF NOT EXISTS abonos (
+                id_abono INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_credito INTEGER NOT NULL,
+                monto REAL NOT NULL,
+                metodo_pago TEXT DEFAULT 'efectivo',
                 observaciones TEXT,
-                fecha_abono TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (id_credito) REFERENCES credito(id_credito)
-            )
-        ";
-        $pdo->exec($createTable);
+                fecha_abono TEXT DEFAULT CURRENT_TIMESTAMP
+            )");
+        }
+    } else {
+        $checkTable = "SHOW TABLES LIKE 'abonos'";
+        $result = $conexion->query($checkTable);
+        if ($result->rowCount() == 0) {
+            $createTable = "
+                CREATE TABLE abonos (
+                    id_abono INT AUTO_INCREMENT PRIMARY KEY,
+                    id_credito INT NOT NULL,
+                    monto DECIMAL(10,2) NOT NULL,
+                    metodo_pago VARCHAR(50) DEFAULT 'efectivo',
+                    observaciones TEXT,
+                    fecha_abono TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (id_credito) REFERENCES credito(id_credito)
+                )
+            ";
+            $conexion->exec($createTable);
+        }
     }
 
     // Consulta corregida para evitar duplicar SUM(c.total) por múltiples filas en abonos
@@ -71,7 +78,7 @@ try {
         ORDER BY p.nombre ASC, p.apellido ASC
     ";
 
-    $stmt = $pdo->prepare($sql);
+    $stmt = $conexion->prepare($sql);
     $stmt->execute();
     $facturas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

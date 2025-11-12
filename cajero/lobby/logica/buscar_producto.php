@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     cantidad_total,
                     (COALESCE(cantidad_total,0)) AS stock_disponible
                 FROM inventario 
-                WHERE activo = TRUE 
+                WHERE activo = 1 
                 AND (nombre_produc LIKE ? OR CAST(id_producto AS CHAR) LIKE ?)
                 ORDER BY nombre_produc ASC";
         

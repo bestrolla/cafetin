@@ -11,7 +11,7 @@ try {
                 cantidad_total,
                 (COALESCE(cantidad_total,0)) AS stock_disponible
             FROM inventario 
-            WHERE activo = TRUE 
+            WHERE activo = 1 
             ORDER BY nombre_produc ASC";
     
     $stmt = $conexion->prepare($sql);

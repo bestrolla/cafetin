@@ -3,7 +3,7 @@ require_once '../../../BBDD/BBDD.php';
 header('Content-Type: application/json');
 
 try {
-    $sql = "SELECT id_producto, nombre_produc FROM inventario WHERE activo = TRUE ORDER BY nombre_produc ASC";
+    $sql = "SELECT id_producto, nombre_produc FROM inventario WHERE activo = 1 ORDER BY nombre_produc ASC";
     $stmt = $conexion->prepare($sql);
     $stmt->execute();
     $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
