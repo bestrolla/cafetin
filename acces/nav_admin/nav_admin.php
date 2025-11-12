@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../auth_check.php'; ?>
 <style>
 section header {
     background: rgba(0, 0, 0, 0.85);
@@ -175,4 +176,5 @@ document.addEventListener('click', function(e) {
     }
 });
 </script>
-<script src="/cafetin/acces/js/notifications.js"></script>
+<script>window.__APP_BASE = "<?php echo appBasePath(); ?>";</script>
+<script src="<?php echo appUrl('/acces/js/notifications.js'); ?>"></script>

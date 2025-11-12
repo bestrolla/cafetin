@@ -7,13 +7,13 @@ require_once '../../../BBDD/BBDD.php';
 
 // Solo aceptar POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode('Método no permitido'));
+  header('Location: ' . appUrl('/login/recuperacion/vista/solicitar.php?error=' . urlencode('Método no permitido')));
   exit;
 }
 
 // Verificar CSRF
 if (!csrfVerifyFromPost('csrf_token')) {
-  header('Location: /cafetin/login/recuperacion/vista/restablecer.php?error=' . urlencode('Token CSRF inválido'));
+  header('Location: ' . appUrl('/login/recuperacion/vista/restablecer.php?error=' . urlencode('Token CSRF inválido')));
   exit;
 }
 
@@ -22,17 +22,17 @@ $nueva = isset($_POST['nueva_contrasena']) ? (string)$_POST['nueva_contrasena'] 
 $confirmar = isset($_POST['confirmar_contrasena']) ? (string)$_POST['confirmar_contrasena'] : '';
 
 if ($token === '' || $nueva === '' || $confirmar === '') {
-  header('Location: /cafetin/login/recuperacion/vista/restablecer.php?error=' . urlencode('Complete todos los campos del formulario'));
+  header('Location: ' . appUrl('/login/recuperacion/vista/restablecer.php?error=' . urlencode('Complete todos los campos del formulario')));
   exit;
 }
 
 if ($nueva !== $confirmar) {
-  header('Location: /cafetin/login/recuperacion/vista/restablecer.php?error=' . urlencode('Las contraseñas no coinciden'));
+  header('Location: ' . appUrl('/login/recuperacion/vista/restablecer.php?error=' . urlencode('Las contraseñas no coinciden')));
   exit;
 }
 
 if (strlen($nueva) < 6 || strlen($nueva) > 12) {
-  header('Location: /cafetin/login/recuperacion/vista/restablecer.php?error=' . urlencode('La contraseña debe tener entre 6 y 12 caracteres'));
+  header('Location: ' . appUrl('/login/recuperacion/vista/restablecer.php?error=' . urlencode('La contraseña debe tener entre 6 y 12 caracteres')));
   exit;
 }
 
@@ -43,12 +43,12 @@ try {
   $reset = $stmt->fetch(PDO::FETCH_ASSOC);
 
   if (!$reset) {
-    header('Location: /cafetin/login/recuperacion/vista/restablecer.php?error=' . urlencode('Token inválido'));
+    header('Location: ' . appUrl('/login/recuperacion/vista/restablecer.php?error=' . urlencode('Token inválido')));
     exit;
   }
 
   if ((int)$reset['usado'] === 1) {
-    header('Location: /cafetin/login/recuperacion/vista/restablecer.php?error=' . urlencode('Este enlace ya fue utilizado'));
+    header('Location: ' . appUrl('/login/recuperacion/vista/restablecer.php?error=' . urlencode('Este enlace ya fue utilizado')));
     exit;
   }
 
@@ -57,7 +57,7 @@ try {
   $stmtExp->execute([':token' => $token]);
   $vigenteRow = $stmtExp->fetch(PDO::FETCH_ASSOC);
   if (!$vigenteRow || (int)$vigenteRow['vigente'] !== 1) {
-    header('Location: /cafetin/login/recuperacion/vista/restablecer.php?error=' . urlencode('El enlace ha expirado'));
+    header('Location: ' . appUrl('/login/recuperacion/vista/restablecer.php?error=' . urlencode('El enlace ha expirado')));
     exit;
   }
 
@@ -76,7 +76,7 @@ try {
   $conexion->commit();
 
   // Redirigir al login con mensaje de éxito
-  header('Location: /cafetin/login/inicio/vista/inicio.php?mensaje=' . urlencode('Contraseña actualizada. Inicie sesión con sus nuevas credenciales.'));
+  header('Location: ' . appUrl('/login/inicio/vista/inicio.php?mensaje=' . urlencode('Contraseña actualizada. Inicie sesión con sus nuevas credenciales.')));
   exit;
 
 } catch (Exception $e) {
@@ -84,6 +84,6 @@ try {
     $conexion->rollBack();
   }
   $msg = 'Error del servidor: ' . $e->getMessage();
-  header('Location: /cafetin/login/recuperacion/vista/restablecer.php?error=' . urlencode($msg));
+  header('Location: ' . appUrl('/login/recuperacion/vista/restablecer.php?error=' . urlencode($msg)));
   exit;
 }

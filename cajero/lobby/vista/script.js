@@ -218,7 +218,7 @@ function configurarValidacionTiempoReal() {
 // Validar formulario completo y actualizar estado de botones
 function validarFormularioCompleto() {
     const todosLosCamposCompletos = validarTodosLosCampos();
-    const cedulaCompleta = validarClienteMinimo();
+    const listoParaRegistrar = !!(elementos.nombreInput?.value?.trim() && elementos.apellidoInput?.value?.trim());
     
     // Actualizar estado del botón Siguiente
     if (elementos.btnSiguiente) {
@@ -229,9 +229,9 @@ function validarFormularioCompleto() {
         }
     }
     
-    // Actualizar estado del botón Registrar (solo necesita cédula mínima)
+    // Actualizar estado del botón Registrar (mínimo nombre y apellido)
     if (elementos.btnRegistrar) {
-        if (cedulaCompleta) {
+        if (listoParaRegistrar) {
             habilitarBoton(elementos.btnRegistrar);
         } else {
             deshabilitarBoton(elementos.btnRegistrar);
@@ -651,24 +651,19 @@ function agregarProductoAFactura(boton) {
 
 // Registrar nuevo cliente
 function registrarCliente() {
-    if (!validarClienteMinimo()) {
-        mostrarAlerta('error', 'Debe ingresar al menos la cédula del cliente');
-        elementos.cedulaInput.focus();
-        return;
-    }
-    
-    // Recopilar datos del cliente
+    // Recopilar datos del cliente (permitir cédula y teléfono vacíos)
     const datosCliente = {
+        id_cliente: obtenerClienteId() || null,
         cedula: elementos.cedulaInput.value.trim(),
         nombre: elementos.nombreInput.value.trim(),
         apellido: elementos.apellidoInput.value.trim(),
         telefono: elementos.telefonoInput.value.trim(),
         alias: elementos.aliasInput.value.trim()
     };
-    
-    // Validar que todos los campos estén completos
+
+    // Validación mínima: nombre y apellido son obligatorios
     if (!validarDatosCliente(datosCliente)) {
-        mostrarAlerta('error', 'Debe completar todos los campos del cliente');
+        mostrarAlerta('error', 'Debe ingresar al menos nombre y apellido');
         resaltarCamposIncompletos();
         return;
     }
@@ -688,8 +683,8 @@ function registrarCliente() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Guardar el id_cliente recién creado
-            clienteSeleccionadoId = data.id_cliente || null;
+            // Guardar/actualizar el id_cliente
+            clienteSeleccionadoId = data.id_cliente || clienteSeleccionadoId || null;
             mostrarAlerta('success', data.message);
             // NO limpiar formulario para mantener los datos del cliente registrado
             // Los datos se mantendrán para mostrarlos en la factura
@@ -770,15 +765,8 @@ function resaltarCamposIncompletos() {
 
 // Validar datos del cliente (actualizada)
 function validarDatosCliente(datos) {
-    return datos.cedula && datos.nombre && datos.apellido && datos.telefono && datos.alias;
-}
-
-// Validación mínima del cliente (solo para registro)
-function validarClienteMinimo() {
-    if (!elementos.cedulaInput?.value?.trim()) {
-        return false;
-    }
-    return true;
+    // cédula y teléfono pueden ser vacíos; nombre y apellido son obligatorios
+    return !!(datos.nombre && datos.apellido);
 }
 
 // 🔹 FUNCIONES DE ANIMACIÓN MEJORADAS ENTRE CLIENTE Y FACTURA

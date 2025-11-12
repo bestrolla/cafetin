@@ -1,6 +1,7 @@
 // Global Inventory Notifications
 (function() {
-  const API_URL = '/cafetin/admin/configuracion/logica/obtener_notificaciones_inventario.php';
+  const BASE = (typeof window !== 'undefined' && window.__APP_BASE) ? window.__APP_BASE : '';
+  const API_URL = `${BASE}/admin/configuracion/logica/obtener_notificaciones_inventario.php`;
   let notifTimer = null;
   let lastNotifCount = 0;
   let lastItemsHash = '';
@@ -52,7 +53,7 @@
           row.classList.add('clickable');
           row.title = 'Abrir Inventario (Admin)';
           row.addEventListener('click', () => {
-            const url = '/cafetin/admin/inventario/vista/inventario.php';
+            const url = `${BASE}/admin/inventario/vista/inventario.php`;
             window.location.href = url;
           });
         }

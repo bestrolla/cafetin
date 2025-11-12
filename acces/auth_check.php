@@ -1,4 +1,5 @@
 <?php
+if (ob_get_level() === 0) { ob_start(); }
 /**
  * Sistema de Control de Acceso
  * Verifica si el usuario tiene una sesión válida y los permisos necesarios
@@ -100,12 +101,10 @@ function destruirSesion() {
  * Función para redirigir al login
  */
 function redirigirLogin($mensaje = '') {
-    $loginUrl = '/cafetin/login/inicio/vista/inicio.php';
-    
+    $loginUrl = appUrl('/login/inicio/vista/inicio.php');
     if (!empty($mensaje)) {
         $loginUrl .= '?error=' . urlencode($mensaje);
     }
-    
     header("Location: $loginUrl");
     exit();
 }
@@ -161,4 +160,17 @@ function esCajero() {
 function esAdminOCajero() {
     return verificarRol(['admin', 'cajero']);
 }
-?>
+function appBasePath() {
+    $doc = rtrim(str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
+    $root = rtrim(str_replace('\\', '/', realpath(__DIR__ . '/..')), '/');
+    if ($doc && $root && strpos($root, $doc) === 0) {
+        $base = substr($root, strlen($doc));
+        return $base ?: '';
+    }
+    return '';
+}
+
+function appUrl($path) {
+    $base = appBasePath();
+    return $base . $path;
+}

@@ -10,6 +10,8 @@ require_once 'auth_check.php';
 destruirSesion();
 
 // Redirigir al login con mensaje
-header("Location: /cafetin/login/inicio/vista/inicio.php?mensaje=" . urlencode("Sesión cerrada correctamente"));
+$url = appUrl('/login/inicio/vista/inicio.php');
+$url .= '?mensaje=' . urlencode('Sesión cerrada correctamente');
+header("Location: $url");
 exit();
 ?>

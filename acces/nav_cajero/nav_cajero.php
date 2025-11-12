@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../auth_check.php'; ?>
 <style>
 section header {
     background: rgba(0, 0, 0, 0.85);
@@ -78,15 +79,14 @@ section header .logo img {
   
     <nav>
       <ul>
-        <li><a href="/cafetin/cajero/lobby/vista/lobby.php">lobby</a></li>
-      
-        <li><a href="/cafetin/cajero/cuentas/vista/cuentas.php">cuentas</a></li>
-        <li><a href="/cafetin/cajero/configuracion/vista/configuracion.php">configuracion</a></li>
-        <li><a href="/cafetin/acces/logout.php">Cerrar Sesión</a></li>
+        <li><a href="<?php echo appUrl('/cajero/lobby/vista/lobby.php'); ?>">lobby</a></li>
+        <li><a href="<?php echo appUrl('/cajero/cuentas/vista/cuentas.php'); ?>">cuentas</a></li>
+        <li><a href="<?php echo appUrl('/cajero/configuracion/vista/configuracion.php'); ?>">configuracion</a></li>
+        <li><a href="<?php echo appUrl('/acces/logout.php'); ?>">Cerrar Sesión</a></li>
       </ul>
     </nav>
     <div class="logo">
-      <img id="logo-cajero" src="../../../acces/img/logo.jpg" alt="Logo" width="100px" height="100px">
+      <img id="logo-cajero" src="<?php echo appUrl('/acces/img/logo.jpg'); ?>" alt="Logo" width="100px" height="100px">
     </div>
   </header>
   <button id="show-header-tab">Mostrar menú</button>
@@ -172,4 +172,5 @@ document.addEventListener('click', function(e) {
   const panelEl = document.getElementById('notif-panel');
   if (panelEl) panelEl.addEventListener('click', function(e){ e.stopPropagation(); });
 </script>
-<script src="/cafetin/acces/js/notifications.js"></script>
+<script>window.__APP_BASE = "<?php echo appBasePath(); ?>";</script>
+<script src="<?php echo appUrl('/acces/js/notifications.js'); ?>"></script>

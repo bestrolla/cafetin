@@ -18,9 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
         formSeguridad.addEventListener('submit', guardarPreguntaSeguridadAdmin);
     }
 
-    // Inicializar notificaciones de inventario solo si no está el global
-    if (!window.__globalNotifInitialized) {
-        initInventarioNotificaciones();
+
+    const formImport = document.getElementById('form-importar-clientes');
+    if (formImport) {
+        formImport.addEventListener('submit', manejarImportacionClientes);
     }
 });
 
@@ -37,6 +38,50 @@ function showTab(tabName) {
     // Mostrar el tab seleccionado
     document.getElementById(tabName).classList.add('active');
     event.target.classList.add('active');
+}
+
+async function manejarImportacionClientes(e) {
+    e.preventDefault();
+    const input = document.getElementById('archivo-clientes');
+    if (!input || !input.files || !input.files.length) {
+        mostrarAlerta('Seleccione un archivo CSV', 'warning');
+        return;
+    }
+    const fd = new FormData();
+    fd.append('archivo', input.files[0]);
+    try {
+        const resp = await fetch('../logica/importar_clientes.php', { method: 'POST', body: fd });
+        const data = await resp.json();
+        if (!data.success) {
+            mostrarAlerta(data.message || 'Error en importación', 'error');
+            return;
+        }
+        mostrarAlerta('Importación completada', 'success');
+        const cont = document.getElementById('resultado-importacion');
+        if (cont) {
+            const t = data.totales || {};
+            const detalles = Array.isArray(data.detalles) ? data.detalles.slice(0, 50) : [];
+            let html = '';
+            html += `<div class="summary-grid">`;
+            html += `<div class="summary-item">Insertados: <strong>${t.insertados || 0}</strong></div>`;
+            html += `<div class="summary-item">Actualizados: <strong>${t.actualizados || 0}</strong></div>`;
+            html += `<div class="summary-item">Omitidos: <strong>${t.omitidos || 0}</strong></div>`;
+            html += `<div class="summary-item">Errores: <strong>${t.errores || 0}</strong></div>`;
+            html += `<div class="summary-item">Créditos creados: <strong>${t.creditos || 0}</strong></div>`;
+            html += `</div>`;
+            if (detalles.length) {
+                html += `<table class="table"><thead><tr><th>Fila</th><th>Estado</th><th>Mensaje</th></tr></thead><tbody>`;
+                detalles.forEach(d => {
+                    html += `<tr><td>${d.fila || ''}</td><td>${d.estado || ''}</td><td>${d.mensaje || ''}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+            }
+            cont.innerHTML = html;
+        }
+        formImport.reset();
+    } catch (err) {
+        mostrarAlerta('Error de conexión al importar', 'error');
+    }
 }
 
 // Cargar configuraciones
@@ -297,98 +342,6 @@ function formatearFecha(fecha) {
     });
 }
 
-// =====================
-// Notificaciones Inventario
-// =====================
-let notifTimer = null;
-let lastNotifCount = 0;
-let lastItemsHash = '';
-
-function initInventarioNotificaciones() {
-    const btn = document.getElementById('btn-notificaciones');
-    if (btn) {
-        btn.addEventListener('click', () => toggleNotifPanel());
-    }
-    // Primera carga inmediata y luego polling
-    fetchInventarioNotificaciones(true);
-    notifTimer = setInterval(() => fetchInventarioNotificaciones(false), 30000);
-}
-
-async function fetchInventarioNotificaciones(isFirstLoad = false) {
-    try {
-        const resp = await fetch('../logica/obtener_notificaciones_inventario.php');
-        const data = await resp.json();
-        if (!data.success) return;
-        updateNotifUI(data);
-
-        // Detectar cambios para sonido
-        const hash = JSON.stringify(data.items);
-        const hasNew = data.count > lastNotifCount || (hash !== lastItemsHash && data.count > 0);
-        if (!isFirstLoad && hasNew) {
-            playNotifSound();
-        }
-        lastNotifCount = data.count;
-        lastItemsHash = hash;
-    } catch (e) {
-        // Silencioso: no interrumpir la página si hay error de red
-        console.error('Error notificaciones inventario:', e);
-    }
-}
-
-function updateNotifUI(data) {
-    const dot = document.getElementById('notif-dot');
-    const list = document.getElementById('notif-list');
-    const summary = document.getElementById('notif-summary');
-    if (!dot || !list || !summary) return;
-
-    if (data.count > 0) {
-        dot.hidden = false;
-        summary.textContent = `${data.count} producto(s) bajo stock (≤ ${data.threshold})`;
-        list.innerHTML = '';
-        data.items.forEach(item => {
-            const row = document.createElement('div');
-            row.className = 'notif-item';
-            row.innerHTML = `
-                <span class="name">${item.nombre_produc}</span>
-                <span class="qty">Stock: ${item.cantidad_total}</span>
-                <span class="badge">Bajo</span>
-            `;
-            list.appendChild(row);
-        });
-    } else {
-        dot.hidden = true;
-        summary.textContent = 'Sin alertas';
-        list.innerHTML = `<div class="notif-empty">No hay productos con stock bajo.</div>`;
-    }
-}
-
-function toggleNotifPanel(force) {
-    const panel = document.getElementById('notif-panel');
-    if (!panel) return;
-    const open = force === undefined ? !panel.classList.contains('open') : !!force;
-    panel.classList.toggle('open', open);
-    panel.setAttribute('aria-hidden', open ? 'false' : 'true');
-}
-
-// Sonido simple (beep) sin archivos externos
-function playNotifSound() {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type = 'sine';
-        o.frequency.value = 880; // beep agudo
-        g.gain.setValueAtTime(0.001, ctx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.1, ctx.currentTime + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.25);
-        o.connect(g);
-        g.connect(ctx.destination);
-        o.start();
-        o.stop(ctx.currentTime + 0.25);
-    } catch (e) {
-        // Sin sonido si el navegador bloquea reproducción
-    }
-}
 
 function mostrarAlerta(mensaje, tipo) {
     // Remover alertas existentes

@@ -7,13 +7,13 @@ require_once '../../../BBDD/BBDD.php';
 
 // Solo aceptar POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode('Método no permitido'));
+  header('Location: ' . appUrl('/login/recuperacion/vista/solicitar.php?error=' . urlencode('Método no permitido')));
   exit;
 }
 
 // Verificar CSRF
 if (!csrfVerifyFromPost('csrf_token')) {
-  header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode('Token CSRF inválido'));
+  header('Location: ' . appUrl('/login/recuperacion/vista/solicitar.php?error=' . urlencode('Token CSRF inválido')));
   exit;
 }
 
@@ -22,7 +22,7 @@ $respuesta = isset($_POST['respuesta']) ? trim($_POST['respuesta']) : '';
 $idPregunta = isset($_POST['id_pregunta']) ? (int)$_POST['id_pregunta'] : 0;
 
 if ($usuario === '') {
-  header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode('Ingrese su usuario.'));
+  header('Location: ' . appUrl('/login/recuperacion/vista/solicitar.php?error=' . urlencode('Ingrese su usuario.')));
   exit;
 }
 
@@ -51,7 +51,7 @@ try {
   $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
   if (!$row) {
-    header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode('Usuario no encontrado.'));
+    header('Location: ' . appUrl('/login/recuperacion/vista/solicitar.php?error=' . urlencode('Usuario no encontrado.')));
     exit;
   }
 
@@ -65,7 +65,7 @@ try {
   if ($tienePreguntas) {
     // Debe venir id_pregunta y respuesta
     if ($idPregunta <= 0 || $respuesta === '') {
-      header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode('Debe responder su pregunta de seguridad.'));
+      header('Location: ' . appUrl('/login/recuperacion/vista/solicitar.php?error=' . urlencode('Debe responder su pregunta de seguridad.')));
       exit;
     }
     // Validar respuesta contra la pregunta seleccionada
@@ -73,7 +73,7 @@ try {
     $stmtResp->execute([':id' => $id_usuario, ':pid' => $idPregunta]);
     $respRow = $stmtResp->fetch(PDO::FETCH_ASSOC);
     if (!$respRow || !password_verify($respuesta, $respRow['respuesta'])) {
-      header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode('Respuesta de seguridad incorrecta.'));
+      header('Location: ' . appUrl('/login/recuperacion/vista/solicitar.php?error=' . urlencode('Respuesta de seguridad incorrecta.')));
       exit;
     }
   }
@@ -87,11 +87,11 @@ try {
   $stmtIns->execute([':id' => $id_usuario, ':token' => $token]);
 
   // Redirigir directamente al formulario de restablecimiento con el token
-  header('Location: /cafetin/login/recuperacion/vista/restablecer.php?token=' . urlencode($token));
+  header('Location: ' . appUrl('/login/recuperacion/vista/restablecer.php?token=' . urlencode($token)));
   exit;
 
 } catch (Exception $e) {
   $msg = 'Error del servidor: ' . $e->getMessage();
-  header('Location: /cafetin/login/recuperacion/vista/solicitar.php?error=' . urlencode($msg));
+  header('Location: ' . appUrl('/login/recuperacion/vista/solicitar.php?error=' . urlencode($msg)));
   exit;
 }

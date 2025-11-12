@@ -30,6 +30,7 @@ protegerPagina(['admin']);
                 <button class="tab-button" onclick="showTab('sistema')">Sistema</button>
                 <button class="tab-button" onclick="showTab('seguridad')">Seguridad</button>
                 <button class="tab-button" onclick="showTab('historial')">Historial</button>
+                <button class="tab-button" onclick="showTab('importar')">Importar Clientes</button>
             </div>
 
             <!-- Tab Tasa del Día -->
@@ -259,6 +260,36 @@ protegerPagina(['admin']);
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- Tab Importar Clientes -->
+            <div id="importar" class="tab-content">
+                <div class="config-section">
+                    <h2>Importar Clientes desde CSV</h2>
+                    <form id="form-importar-clientes" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="archivo-clientes">Archivo CSV</label>
+                            <input type="file" id="archivo-clientes" name="archivo" accept=".csv" required>
+                        <div class="help-text" style="margin-top:8px; line-height:1.4;">
+                            <div><strong>Obligatorias:</strong> cedula, nombre, apellido, telefono, alias</div>
+                            <div style="margin-top:6px;"><strong>Opcionales de deuda:</strong></div>
+                            <ul style="margin:6px 0 0 18px;">
+                                <li>deuda en dolares</li>
+                                <li>deuda en bolivares</li>
+                                <li>deuda total</li>
+                            </ul>
+                            <div style="margin-top:6px;"><strong>Variantes reconocidas:</strong></div>
+                            <ul style="margin:6px 0 0 18px;">
+                                <li>deuda_dolares, deuda_usd</li>
+                                <li>deuda_bolivares, deuda_bs</li>
+                                <li>total_deuda</li>
+                            </ul>
+                        </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Importar</button>
+                    </form>
+                    <div id="resultado-importacion" class="table-container" style="margin-top:16px;"></div>
                 </div>
             </div>
         </div>

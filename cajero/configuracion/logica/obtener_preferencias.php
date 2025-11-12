@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once '../../../acces/auth_check.php';
+initSessionIfNeeded();
 require_once '../../../BBDD/BBDD.php';
 
 header('Content-Type: application/json');
