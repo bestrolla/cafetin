@@ -14,11 +14,26 @@ try {
     $telefono = '0000000000';
     
     // Verificar si el usuario ya existe
-    $stmt = $pdo->prepare("SELECT usuario FROM usuario WHERE usuario = ?");
+    $stmt = $pdo->prepare("SELECT id_usuario FROM usuario WHERE usuario = ? LIMIT 1");
     $stmt->execute([$usuario]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if ($stmt->fetch()) {
-        echo "El usuario administrador ya existe.\n";
+    if ($row && isset($row['id_usuario'])) {
+        $id_usuario = (int)$row['id_usuario'];
+        $contrasenaHash = password_hash($contrasena, PASSWORD_DEFAULT);
+        $pdo->beginTransaction();
+        $upd = $pdo->prepare("UPDATE usuario SET contrasena = ? WHERE id_usuario = ?");
+        $upd->execute([$contrasenaHash, $id_usuario]);
+        $checkAdmin = $pdo->prepare("SELECT 1 FROM admin WHERE id_usuario = ?");
+        $checkAdmin->execute([$id_usuario]);
+        if (!$checkAdmin->fetch()) {
+            $insAdmin = $pdo->prepare("INSERT INTO admin (id_usuario) VALUES (?)");
+            $insAdmin->execute([$id_usuario]);
+        }
+        $pdo->commit();
+        echo "Contraseña del usuario administrador actualizada.\n";
+        echo "Usuario: $usuario\n";
+        echo "Nueva contraseña: $contrasena\n";
         exit();
     }
     

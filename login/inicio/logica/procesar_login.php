@@ -18,8 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($response);
         exit;
     }
-    $usuario_post = $_POST['usuario'] ?? null;
-    $contrasena_post = $_POST['contrasena'] ?? null;
+    $usuario_post = isset($_POST['usuario']) ? trim((string)$_POST['usuario']) : null;
+    $contrasena_post = isset($_POST['contrasena']) ? trim((string)$_POST['contrasena']) : null;
 
     if (!$usuario_post || !$contrasena_post) {
         $response['message'] = 'Usuario y contraseña son obligatorios.';
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 FROM usuario u
                 JOIN persona p ON u.id_persona = p.id_persona
                 JOIN rol r ON u.id_rol = r.id_rol
-                WHERE u.usuario = :usuario LIMIT 1";
+                WHERE LOWER(u.usuario) = LOWER(:usuario) LIMIT 1";
 
         $stmt = $conexion->prepare($sql);
         $stmt->execute([':usuario' => $usuario_post]);
