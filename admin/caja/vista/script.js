@@ -569,20 +569,22 @@ function calcularRangoPorPeriodo(periodo, fechaBaseStr) {
     let end = new Date(base);
 
     switch (periodo) {
-        case 'dia':
-            break;
-        case 'semana': {
-            const day = base.getDay();
-            const diffToMonday = (day === 0 ? -6 : 1 - day);
+        case 'dia': {
+            // Mostrar desde la fecha base seleccionada hasta hoy (granularidad diaria)
             start = new Date(base);
-            start.setDate(base.getDate() + diffToMonday);
-            end = new Date(start);
-            end.setDate(start.getDate() + 6);
+            end = new Date(hoy);
+            break;
+        }
+        case 'semana': {
+            // Mostrar todas las semanas del año base (del 1 de enero al 31 de diciembre)
+            start = new Date(base.getFullYear(), 0, 1);
+            end = new Date(base.getFullYear(), 11, 31);
             break;
         }
         case 'mes':
-            start = new Date(base.getFullYear(), base.getMonth(), 1);
-            end = new Date(base.getFullYear(), base.getMonth()+1, 0);
+            // Mostrar todos los meses del año base (enero a diciembre)
+            start = new Date(base.getFullYear(), 0, 1);
+            end = new Date(base.getFullYear(), 11, 31);
             break;
         case 'anio':
             start = new Date(base.getFullYear(), 0, 1);
@@ -591,7 +593,7 @@ function calcularRangoPorPeriodo(periodo, fechaBaseStr) {
         default:
             break;
     }
-    // No permitir rangos que terminen en el futuro
+    // No permitir futuro para cualquier periodo que pueda calcularse hacia delante
     if (end > hoy) end = new Date(hoy);
     return { start: toYMD(start), end: toYMD(end) };
 }
@@ -696,6 +698,54 @@ function initGraficosControls() {
 
     cargarProductosGrafico();
 
+    // Cargar configuraciones para gráficos (días laborales e incluir días sin ventas)
+    (async () => {
+        try {
+            const resp = await fetch('../logica/obtener_configuraciones.php');
+            const data = await resp.json();
+            if (data && data.success && data.configuraciones) {
+                const cfg = data.configuraciones;
+                const diasStr = cfg.dias_laborales || '1,2,3,4,5';
+                const diasArr = diasStr.split(',').map(x => parseInt(x,10)).filter(x => x>=1 && x<=7);
+                window.__graficoDiasLaborales = diasArr;
+                window.__graficoIncluirSinVentas = (cfg.incluir_dias_sin_ventas || 'true') === 'true';
+                window.__graficoGridMax = parseInt(cfg.grafico_grid_max, 10);
+                if (isNaN(window.__graficoGridMax) || window.__graficoGridMax < 1) window.__graficoGridMax = 100;
+                window.__graficoGridStep = parseInt(cfg.grafico_grid_step, 10);
+                if (isNaN(window.__graficoGridStep) || window.__graficoGridStep < 1) window.__graficoGridStep = 10;
+            }
+        } catch(err) {
+            console.warn('No se pudieron cargar configuraciones del sistema para gráficos:', err);
+            window.__graficoDiasLaborales = [1,2,3,4,5];
+            window.__graficoIncluirSinVentas = true;
+            window.__graficoGridMax = 100;
+            window.__graficoGridStep = 10;
+        }
+    })();
+
+    // Actualizar el gráfico automáticamente cuando cambie el periodo, la fecha o el producto
+    if (periodoEl) {
+        periodoEl.addEventListener('change', () => {
+            // Si se selecciona 'dia' y la fecha está vacía, usar hoy
+            if (periodoEl.value === 'dia' && fechaEl && !fechaEl.value) {
+                fechaEl.value = hoyStr;
+            }
+            actualizarGrafico();
+        });
+    }
+    if (fechaEl) {
+        fechaEl.addEventListener('change', () => {
+            // Asegurar que no se seleccione una fecha futura
+            if (fechaEl.value && fechaEl.value > hoyStr) {
+                fechaEl.value = hoyStr;
+            }
+            actualizarGrafico();
+        });
+    }
+    if (productoEl) {
+        productoEl.addEventListener('change', actualizarGrafico);
+    }
+
     if (btnActualizar) btnActualizar.addEventListener('click', actualizarGrafico);
     if (btnLimpiar) btnLimpiar.addEventListener('click', () => {
         if (periodoEl) periodoEl.value = 'dia';
@@ -748,9 +798,22 @@ async function actualizarGrafico() {
         const producto = document.getElementById('grafico_producto')?.value || '';
 
         // Calcular rango por periodo usando helper existente
-        const rango = calcularRangoPorPeriodo(periodo, fechaBase);
-        const start = rango?.start || '';
-        const end = rango?.end || '';
+        let rango = calcularRangoPorPeriodo(periodo, fechaBase);
+        let start = rango?.start || '';
+        let end = rango?.end || '';
+
+        // Para semana y mes: pedir datos del año completo del base
+        const hoy = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const toYMD = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+        const baseDate = fechaBase ? new Date(fechaBase + 'T00:00:00') : hoy;
+        const baseYear = baseDate.getFullYear();
+        if (periodo === 'semana' || periodo === 'mes') {
+            const yStart = new Date(baseYear, 0, 1);
+            const yEnd = new Date(baseYear, 11, 31);
+            start = toYMD(yStart);
+            end = toYMD(yEnd);
+        }
 
         let url = `../logica/obtener_grafico_ventas.php?period=${encodeURIComponent(periodo)}`;
         if (start && end) {
@@ -767,7 +830,161 @@ async function actualizarGrafico() {
             return;
         }
         // Adaptar a respuesta del backend existente
-        const adapted = (data.labels && data.series) ? { labels: data.labels, datasets: { cantidad: data.series } } : data;
+        let adapted = (data.labels && data.series) ? { labels: data.labels, datasets: { cantidad: data.series }, period: periodo } : { ...data, period: periodo };
+
+        // Completar días sin ventas en periodo diario (llenar con 0) — siempre incluir el día seleccionado
+        if (periodo === 'dia' && adapted && Array.isArray(adapted.labels) && Array.isArray(adapted.datasets?.cantidad)) {
+            const rango = calcularRangoPorPeriodo(periodo, fechaBase);
+            const pad = n => String(n).padStart(2, '0');
+            const toYMD = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+            const startDate = new Date(rango.start + 'T00:00:00');
+            const endDate = new Date(rango.end + 'T00:00:00');
+            const mapCant = new Map();
+            adapted.labels.forEach((lbl, i) => {
+                mapCant.set(lbl, Number(adapted.datasets.cantidad[i]) || 0);
+            });
+            const fullLabels = [];
+            const fullValues = [];
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                const ymd = toYMD(d);
+                fullLabels.push(ymd);
+                fullValues.push(mapCant.has(ymd) ? mapCant.get(ymd) : 0);
+            }
+            adapted = { labels: fullLabels, datasets: { cantidad: fullValues }, period: periodo };
+        }
+
+        // Completar semanas del año (llenar con 0 usando YEARWEEK ISO concatenado YYYYWW)
+        if (periodo === 'semana' && adapted && Array.isArray(adapted.labels) && Array.isArray(adapted.datasets?.cantidad) && (window.__graficoIncluirSinVentas !== false)) {
+            const targetYear = baseYear;
+            const getISO = (date) => {
+                const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                const dayNum = d.getUTCDay() || 7;
+                d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+                const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+                const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+                const isoYear = d.getUTCFullYear();
+                return { isoYear, isoWeek: weekNo };
+            };
+            const weeksInYear = getISO(new Date(Date.UTC(targetYear, 11, 28))).isoWeek;
+            const mapCant = new Map();
+            adapted.labels.forEach((lbl, i) => {
+                const key = String(lbl);
+                mapCant.set(key, Number(adapted.datasets.cantidad[i]) || 0);
+            });
+            const fullLabels = [];
+            const fullValues = [];
+            for (let w = 1; w <= weeksInYear; w++) {
+                const key = String(`${targetYear}${String(w).padStart(2,'0')}`);
+                fullLabels.push(key);
+                fullValues.push(mapCant.has(key) ? mapCant.get(key) : 0);
+            }
+            adapted = { labels: fullLabels, datasets: { cantidad: fullValues }, period: periodo };
+        }
+
+        // Completar meses del año (llenar con 0 usando YYYY-MM)
+        if (periodo === 'mes' && adapted && Array.isArray(adapted.labels) && Array.isArray(adapted.datasets?.cantidad) && (window.__graficoIncluirSinVentas !== false)) {
+            const targetYear = baseYear;
+            const mapCant = new Map();
+            adapted.labels.forEach((lbl, i) => {
+                const key = String(lbl);
+                mapCant.set(key, Number(adapted.datasets.cantidad[i]) || 0);
+            });
+            const fullLabels = [];
+            const fullValues = [];
+            for (let m = 0; m <= 11; m++) {
+                const key = `${targetYear}-${String(m+1).padStart(2,'0')}`;
+                fullLabels.push(key);
+                fullValues.push(mapCant.has(key) ? mapCant.get(key) : 0);
+            }
+            adapted = { labels: fullLabels, datasets: { cantidad: fullValues }, period: periodo };
+        }
+
+        // Completar años en el rango (llenar con 0 usando YYYY)
+        if (periodo === 'anio' && adapted && Array.isArray(adapted.labels) && Array.isArray(adapted.datasets?.cantidad) && (window.__graficoIncluirSinVentas !== false)) {
+            const startYear = new Date(rango.start + 'T00:00:00').getFullYear();
+            const endYear = new Date(rango.end + 'T00:00:00').getFullYear();
+            const mapCant = new Map();
+            adapted.labels.forEach((lbl, i) => {
+                const key = String(lbl);
+                mapCant.set(key, Number(adapted.datasets.cantidad[i]) || 0);
+            });
+            const fullLabels = [];
+            const fullValues = [];
+            for (let y = startYear; y <= endYear; y++) {
+                const key = String(y);
+                fullLabels.push(key);
+                fullValues.push(mapCant.has(key) ? mapCant.get(key) : 0);
+            }
+            adapted = { labels: fullLabels, datasets: { cantidad: fullValues }, period: periodo };
+        }
+
+        // Completar semanas del año (llenar con 0 usando YEARWEEK ISO concatenado YYYYWW)
+        if (periodo === 'semana' && adapted && Array.isArray(adapted.labels) && Array.isArray(adapted.datasets?.cantidad) && (window.__graficoIncluirSinVentas !== false)) {
+            const targetYear = baseYear;
+            const getISO = (date) => {
+                const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                const dayNum = d.getUTCDay() || 7;
+                d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+                const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+                const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+                const isoYear = d.getUTCFullYear();
+                return { isoYear, isoWeek: weekNo };
+            };
+            // Última semana ISO del año base: usar 28 de diciembre
+            const lastWeekInYear = getISO(new Date(targetYear, 11, 28)).isoWeek;
+            const mapCant = new Map();
+            adapted.labels.forEach((lbl, i) => {
+                const key = String(lbl);
+                mapCant.set(key, Number(adapted.datasets.cantidad[i]) || 0);
+            });
+            const fullLabels = [];
+            const fullValues = [];
+            for (let w = 1; w <= lastWeekInYear; w++) {
+                const key = String(`${targetYear}${String(w).padStart(2,'0')}`);
+                fullLabels.push(key);
+                fullValues.push(mapCant.has(key) ? mapCant.get(key) : 0);
+            }
+            adapted = { labels: fullLabels, datasets: { cantidad: fullValues }, period: periodo };
+        }
+
+        // Completar meses del año (llenar con 0 usando YYYY-MM)
+        if (periodo === 'mes' && adapted && Array.isArray(adapted.labels) && Array.isArray(adapted.datasets?.cantidad) && (window.__graficoIncluirSinVentas !== false)) {
+            const targetYear = baseYear;
+            const lastMonthIndex = 11; // siempre enero..diciembre
+            const mapCant = new Map();
+            adapted.labels.forEach((lbl, i) => {
+                const key = String(lbl);
+                mapCant.set(key, Number(adapted.datasets.cantidad[i]) || 0);
+            });
+            const fullLabels = [];
+            const fullValues = [];
+            for (let m = 0; m <= lastMonthIndex; m++) {
+                const key = `${targetYear}-${String(m+1).padStart(2,'0')}`;
+                fullLabels.push(key);
+                fullValues.push(mapCant.has(key) ? mapCant.get(key) : 0);
+            }
+            adapted = { labels: fullLabels, datasets: { cantidad: fullValues }, period: periodo };
+        }
+
+        // Completar años en el rango (llenar con 0 usando YYYY)
+        if (periodo === 'anio' && adapted && Array.isArray(adapted.labels) && Array.isArray(adapted.datasets?.cantidad) && (window.__graficoIncluirSinVentas !== false)) {
+            const startYear = new Date(rango.start + 'T00:00:00').getFullYear();
+            const endYear = new Date(rango.end + 'T00:00:00').getFullYear();
+            const mapCant = new Map();
+            adapted.labels.forEach((lbl, i) => {
+                const key = String(lbl);
+                mapCant.set(key, Number(adapted.datasets.cantidad[i]) || 0);
+            });
+            const fullLabels = [];
+            const fullValues = [];
+            for (let y = startYear; y <= endYear; y++) {
+                const key = String(y);
+                fullLabels.push(key);
+                fullValues.push(mapCant.has(key) ? mapCant.get(key) : 0);
+            }
+            adapted = { labels: fullLabels, datasets: { cantidad: fullValues }, period: periodo };
+        }
+
         renderBarChart(adapted);
     } catch(err) {
         console.error('Error al actualizar gráfico:', err);
@@ -788,27 +1005,177 @@ function renderBarChart(data) {
     contBarras.innerHTML = '';
     contEtiquetas.innerHTML = '';
     totalEl.textContent = String(total);
+    // Ocultar etiquetas inferiores (fechas) para evitar aglomeración; usar solo tooltips
+    try { contEtiquetas.style.display = 'none'; } catch(_) {}
+
+    // Líneas horizontales de referencia por cantidades configurables
+    try {
+        contBarras.style.position = 'relative';
+        contBarras.style.paddingLeft = '24px'; // espacio para etiquetas de línea
+        contBarras.style.paddingBottom = '20px'; // espacio para marcador triangular
+        contBarras.style.overflowX = 'hidden'; // evitar scroll horizontal
+        const gridMax = (typeof window.__graficoGridMax === 'number' && window.__graficoGridMax > 0) ? window.__graficoGridMax : 100;
+        const gridStep = (typeof window.__graficoGridStep === 'number' && window.__graficoGridStep > 0) ? window.__graficoGridStep : 10;
+        for (let p = gridStep; p <= gridMax; p += gridStep) {
+            const porcentaje = (p / maxVal) * 100;
+            if (porcentaje <= 100) {
+                const top = 100 - porcentaje;
+                const line = document.createElement('div');
+                line.style.position = 'absolute';
+                line.style.left = '0';
+                line.style.right = '0';
+                line.style.top = `${top}%`;
+                line.style.height = '1px';
+                line.style.background = '#e0e0e0';
+                line.style.pointerEvents = 'none';
+                contBarras.appendChild(line);
+
+                const label = document.createElement('span');
+                label.textContent = String(p);
+                label.style.position = 'absolute';
+                label.style.left = '2px';
+                label.style.top = `calc(${top}% - 8px)`;
+                label.style.fontSize = '11px';
+                label.style.color = '#9aa5b1';
+                label.style.background = 'transparent';
+                label.style.pointerEvents = 'none';
+                contBarras.appendChild(label);
+            }
+        }
+    } catch(_) {}
+
+    // Identificador de hoy para resaltar barra en periodo 'dia'
+    const hoy = new Date();
+    const pad2 = n => String(n).padStart(2, '0');
+    const hoyStr = `${hoy.getFullYear()}-${pad2(hoy.getMonth()+1)}-${pad2(hoy.getDate())}`;
+    // Identificadores de semana y mes actuales para periodos 'semana' y 'mes'
+    function getISOWeekYear(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7; // 1..7 (lun..dom)
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum); // jueves de la semana ISO
+        const isoYear = d.getUTCFullYear();
+        const yearStart = new Date(Date.UTC(isoYear, 0, 1));
+        const isoWeek = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        return { isoYear, isoWeek };
+    }
+    const { isoYear: semanaIsoYear, isoWeek: semanaIsoWeek } = getISOWeekYear(hoy);
+    const semanaActualLbl = `${semanaIsoYear}${pad2(semanaIsoWeek)}`;
+    const mesActualLbl = `${hoy.getFullYear()}-${pad2(hoy.getMonth()+1)}`;
+
+    // Calcular ancho dinámico de barras para evitar scroll horizontal
+    // Base estándar: 25px; disminuir según espacio disponible
+    let gapPx = 8; // coincide con el gap del contenedor (definido en HTML)
+    const containerInnerWidth = Math.max(0, contBarras.clientWidth - 24);
+    let gapsTotal = Math.max(labels.length - 1, 0) * gapPx;
+    let computedWidth = Math.floor((containerInnerWidth - gapsTotal) / Math.max(labels.length, 1));
+    // Reducir gap si las barras están muy estrechas
+    if (computedWidth < 6) {
+        gapPx = 4;
+        contBarras.style.gap = '4px';
+        gapsTotal = Math.max(labels.length - 1, 0) * gapPx;
+        computedWidth = Math.floor((containerInnerWidth - gapsTotal) / Math.max(labels.length, 1));
+    }
+    if (computedWidth < 3) {
+        gapPx = 2;
+        contBarras.style.gap = '2px';
+        gapsTotal = Math.max(labels.length - 1, 0) * gapPx;
+        computedWidth = Math.floor((containerInnerWidth - gapsTotal) / Math.max(labels.length, 1));
+    }
+    const baseWidth = 25;
+    const minWidth = 2; // mínimo visible
+    let barWidth = Math.max(minWidth, Math.min(baseWidth, computedWidth));
+    contBarras.style.justifyContent = (labels.length === 1) ? 'center' : 'flex-start';
 
     labels.forEach((lbl, idx) => {
         const val = Number(valores[idx]) || 0;
-        const altura = Math.round((val / maxVal) * 100);
+        const alturaPct = Math.round((val / maxVal) * 100);
         const barra = document.createElement('div');
-        barra.style.height = altura + '%';
-        barra.style.width = '28px';
-        barra.style.background = '#4C8BF5';
+        if (alturaPct <= 0) {
+            // Asegurar visibilidad para días con 0 ventas
+            barra.style.height = '2px';
+        } else {
+            barra.style.height = alturaPct + '%';
+        }
+        barra.style.width = barWidth + 'px';
+        // Color por día laborable/no laborable si hay configuración cargada (solo periodo 'dia')
+        let color = '#4C8BF5';
+        try {
+            if (data.period === 'dia') {
+                const dow = new Date(lbl + 'T00:00:00').getDay(); // 0=Domingo..6=Sabado
+                const dia17 = (dow === 0 ? 7 : dow); // 1=Lunes..7=Domingo
+                if (window.__graficoDiasLaborales && Array.isArray(window.__graficoDiasLaborales)) {
+                    if (!window.__graficoDiasLaborales.includes(dia17)) {
+                        color = '#9aa5b1'; // gris para no laborables
+                    }
+                }
+            }
+        } catch(_) {}
+        barra.style.background = color;
         barra.style.borderRadius = '4px 4px 0 0';
         barra.style.display = 'inline-block';
         barra.style.minHeight = '2px';
-        barra.title = `${lbl}: ${val}`;
+        // Tooltip amigable por periodo (breve descripción)
+        let tooltip = `${lbl}: ${val}`;
+        const period = data.period || null;
+        try {
+            const unidades = (val === 1) ? 'unidad' : 'unidades';
+            if (period === 'dia') {
+                const esHoy = (lbl === hoyStr);
+                tooltip = (val > 0)
+                    ? `Día ${lbl} — Ventas: ${val} ${unidades}`
+                    : `Día ${lbl} — Sin ventas`;
+                if (esHoy) tooltip += ' — Hoy';
+            } else if (period === 'semana') {
+                const str = String(lbl);
+                const isoYear = str.slice(0,4);
+                const isoWeek = str.slice(4);
+                tooltip = (val > 0)
+                    ? `Semana ${isoWeek} de ${isoYear} — Ventas: ${val} ${unidades}`
+                    : `Semana ${isoWeek} de ${isoYear} — Sin ventas`;
+                const esSemanaActual = (lbl === semanaActualLbl);
+                if (esSemanaActual) tooltip += ' — Semana actual';
+            } else if (period === 'mes') {
+                const [y,m] = String(lbl).split('-');
+                const nombres = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+                const nombreMes = nombres[(parseInt(m,10)-1) || 0] || m;
+                tooltip = (val > 0)
+                    ? `Mes ${nombreMes} ${y} — Ventas: ${val} ${unidades}`
+                    : `Mes ${nombreMes} ${y} — Sin ventas`;
+                const esMesActual = (lbl === mesActualLbl);
+                if (esMesActual) tooltip += ' — Mes actual';
+            } else if (period === 'anio') {
+                tooltip = (val > 0)
+                    ? `Año ${lbl} — Ventas: ${val} ${unidades}`
+                    : `Año ${lbl} — Sin ventas`;
+            }
+        } catch(_) {}
+        barra.title = tooltip;
 
-        const etiqueta = document.createElement('div');
-        etiqueta.textContent = lbl;
-        etiqueta.style.width = '28px';
-        etiqueta.style.textAlign = 'center';
-        etiqueta.style.whiteSpace = 'nowrap';
+        // Resaltar periodo actual con un marcador en forma de triángulo sobre la barra
+        try {
+            const isDiaActual = (data.period === 'dia' && lbl === hoyStr);
+            const isSemanaActual = (data.period === 'semana' && lbl === semanaActualLbl);
+            const isMesActual = (data.period === 'mes' && lbl === mesActualLbl);
+            if (isDiaActual || isSemanaActual || isMesActual) {
+                barra.style.position = 'relative';
+                const tri = document.createElement('div');
+                tri.style.position = 'absolute';
+                const halfBase = Math.max(4, Math.floor(barWidth / 2));
+                const height = Math.max(8, Math.floor(barWidth * 0.7));
+                tri.style.bottom = `-${height}px`;
+                tri.style.left = '50%';
+                tri.style.transform = 'translateX(-50%)';
+                tri.style.width = '0';
+                tri.style.height = '0';
+                tri.style.borderLeft = `${halfBase}px solid transparent`;
+                tri.style.borderRight = `${halfBase}px solid transparent`;
+                tri.style.borderBottom = `${height}px solid #FFB300`;
+                tri.style.pointerEvents = 'none';
+                barra.appendChild(tri);
+            }
+        } catch(_) {}
 
         contBarras.appendChild(barra);
-        contEtiquetas.appendChild(etiqueta);
     });
 }
 

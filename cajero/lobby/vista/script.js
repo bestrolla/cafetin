@@ -878,6 +878,7 @@ function actualizarTablaFactura() {
                            value="${producto.cantidad}" 
                            min="1" 
                            max="999"
+                           oninput="actualizarCantidadManual(${index}, this.value)"
                            onchange="actualizarCantidadManual(${index}, this.value)"
                            onblur="validarCantidadInput(this)"
                            onclick="this.select()">
@@ -1761,7 +1762,19 @@ function actualizarCantidadManual(index, nuevaCantidad) {
     // Actualizar la cantidad del producto
     productosFactura[index].cantidad = cantidad;
     
-    // Recalcular totales
+    // Actualizar subtotal de la fila en tiempo real sin re-renderizar toda la tabla
+    if (elementos.tablaFacturaBody && elementos.tablaFacturaBody.children[index]) {
+        const fila = elementos.tablaFacturaBody.children[index];
+        const subtotalUSD = productosFactura[index].precio * cantidad;
+        const subtotalBs = subtotalUSD * tasaCambio;
+        const subtotalCol = fila.children && fila.children[4];
+        if (subtotalCol) {
+            subtotalCol.textContent = monedaActual === 'USD' 
+                ? `$${subtotalUSD.toFixed(2)}` 
+                : `Bs ${subtotalBs.toFixed(2)}`;
+        }
+    }
+    // Recalcular totales generales
     calcularTotalFactura();
     
     console.log(`Cantidad actualizada manualmente: ${cantidad} para producto ${productosFactura[index].nombre}`);

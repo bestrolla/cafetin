@@ -17,25 +17,7 @@ protegerPagina(['admin']);
 <body>
     <?php include '../../../acces/nav_admin/nav_admin.php'; ?>
     
-    <!-- Botón flotante de notificaciones de inventario -->
-    <button id="btn-notificaciones" class="notif-button" title="Notificaciones de inventario" aria-label="Notificaciones de inventario">
-        <span class="notif-icon">🔔</span>
-        <span id="notif-dot" class="notif-dot" hidden></span>
-    </button>
-    
-    <!-- Panel lateral de notificaciones -->
-    <div id="notif-panel" class="notif-panel" aria-hidden="true">
-        <div class="notif-header">
-            <h3>Alertas de Inventario</h3>
-            <button class="close" onclick="toggleNotifPanel(false)" aria-label="Cerrar">&times;</button>
-        </div>
-        <div class="notif-subheader">
-            <span id="notif-summary">Sin alertas</span>
-        </div>
-        <div id="notif-list" class="notif-body">
-            <!-- Se llena dinámicamente -->
-        </div>
-    </div>
+    <!-- Notificaciones globales se gestionan desde nav_admin -->
     
     <div class="container">
         <div class="content-wrapper">
@@ -149,6 +131,38 @@ protegerPagina(['admin']);
                                 <input type="checkbox" id="notificaciones-email">
                                 Enviar notificaciones por email
                             </label>
+                        </div>
+                        <hr>
+                        <div class="form-group">
+                            <label>Días laborales:</label>
+                            <div class="checkbox-group" style="display:flex; gap:12px; flex-wrap:wrap;">
+                                <label><input type="checkbox" id="dias-laborales-1"> Lunes</label>
+                                <label><input type="checkbox" id="dias-laborales-2"> Martes</label>
+                                <label><input type="checkbox" id="dias-laborales-3"> Miércoles</label>
+                                <label><input type="checkbox" id="dias-laborales-4"> Jueves</label>
+                                <label><input type="checkbox" id="dias-laborales-5"> Viernes</label>
+                                <label><input type="checkbox" id="dias-laborales-6"> Sábado</label>
+                                <label><input type="checkbox" id="dias-laborales-7"> Domingo</label>
+                            </div>
+                            <small>Selecciona los días en que se trabaja. Los otros se consideran no laborables.</small>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="incluir-dias-sin-ventas">
+                                Incluir días sin ventas en los gráficos
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="grafico-grid-max">Líneas del gráfico: Máximo referencia</label>
+                                <input type="number" id="grafico-grid-max" step="1" min="10" placeholder="100">
+                                <small>Valor máximo para líneas horizontales (ej: 100).</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="grafico-grid-step">Líneas del gráfico: Paso</label>
+                                <input type="number" id="grafico-grid-step" step="1" min="1" placeholder="10">
+                                <small>Intervalo entre líneas (ej: 10).</small>
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Guardar Configuración</button>
                     </form>

@@ -103,6 +103,20 @@ function actualizarInterfaz() {
     if (configuraciones.notificaciones_email) {
         document.getElementById('notificaciones-email').checked = configuraciones.notificaciones_email === 'true';
     }
+    // Líneas de gráfico: máximo y paso
+    const gridMaxEl = document.getElementById('grafico-grid-max');
+    const gridStepEl = document.getElementById('grafico-grid-step');
+    if (gridMaxEl) gridMaxEl.value = configuraciones.grafico_grid_max || '100';
+    if (gridStepEl) gridStepEl.value = configuraciones.grafico_grid_step || '10';
+    // Días laborales (1=Lunes .. 7=Domingo) y flag de incluir días sin ventas
+    const diasStr = configuraciones.dias_laborales || '1,2,3,4,5';
+    const diasArr = diasStr.split(',').map(x => parseInt(x, 10)).filter(x => x>=1 && x<=7);
+    for (let i=1;i<=7;i++) {
+        const el = document.getElementById(`dias-laborales-${i}`);
+        if (el) el.checked = diasArr.includes(i);
+    }
+    const incluirEl = document.getElementById('incluir-dias-sin-ventas');
+    if (incluirEl) incluirEl.checked = (configuraciones.incluir_dias_sin_ventas || 'true') === 'true';
 }
 
 // Manejar cambio de tasa
@@ -189,7 +203,24 @@ async function guardarConfiguracionSistema(e) {
         descuento_maximo: document.getElementById('descuento-maximo').value,
         inventario_umbral_bajo: document.getElementById('inventario-umbral-bajo').value || '50',
         backup_automatico: document.getElementById('backup-automatico').checked ? 'true' : 'false',
-        notificaciones_email: document.getElementById('notificaciones-email').checked ? 'true' : 'false'
+        notificaciones_email: document.getElementById('notificaciones-email').checked ? 'true' : 'false',
+        grafico_grid_max: (function(){
+            const v = parseInt(document.getElementById('grafico-grid-max').value,10);
+            return (isNaN(v) || v < 1) ? '100' : String(v);
+        })(),
+        grafico_grid_step: (function(){
+            const v = parseInt(document.getElementById('grafico-grid-step').value,10);
+            return (isNaN(v) || v < 1) ? '10' : String(v);
+        })(),
+        dias_laborales: (function(){
+            const activos = [];
+            for (let i=1;i<=7;i++) {
+                const el = document.getElementById(`dias-laborales-${i}`);
+                if (el && el.checked) activos.push(i);
+            }
+            return activos.length ? activos.join(',') : '1,2,3,4,5';
+        })(),
+        incluir_dias_sin_ventas: document.getElementById('incluir-dias-sin-ventas').checked ? 'true' : 'false'
     };
     
     await guardarConfiguraciones(configuracionSistema, 'Configuración de sistema guardada correctamente');
