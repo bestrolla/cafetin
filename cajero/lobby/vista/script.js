@@ -585,6 +585,7 @@ function agregarProductoAFactura(boton) {
     const idProducto = boton.dataset.id;
     const nombreProducto = boton.dataset.nombre;
     const precioProducto = parseFloat(boton.dataset.precio) || 0;
+    const stockDisponible = parseInt(boton.dataset.stock, 10);
     // Leer cantidad desde el input de la misma fila si existe
     const fila = boton.closest('tr');
     let cantidadSeleccionada = 1;
@@ -610,6 +611,11 @@ function agregarProductoAFactura(boton) {
         boton.disabled = false; // Rehabilitar el botón
         return;
     }
+    if (Number.isFinite(stockDisponible) && stockDisponible <= 0) {
+        mostrarAlerta('warning', 'Producto vacío (sin stock)');
+        boton.disabled = false;
+        return;
+    }
     
     const producto = {
         id: idProducto,
@@ -623,13 +629,21 @@ function agregarProductoAFactura(boton) {
     const productoExistente = productosFactura.find(p => p.id === producto.id);
     
     if (productoExistente) {
-        // Si ya existe, aumentar la cantidad seleccionada
-        productoExistente.cantidad += cantidadSeleccionada;
-        console.log('Producto existente, nueva cantidad:', productoExistente.cantidad);
+        const max = Number.isFinite(productoExistente.stock) ? productoExistente.stock : (Number.isFinite(stockDisponible) ? stockDisponible : 999);
+        const nuevaCantidad = (productoExistente.cantidad || 0) + cantidadSeleccionada;
+        if (Number.isFinite(max) && nuevaCantidad > max) {
+            productoExistente.cantidad = max;
+            mostrarAlerta('info', `Cantidad ajustada al stock máximo (${max})`);
+        } else {
+            productoExistente.cantidad = nuevaCantidad;
+        }
     } else {
-        // Si no existe, agregarlo
+        producto.stock = Number.isFinite(stockDisponible) ? stockDisponible : undefined;
+        if (Number.isFinite(stockDisponible) && cantidadSeleccionada > stockDisponible) {
+            producto.cantidad = stockDisponible;
+            mostrarAlerta('info', `Cantidad ajustada al stock máximo (${stockDisponible})`);
+        }
         productosFactura.push(producto);
-        console.log('Producto nuevo agregado');
     }
     
     console.log('Array de productos actualizado:', productosFactura);
@@ -865,7 +879,7 @@ function actualizarTablaFactura() {
                            class="cantidad-numero" 
                            value="${producto.cantidad}" 
                            min="1" 
-                           max="999"
+                           max="${Number.isFinite(producto.stock) ? producto.stock : 999}"
                            oninput="actualizarCantidadManual(${index}, this.value)"
                            onchange="actualizarCantidadManual(${index}, this.value)"
                            onblur="validarCantidadInput(this)"
@@ -902,8 +916,15 @@ function actualizarTablaFactura() {
 // Cambiar cantidad de un producto en la factura
 function cambiarCantidadProducto(index, cambio) {
     if (index < 0 || index >= productosFactura.length) return;
-    
-    productosFactura[index].cantidad += cambio;
+    const prod = productosFactura[index];
+    const max = Number.isFinite(prod.stock) ? prod.stock : 999;
+    const nueva = (prod.cantidad || 0) + cambio;
+    if (cambio > 0 && nueva > max) {
+        prod.cantidad = max;
+        mostrarAlerta('info', `Cantidad ajustada al stock máximo (${max})`);
+    } else {
+        prod.cantidad = nueva;
+    }
     
     // Si la cantidad llega a 0 o menos, eliminar el producto
     if (productosFactura[index].cantidad <= 0) {
@@ -1111,24 +1132,31 @@ function actualizarTablaProductos(productos) {
         return;
     }
     
+    let productosVacios = 0;
     // Agregar productos encontrados
     productos.forEach(producto => {
         console.log('Procesando producto para tabla:', producto);
         
         const fila = document.createElement('tr');
         const precioUSD = parseFloat(producto.precio_venta);
+        const stockNum = parseInt(producto.stock_disponible !== undefined ? producto.stock_disponible : (producto.cantidad_total ?? 0));
+        const stockLabel = (Number.isFinite(stockNum) && stockNum <= 0) ? 'Vacío' : (Number.isFinite(stockNum) ? stockNum : 0);
+        if (Number.isFinite(stockNum) && stockNum <= 0) {
+            productosVacios++;
+        }
         const precioMostrar = monedaActual === 'USD' 
             ? `$${precioUSD.toFixed(2)}` 
             : `Bs ${ (precioUSD * tasaCambio).toFixed(2) }`;
         fila.innerHTML = `
             <td>${producto.nombre_produc}</td>
             <td>${precioMostrar}</td>
-            <td>${producto.stock_disponible !== undefined ? producto.stock_disponible : (producto.cantidad_total ?? 0)}</td>
+            <td>${stockLabel}</td>
             <td>
                 <button class="btn-agregar-producto modern-btn" 
                         data-id="${producto.id_producto}" 
                         data-nombre="${producto.nombre_produc}" 
                         data-precio="${producto.precio_venta}" 
+                        data-stock="${Number.isFinite(stockNum) ? stockNum : 0}" ${Number.isFinite(stockNum) && stockNum <= 0 ? 'disabled' : ''}
                         aria-label="Agregar ${producto.nombre_produc} a la factura">
                     Agregar
                 </button>
@@ -1140,6 +1168,10 @@ function actualizarTablaProductos(productos) {
         elementos.productosBody.appendChild(fila);
     });
     
+    if (productosVacios > 0) {
+        const plural = productosVacios !== 1 ? 's' : '';
+        mostrarAlerta('warning', `Hay ${productosVacios} producto${plural} Vacío (sin stock)`);
+    }
     console.log('Tabla de productos actualizada');
 }
 
@@ -1333,47 +1365,7 @@ function mostrarAlerta(tipo = 'info', mensaje = '') {
     }
 }
 
-// Mostrar alertas animadas
-function mostrarAlerta(tipo, mensaje) {
-    /*
-    Alertas visuales deshabilitadas por solicitud.
-    Código original conservado pero comentado.
-    */
-    // const alertaAnterior = document.querySelector('.custom-alert');
-    // if (alertaAnterior) {
-    //     alertaAnterior.remove();
-    // }
-    // const alerta = document.createElement('div');
-    // alerta.className = `custom-alert alert-${tipo}`;
-    // alerta.textContent = mensaje;
-    // alerta.style.cssText = `
-    //     position: fixed;
-    //     top: 20px;
-    //     right: 20px;
-    //     padding: 15px 20px;
-    //     border-radius: 8px;
-    //     color: white;
-    //     font-weight: bold;
-    //     z-index: 10000;
-    //     max-width: 300px;
-    //     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    //     animation: slideInRight 0.3s ease-out;
-    // `;
-    // const colores = {
-    //     success: '#28a745',
-    //     error: '#dc3545',
-    //     warning: '#ffc107',
-    //     info: '#17a2b8'
-    // };
-    // alerta.style.backgroundColor = colores[tipo] || colores.info;
-    // document.body.appendChild(alerta);
-    // setTimeout(() => {
-    //     if (alerta.parentNode) {
-    //         alerta.style.animation = 'slideOutRight 0.3s ease-in';
-    //         setTimeout(() => alerta.remove(), 300);
-    //     }
-    // }, 4000);
-}
+ 
 
 // Inicializar animaciones CSS
 function inicializarAnimaciones() {
@@ -1741,9 +1733,12 @@ function actualizarCantidadManual(index, nuevaCantidad) {
         return;
     }
     
-    if (cantidad > 999) {
-        mostrarAlerta('error', 'La cantidad no puede ser mayor a 999');
-        actualizarTablaFactura(); // Restaurar valor anterior
+    const max = Number.isFinite(productosFactura[index]?.stock) ? productosFactura[index].stock : 999;
+    if (cantidad > max) {
+        productosFactura[index].cantidad = max;
+        actualizarTablaFactura();
+        mostrarAlerta('info', `Cantidad ajustada al stock máximo (${max})`);
+        calcularTotalFactura();
         return;
     }
     
@@ -1771,15 +1766,15 @@ function actualizarCantidadManual(index, nuevaCantidad) {
 // Función para validar el input de cantidad
 function validarCantidadInput(input) {
     const valor = parseInt(input.value);
-    
+    const max = parseInt(input.max || '999', 10);
     if (isNaN(valor) || valor < 1) {
         input.value = 1;
         input.style.borderColor = '#ff4757';
         setTimeout(() => {
             input.style.borderColor = '';
         }, 200);
-    } else if (valor > 999) {
-        input.value = 999;
+    } else if (valor > max) {
+        input.value = max;
         input.style.borderColor = '#ff4757';
         setTimeout(() => {
             input.style.borderColor = '';

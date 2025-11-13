@@ -102,7 +102,7 @@ function mostrarCuentas() {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${factura.cliente}</td>
-            <td>${factura.total_productos} factura(s)</td>
+            <td>${(factura.cantidad_facturas ?? factura.total_productos)} factura(s)</td>
             <td>${formatMonto(factura.total_factura)}</td>
             <td>${formatMonto(factura.total_abonado)}</td>
             <td>${formatMonto(saldo)}</td>

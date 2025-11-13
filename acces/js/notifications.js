@@ -39,15 +39,25 @@
     if (!dot || !list || !summary) return;
     if (data.count > 0) {
       dot.hidden = false;
-      summary.textContent = `${data.count} producto(s) bajo stock (≤ ${data.threshold})`;
+      const zeros = Array.isArray(data.items) ? data.items.reduce((acc, it) => {
+        const qty = parseInt(it.cantidad_total ?? 0);
+        return acc + (Number.isFinite(qty) && qty <= 0 ? 1 : 0);
+      }, 0) : 0;
+      const low = data.count - zeros;
+      summary.textContent = zeros > 0
+        ? `${zeros} producto(s) Vacío${low > 0 ? `, ${low} bajo stock ( ${data.threshold})` : ''}`
+        : `${data.count} producto(s) bajo stock ( ${data.threshold})`;
       list.innerHTML = '';
       data.items.forEach(item => {
         const row = document.createElement('div');
         row.className = 'notif-item';
+        const qty = parseInt(item.cantidad_total ?? 0);
+        const qtyLabel = (Number.isFinite(qty) && qty <= 0) ? 'Vacío' : qty;
+        const badge = (Number.isFinite(qty) && qty <= 0) ? 'Vacío' : 'Bajo';
         row.innerHTML = `
           <span class="name">${item.nombre_produc}</span>
-          <span class="qty">Stock: ${item.cantidad_total}</span>
-          <span class="badge">Bajo</span>
+          <span class="qty">Stock: ${qtyLabel}</span>
+          <span class="badge">${badge}</span>
         `;
         if (data.canNavigate) {
           row.classList.add('clickable');

@@ -122,8 +122,8 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
                         echo "<td>" . htmlspecialchars($producto['nombre_produc']) . "</td>";
                         echo "<td>$" . htmlspecialchars(number_format($producto['precio_venta'], 2)) . "</td>";
                         $stock = (int)($producto['cantidad_total'] ?? 0);
-                        echo "<td>" . htmlspecialchars($stock) . "</td>";
-                        echo "<td><button class=\"btn-agregar-producto modern-btn\" data-id=\"" . htmlspecialchars($producto['id_producto']) . "\" data-nombre=\"" . htmlspecialchars($producto['nombre_produc']) . "\" data-precio=\"" . htmlspecialchars($producto['precio_venta']) . "\" aria-label=\"Agregar " . htmlspecialchars($producto['nombre_produc']) . " a la factura\">Agregar</button></td>";
+                        echo "<td>" . ($stock <= 0 ? 'Vacío' : htmlspecialchars($stock)) . "</td>";
+                        echo "<td><button class=\"btn-agregar-producto modern-btn" . ($stock <= 0 ? " disabled" : "") . "\" data-id=\"" . htmlspecialchars($producto['id_producto']) . "\" data-nombre=\"" . htmlspecialchars($producto['nombre_produc']) . "\" data-precio=\"" . htmlspecialchars($producto['precio_venta']) . "\" data-stock=\"" . htmlspecialchars($stock) . "\" aria-label=\"Agregar " . htmlspecialchars($producto['nombre_produc']) . " a la factura\">Agregar</button></td>";
                         echo "</tr>";
                     }
                 } else {

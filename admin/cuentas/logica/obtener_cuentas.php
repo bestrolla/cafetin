@@ -54,6 +54,7 @@ try {
         SELECT 
             CONCAT(p.nombre, ' ', p.apellido) AS cliente,
             c.id_cliente,
+            COUNT(DISTINCT DATE(c.fecha_cre)) AS cantidad_facturas,
             COUNT(c.id_credito) AS total_productos,
             SUM(c.total) AS total_factura,
             COALESCE(SUM(a.total_abonado), 0) AS total_abonado,
