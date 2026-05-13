@@ -1,4 +1,2 @@
 <?php
-header('Location: login/inicio/vista/inicio.php');
-exit;
-?>
+echo "Hola desde Vercel";
