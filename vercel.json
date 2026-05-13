@@ -4,8 +4,15 @@
     "api/*.php": {
       "runtime": "vercel-php@0.7.3",
       "memory": 128,
-      "maxDuration": 10,
-      "includeFiles": "api/**"
+      "maxDuration": 10
     }
-  }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
 }
