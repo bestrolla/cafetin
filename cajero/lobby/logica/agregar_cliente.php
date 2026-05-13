@@ -3,45 +3,141 @@ require_once '../../../BBDD/BBDD.php';
 
 header('Content-Type: application/json');
 
-$response = ['success' => false, 'message' => 'Error desconocido.'];
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $cedula = $_POST['cedula'] ?? null;
-    $nombre = $_POST['nombre'] ?? null;
-    $apellido = $_POST['apellido'] ?? null;
-    $telefono = $_POST['telefono'] ?? null;
-    $alias = $_POST['alias'] ?? null;
+    $data = json_decode(file_get_contents('php://input'), true);
 
-    if ($cedula && $nombre && $apellido) {
-        try {
-            $sql = "INSERT INTO clientes (cedula, nombre, apellido, telefono, alias) VALUES (:cedula, :nombre, :apellido, :telefono, :alias)";
-            $stmt = $conexion->prepare($sql);
+    $id_cliente = $data['id_cliente'] ?? null;
+    $cedula = trim($data['cedula'] ?? '');
+    $nombre = normalizarTextoNombre($data['nombre'] ?? '');
+    $apellido = normalizarTextoNombre($data['apellido'] ?? '');
+    $telefono = trim($data['telefono'] ?? '');
+    $alias = normalizarTextoNombre($data['alias'] ?? '');
 
-            $stmt->bindParam(':cedula', $cedula, PDO::PARAM_STR);
-            $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
-            $stmt->bindParam(':apellido', $apellido, PDO::PARAM_STR);
-            $stmt->bindParam(':telefono', $telefono, PDO::PARAM_STR);
-            $stmt->bindParam(':alias', $alias, PDO::PARAM_STR);
+    try {
+        // Asegurar rol cliente
+        $sqlCheckRol = "SELECT id_rol FROM rol WHERE nombre_rol = 'cliente'";
+        $stmtCheckRol = $conexion->prepare($sqlCheckRol);
+        $stmtCheckRol->execute();
+        $rolExistente = $stmtCheckRol->fetch(PDO::FETCH_ASSOC);
+        if (!$rolExistente) {
+            $sqlCrearRol = "INSERT INTO rol (nombre_rol) VALUES ('cliente')";
+            $stmtCrearRol = $conexion->prepare($sqlCrearRol);
+            $stmtCrearRol->execute();
+            $id_rol = (int)$conexion->lastInsertId();
+        } else {
+            $id_rol = (int)$rolExistente['id_rol'];
+        }
 
-            if ($stmt->execute()) {
-                $response['success'] = true;
-                $response['message'] = 'Cliente registrado con éxito.';
-            } else {
-                $response['message'] = 'Error al registrar el cliente.';
+        // Descripción cliente
+        $descripcion = "Cliente: $nombre $apellido - Tel: $telefono";
+
+        // Si viene id_cliente, actualizar registro existente
+        if ($id_cliente) {
+            // Obtener persona asociada al cliente
+            $sqlGetPersona = "
+                SELECT p.id_persona, p.cedula
+                FROM cliente c
+                JOIN usuario u ON c.id_usuario = u.id_usuario
+                JOIN persona p ON u.id_persona = p.id_persona
+                WHERE c.id_cliente = ?
+                LIMIT 1";
+            $stmtGetPersona = $conexion->prepare($sqlGetPersona);
+            $stmtGetPersona->execute([$id_cliente]);
+            $rowPersona = $stmtGetPersona->fetch(PDO::FETCH_ASSOC);
+            if (!$rowPersona) {
+                echo json_encode(['success' => false, 'message' => 'Cliente no encontrado']);
+                exit;
             }
-        } catch (PDOException $e) {
-            if ($e->errorInfo[1] == 1062) { // Error de entrada duplicada
-                $response['message'] = 'La cédula ingresada ya existe.';
-            } else {
-                $response['message'] = 'Error de base de datos: ' . $e->getMessage();
+            $id_persona = (int)$rowPersona['id_persona'];
+            $cedulaActual = (int)$rowPersona['cedula'];
+
+            // Regla: cédula solo se puede actualizar una vez (de 0 a valor real)
+            $nuevaCedula = strlen($cedula) ? (int)$cedula : null;
+            if ($nuevaCedula !== null) {
+                if ($cedulaActual !== 0 && $cedulaActual !== $nuevaCedula) {
+                    echo json_encode(['success' => false, 'message' => 'La cédula ya está asignada y no puede cambiarse']);
+                    exit;
+                }
+                if ($cedulaActual === 0) {
+                    // Verificar que la nueva cédula no existe en otra persona
+                    $sqlCheckCed = "SELECT id_persona FROM persona WHERE cedula = ? LIMIT 1";
+                    $stmtCheckCed = $conexion->prepare($sqlCheckCed);
+                    $stmtCheckCed->execute([$nuevaCedula]);
+                    if ($stmtCheckCed->fetch(PDO::FETCH_ASSOC)) {
+                        echo json_encode(['success' => false, 'message' => 'Ya existe otra persona con esa cédula']);
+                        exit;
+                    }
+                    // Actualizar cédula
+                    $conexion->prepare("UPDATE persona SET cedula = ? WHERE id_persona = ?")
+                             ->execute([$nuevaCedula, $id_persona]);
+                }
+            }
+
+            // Actualizar datos de persona
+            $conexion->prepare("UPDATE persona SET nombre = ?, apellido = ?, telefono = ? WHERE id_persona = ?")
+                     ->execute([$nombre, $apellido, $telefono, $id_persona]);
+
+            // Actualizar alias y descripción del cliente
+            $conexion->prepare("UPDATE cliente SET alias = ?, descripcion = ? WHERE id_cliente = ?")
+                     ->execute([$alias, $descripcion, $id_cliente]);
+
+            echo json_encode(['success' => true, 'message' => 'Cliente actualizado exitosamente', 'id_cliente' => (int)$id_cliente]);
+            exit;
+        }
+
+        // Crear nuevo cliente
+        $cedulaInt = strlen($cedula) ? (int)$cedula : 0; // permitir cédula 0
+
+        // Verificar duplicado solo si cédula > 0
+        if ($cedulaInt > 0) {
+            $stmtCheck = $conexion->prepare("SELECT id_persona FROM persona WHERE cedula = ? LIMIT 1");
+            $stmtCheck->execute([$cedulaInt]);
+            if ($stmtCheck->fetch(PDO::FETCH_ASSOC)) {
+                echo json_encode(['success' => false, 'message' => 'Ya existe un cliente con esta cédula']);
+                exit;
             }
         }
-    } else {
-        $response['message'] = 'Todos los campos obligatorios deben ser completados.';
+
+        // Insertar persona
+        $stmtPersona = $conexion->prepare("INSERT INTO persona (cedula, nombre, apellido, telefono) VALUES (?, ?, ?, ?)");
+        $stmtPersona->execute([$cedulaInt, $nombre, $apellido, $telefono]);
+        $id_persona = (int)$conexion->lastInsertId();
+
+        // Insertar usuario
+        $stmtUsuario = $conexion->prepare("INSERT INTO usuario (id_persona, usuario, contrasena, id_rol) VALUES (?, ?, ?, ?)");
+        $usuario = strtolower(preg_replace('/\s+/', '', $nombre . $apellido));
+        $contrasena = password_hash($cedulaInt, PASSWORD_DEFAULT);
+        $stmtUsuario->execute([$id_persona, $usuario, $contrasena, $id_rol]);
+        $id_usuario = (int)$conexion->lastInsertId();
+
+        // Insertar cliente
+        $stmtCliente = $conexion->prepare("INSERT INTO cliente (alias, descripcion, id_usuario) VALUES (?, ?, ?)");
+        $stmtCliente->execute([$alias, $descripcion, $id_usuario]);
+        $id_cliente = (int)$conexion->lastInsertId();
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Cliente registrado exitosamente',
+            'id_cliente' => $id_cliente,
+            'cliente' => [
+                'id_cliente' => $id_cliente,
+                'cedula' => $cedulaInt,
+                'nombre' => $nombre,
+                'apellido' => $apellido,
+                'telefono' => $telefono,
+                'alias' => $alias
+            ]
+        ]);
+    } catch (PDOException $e) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error al registrar/actualizar cliente: ' . $e->getMessage()
+        ]);
     }
 } else {
-    $response['message'] = 'Método de solicitud no válido.';
+    echo json_encode([
+        'success' => false,
+        'message' => 'Método no permitido'
+    ]);
 }
-
-echo json_encode($response);
 ?>

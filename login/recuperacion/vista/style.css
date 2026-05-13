@@ -1,0 +1,302 @@
+/* Estilos dedicados para Recuperación de Contraseña - Independiente */
+
+:root {
+  --primary: #0b57d0;
+  --bg1: #f1f5fb;
+  --bg2: #e9f1ff;
+  --text: #111;
+  --muted: #666;
+}
+
+/* Centrado robusto del panel en recuperación */
+.container {
+    flex: 1; /* ocupa el espacio disponible */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: 
+        linear-gradient(rgba(197, 197, 197, 0.322) 0%  , rgb(0, 0, 0) 99%),
+        url('../../../acces/img/fondo_login02.jpg');
+   background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+   width: 100%;
+   height: 100vh;
+    
+}
+
+
+/* Ajustes del formulario de recuperación */
+.login-form.recuperacion {
+  max-width: 560px;
+  width: 100%;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e4e7eb;
+  border-radius: 12px;
+  padding: 24px 22px;
+}
+
+.login-form.recuperacion form {
+  display: grid;
+  gap: 12px;
+}
+
+.login-form.recuperacion h2 {
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin-bottom: 6px;
+}
+
+.login-form.recuperacion hr { display: none; }
+
+/* Base mínima para inputs/select y layout interno */
+.inputBox {
+  position: relative;
+  margin: 14px 0;
+}
+
+.inputBox input,
+.inputBox select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  padding: 12px 36px 10px 10px;
+  outline: none;
+  font-size: 14px;
+}
+
+.login-form .subtitle {
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 6px 0 10px;
+  opacity: 0.85;
+}
+
+.login-form.recuperacion .inputBox span {
+  color: #555;
+  background: #fff;
+  padding: 0 4px;
+}
+
+.login-form.recuperacion .inputBox input {
+  color: #111;
+  border: 1px solid #dcdfe4;
+  border-radius: 10px;
+  padding: 12px 44px 12px 12px;
+  background: #fff;
+}
+
+.login-form.recuperacion .inputBox select {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #dcdfe4;
+  border-radius: 10px;
+  padding: 12px 44px 12px 12px;
+  outline: none;
+  color: #111;
+}
+
+.login-form.recuperacion .inputBox select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11,87,208,0.15);
+}
+
+.login-form.recuperacion .inputBox select[disabled] {
+  color: #777;
+  background: #f4f5f7;
+  border-color: #ddd;
+  cursor: not-allowed;
+}
+
+.login-form.recuperacion .inputBox input::placeholder {
+  color: #888;
+}
+
+.login-form.recuperacion .inputBox input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11,87,208,0.15);
+}
+
+/* Toggle de visibilidad en campos de contraseña */
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8e8e93;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.toggle-password svg { width: 20px; height: 20px; }
+
+.toggle-password:hover {
+  color: var(--primary);
+  background: rgba(11, 87, 208, 0.12);
+  border-color: rgba(11, 87, 208, 0.24);
+}
+
+.inputBox input[disabled] {
+  background-color: rgba(255, 255, 255, 0.6);
+  color: #555;
+  cursor: not-allowed;
+  border-bottom-color: #bbb;
+}
+
+.login-form.recuperacion .button {
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px 30px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-width: 140px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+}
+
+.login-form.recuperacion .button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s;
+}
+
+.login-form.recuperacion .button:hover::before { left: 100%; }
+
+.login-form.recuperacion .button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(0, 123, 255, 0.4);
+}
+
+.login-form.recuperacion .button:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.login-form .links {
+  margin-top: 10px;
+}
+
+.login-form .links a {
+  color: var(--primary);
+}
+
+.login-form .links a:hover {
+  text-decoration: underline;
+}
+
+/* Mensajes */
+.error-message {
+  color: #b00020;
+  text-align: center;
+  margin: 8px 0;
+  padding: 10px 12px;
+  background: #fff7f7;
+  border-radius: 10px;
+  border: 1px solid #ffd6d6;
+}
+
+.success-message {
+  color: #0f7b28;
+  text-align: center;
+  margin: 8px 0;
+  padding: 10px 12px;
+  background: #f6fff6;
+  border-radius: 10px;
+  border: 1px solid #d7f5dc;
+}
+
+.hint {
+  font-size: 12px;
+  color: #6b6b6b;
+  margin-top: 6px;
+}
+
+.info {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* Etiquetas estáticas arriba, pequeñas (sin animación) */
+.inputBox select + span,
+.inputBox input + span {
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  font-size: 12px;
+  color: #666;
+}
+
+
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+/* Leyenda de indicaciones de contraseña */
+.login-form.recuperacion .password-legend {
+  font-size: 12px;
+  color: #555;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 8px 0 12px;
+}
+.login-form.recuperacion .password-legend strong {
+  display: block;
+  margin-bottom: 6px;
+}
+.login-form.recuperacion .password-legend ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.login-form.recuperacion .password-legend li {
+  line-height: 1.4;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}

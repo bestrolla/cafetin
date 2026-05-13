@@ -32,38 +32,91 @@ body, html {
 
 /* 🔹 CLIENTE - MEJORADO CON 2 COLUMNAS */
 .container_cliente {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+  backdrop-filter: blur(10px);
+  padding: 30px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
   margin-top: 50px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 20px;
   align-content: start;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.container_cliente::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #007bff, #28a745, #ffc107, #dc3545);
+  opacity: 0.8;
+}
+
+.container_cliente:hover {
+  transform: translateY(-5px);
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 12px 24px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .container_cliente h2 {
   grid-column: 1 / -1;
   text-align: center;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-size: 24px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.container_cliente h2::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, #007bff, #28a745);
+  border-radius: 1px;
 }
 
 .container_cliente hr {
   grid-column: 1 / -1;
-  margin-bottom: 10px;
+  margin: 15px 0;
   border: none;
-  border-top: 1px solid #ddd;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+  opacity: 0.6;
 }
 
 .container_cliente label {
-  font-weight: bold;
-  font-size: 13px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #495057;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.container_cliente label:hover {
+  color: #007bff;
 }
 
 /* Campos que ocupan ambas columnas */
@@ -72,68 +125,111 @@ body, html {
   grid-column: 1 / -1;
 }
 
-.container_cliente input[type="text"] {
-  width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
+/* Los estilos de inputs ahora se manejan desde main.css */
 
 /* Botones del cliente - ocupan ambas columnas */
 .cliente-actions {
   grid-column: 1 / -1;
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  gap: 15px;
   width: 100%;
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .cliente-actions .button {
   flex: 1;
-  padding: 12px;
+  padding: 14px 20px;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   color: #fff;
-  transition: background 0.3s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.15),
+    0 3px 10px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.cliente-actions .button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s ease;
+}
+
+.cliente-actions .button:hover::before {
+  left: 100%;
+}
+
+.cliente-actions .button:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .container_cliente .registrar {
-  background-color: #28a745;
+  background: linear-gradient(135deg, #28a745, #20c997);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.container_cliente .registrar:hover {
+  background: linear-gradient(135deg, #20c997, #1e7e34);
+  box-shadow: 
+    0 10px 30px rgba(40, 167, 69, 0.4),
+    0 5px 15px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px) scale(1.02);
 }
 
 .container_cliente .siguiente {
-  background-color: #007bff;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: 1px solid rgba(0, 123, 255, 0.3);
+}
+
+.container_cliente .siguiente:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  box-shadow: 
+    0 10px 30px rgba(0, 123, 255, 0.4),
+    0 5px 15px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px) scale(1.02);
 }
 
 .cliente-actions .button:hover {
-  filter: brightness(0.9);
+  transform: translateY(-3px) scale(1.02);
 }
 
-/* 🔹 FACTURA - MÁS COMPACTA Y MEJOR DISTRIBUIDA */
-.container_factura {
+.cliente-actions .button:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* 🔹 PEDIDO - MÁS COMPACTA Y MEJOR DISTRIBUIDA */
+.container_pedido {
   background: rgba(255, 255, 255, 0.9);
   padding: 20px;
   border-radius: 15px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 950px;
+  max-width: 1200px;
   margin-top: 30px;
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.container_factura h2 {
+.container_pedido h2 {
   text-align: center;
   margin-bottom: 5px;
 }
 
-.container_factura hr {
+.container_pedido hr {
   margin-bottom: 11px;
   border: none;
   border-top: 1px solid #ddd;
@@ -160,15 +256,15 @@ body, html {
   margin: 0;
 }
 
-/* Contenido de factura - más espacio */
-.factura-content {
+/* Contenido de pedido - más espacio */
+.pedido-content {
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: 25px;
   align-items: start;
 }
 
-.factura-panel, .agregar-panel {
+.pedido-panel, .agregar-panel {
   background: rgba(255, 255, 255, 0.95);
   padding: 15px;
   border-radius: 10px;
@@ -181,10 +277,45 @@ body, html {
   flex-direction: column;
   gap: 12px;
   max-height: 650px;
+  overflow: hidden; /* Evitar desbordamiento */
 }
 
-/* Tablas más compactas */
-.tabla-factura, .tabla-productos {
+.lista-productos {
+  overflow-y: auto; /* Scroll solo en la lista de productos */
+  max-height: 500px; /* Altura máxima para la lista */
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.tabla-pedido {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-size: 12px;
+  table-layout: fixed; /* Forzar ancho fijo de columnas */
+  color: #fff
+}
+
+.tabla-pedido th, .tabla-pedido td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  word-wrap: break-word;
+  overflow: hidden;
+}
+
+/* Anchos específicos para cada columna */
+.tabla-pedido th:nth-child(1), .tabla-pedido td:nth-child(1) { width: 20%; } /* Producto */
+.tabla-pedido th:nth-child(2), .tabla-pedido td:nth-child(2) { width: 20%; text-align: center; } /* Cantidad */
+.tabla-pedido th:nth-child(3), .tabla-pedido td:nth-child(3) { width: 12%; text-align: right; } /* Precio $ */
+.tabla-pedido th:nth-child(4), .tabla-pedido td:nth-child(4) { width: 12%; text-align: right; } /* Precio Bs */
+.tabla-pedido th:nth-child(5), .tabla-pedido td:nth-child(5) { width: 20%; text-align: right; } /* Total */
+.tabla-pedido th:nth-child(6), .tabla-pedido td:nth-child(6) { width: 16%; text-align: center; } /* Eliminar */
+/* Tabla productos */
+.tabla-productos {
   width: 100%;
   border-collapse: collapse;
   background: white;
@@ -194,14 +325,13 @@ body, html {
   font-size: 12px;
 }
 
-.tabla-factura th, .tabla-factura td,
 .tabla-productos th, .tabla-productos td {
   padding: 8px 10px;
   text-align: left;
   border-bottom: 1px solid #e0e0e0;
 }
 
-.tabla-factura th, .tabla-productos th {
+.tabla-pedido th, .tabla-productos th {
   background-color: #007bff;
   color: #fff;
   font-weight: bold;
@@ -209,7 +339,7 @@ body, html {
   padding: 10px;
 }
 
-.tabla-factura tr:hover, .tabla-productos tr:hover {
+.tabla-pedido tr:hover, .tabla-productos tr:hover {
   background-color: #f8f9fa;
 }
 
@@ -239,59 +369,142 @@ body, html {
   padding: 5px;
 }
 
-/* Botones */
+/* Botones - Patrón del Inventario */
 .button {
   padding: 10px 15px;
   border: none;
-  border-radius: 6px;
+  border-radius: 25px;
   cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s ease;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
   font-size: 13px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 
+    0 4px 15px rgba(102, 126, 234, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.factura-actions {
+.button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.button:hover::before {
+  left: 100%;
+}
+
+.button:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 
+    0 8px 25px rgba(102, 126, 234, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.button:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.pedido-actions {
   display: flex;
   gap: 10px;
   margin-top: 15px;
 }
 
-.factura-actions .button {
+.pedido-actions .button {
   flex: 1;
   padding: 12px;
 }
 
-.factura-actions .cuenta {
-  background-color: #17a2b8;
+.pedido-actions .cuenta {
+  background: linear-gradient(135deg, #17a2b8, #138496);
   color: white;
 }
 
-.factura-actions .procesar {
-  background-color: #28a745;
+.pedido-actions .cuenta:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  box-shadow: 
+    0 8px 25px rgba(23, 162, 184, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pedido-actions .procesar {
+  background: linear-gradient(135deg, #28a745, #20c997);
   color: white;
+}
+
+.pedido-actions .procesar:hover {
+  background: linear-gradient(135deg, #20c997, #1e7e34);
+  box-shadow: 
+    0 8px 25px rgba(40, 167, 69, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .agregar-btn {
-  background-color: #28a745;
+  background: linear-gradient(135deg, #28a745, #20c997);
   color: white;
   border: none;
   padding: 5px 10px;
-  border-radius: 4px;
+  border-radius: 15px;
   cursor: pointer;
   font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
   white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 2px 8px rgba(40, 167, 69, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.agregar-btn:hover {
+  transform: translateY(-1px) scale(1.05);
+  background: linear-gradient(135deg, #20c997, #1e7e34);
+  box-shadow: 
+    0 4px 12px rgba(40, 167, 69, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .eliminar-btn {
-  background-color: #dc3545;
+  background: linear-gradient(135deg, #dc3545, #c82333);
   color: white;
   border: none;
   padding: 5px 10px;
-  border-radius: 4px;
+  border-radius: 15px;
   cursor: pointer;
   font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
   white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 2px 8px rgba(220, 53, 69, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.eliminar-btn:hover {
+  transform: translateY(-1px) scale(1.05);
+  background: linear-gradient(135deg, #c82333, #a71e2a);
+  box-shadow: 
+    0 4px 12px rgba(220, 53, 69, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.eliminar-btn:active {
+  transform: translateY(0) scale(0.95);
 }
 
 .agregar-btn:hover, .eliminar-btn:hover {
@@ -342,7 +555,7 @@ body, html {
   display: none !important;
 }
 
-.tabla-factura tr.selected {
+.tabla-pedido tr.selected {
   background-color: #ffe8e8;
 }
 
@@ -353,11 +566,11 @@ body, html {
     padding: 20px;
   }
   
-  .container_factura {
+  .container_pedido {
     max-width: 900px;
   }
   
-  .factura-content {
+  .pedido-content {
     grid-template-columns: 1fr 350px;
     gap: 20px;
   }
@@ -370,12 +583,12 @@ body, html {
     gap: 30px;
   }
   
-  .container_cliente, .container_factura {
+  .container_cliente, .container_pedido {
     margin-top: 20px;
     max-width: 100%;
   }
   
-  .factura-content {
+  .pedido-content {
     grid-template-columns: 1fr;
     gap: 15px;
   }
@@ -400,15 +613,15 @@ body, html {
     grid-column: 1 / -1;
   }
   
-  .cliente-actions, .factura-actions {
+  .cliente-actions, .pedido-actions {
     flex-direction: column;
   }
   
-  .tabla-factura, .tabla-productos {
+  .tabla-pedido, .tabla-productos {
     font-size: 11px;
   }
   
-  .tabla-factura th, .tabla-factura td,
+  .tabla-pedido th, .tabla-pedido td,
   .tabla-productos th, .tabla-productos td {
     padding: 6px 8px;
   }
@@ -420,16 +633,675 @@ body, html {
     gap: 15px;
   }
   
-  .container_cliente, .container_factura {
+  .container_cliente, .container_pedido {
     padding: 15px;
     margin-top: 15px;
   }
   
-  .factura-content {
+  .pedido-content {
     gap: 12px;
   }
   
-  .factura-panel, .agregar-panel {
+  .pedido-panel, .agregar-panel {
     padding: 12px;
   }
+}
+
+/* Modern Button Styles - Siguiendo el patrón de toggle moderno */
+.modern-btn, .btn-agregar-producto {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 2px 8px rgba(102, 126, 234, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+.modern-btn:hover, .btn-agregar-producto:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 4px 12px rgba(102, 126, 234, 0.4),
+        0 2px 6px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+}
+
+.modern-btn:active, .btn-agregar-producto:active {
+    transform: translateY(0);
+    box-shadow: 
+        0 2px 6px rgba(102, 126, 234, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.modern-btn:focus, .btn-agregar-producto:focus {
+    outline: none;
+    box-shadow: 
+        0 2px 8px rgba(102, 126, 234, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.1),
+        0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* Los estilos de inputs adicionales ahora se manejan desde main.css */
+
+/* Mejoras para las tablas siguiendo el patrón moderno */
+.tabla-pedido, .tabla-productos {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tabla-pedido th, .tabla-productos th {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+/* Animaciones de carga para botones */
+@keyframes buttonPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.modern-btn.loading, .btn-agregar-producto.loading {
+    animation: buttonPulse 1s infinite;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* Efectos de glassmorphism para contenedores */
+.container_cliente, .container_pedido {
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.pedido-panel, .agregar-panel {
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 🔹 ESTILOS MEJORADOS PARA BOTONES DE CANTIDAD Y ELIMINAR */
+
+/* Contenedor de controles de cantidad */
+.cantidad-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+/* Botones de cantidad (+ y -) */
+.btn-cantidad {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.btn-cantidad::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    transform: translate(-50%, -50%);
+}
+
+.btn-cantidad:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+/* Botón de incrementar (+) */
+.btn-incrementar {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.btn-incrementar:hover {
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, #059669, #047857);
+}
+
+.btn-incrementar:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* Botón de decrementar (-) */
+.btn-decrementar {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.btn-decrementar:hover {
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.btn-decrementar:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* Número de cantidad */
+.cantidad-numero {
+    min-width: 32px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: #374151;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    outline: none;
+    transition: all 0.2s ease;
+    -moz-appearance: textfield; /* Firefox */
+}
+
+/* Ocultar flechas de número en Chrome, Safari, Edge */
+.cantidad-numero::-webkit-outer-spin-button,
+.cantidad-numero::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.cantidad-numero:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    background: rgba(255, 255, 255, 1);
+}
+
+.cantidad-numero:hover {
+    border-color: #9ca3af;
+    background: rgba(255, 255, 255, 1);
+}
+
+/* Botón eliminar mejorado */
+.btn-eliminar {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+    position: relative;
+    overflow: hidden;
+    min-width: 70px;
+    z-index: 1;
+}
+
+.btn-eliminar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-eliminar:hover::before {
+    left: 100%;
+}
+
+.btn-eliminar:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.btn-eliminar:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* 🔹 TABLA MINIMALISTA MEJORADA */
+
+/* Tabla de pedido más limpia */
+.tabla-pedido {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    font-size: 13px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tabla-pedido th {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 12px 10px;
+    text-align: left;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: none;
+}
+
+.tabla-pedido th:first-child {
+    border-top-left-radius: 12px;
+}
+
+.tabla-pedido th:last-child {
+    border-top-right-radius: 12px;
+}
+
+.tabla-pedido td {
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    vertical-align: middle;
+    color: #374151;
+}
+
+.tabla-pedido tr:last-child td {
+    border-bottom: none;
+}
+
+.tabla-pedido tr:hover {
+    background: rgba(102, 126, 234, 0.02);
+}
+
+/* Mensaje de tabla vacía mejorado */
+.tabla-vacia {
+    text-align: center;
+    color: #6b7280;
+    font-style: italic;
+    padding: 20px;
+    background: rgba(249, 250, 251, 0.8);
+}
+
+/* Total mejorado */
+.total {
+    text-align: right;
+    font-weight: 700;
+    margin-top: 15px;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-radius: 10px;
+    font-size: 16px;
+    color: #374151;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* 🔹 DISEÑO MEJORADO DEL TOTAL */
+
+.total-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.total-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.total-amounts {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.total-usd {
+    color: #059669;
+    font-size: 20px;
+    text-shadow: 0 1px 2px rgba(5, 150, 105, 0.2);
+}
+
+.total-bs {
+    color: #dc2626;
+    font-size: 18px;
+    text-shadow: 0 1px 2px rgba(220, 38, 38, 0.2);
+}
+
+.total-separator {
+    color: #9ca3af;
+    font-weight: 400;
+    font-size: 16px;
+}
+
+/* Animación para el total */
+@keyframes totalPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.total-container {
+    animation: totalPulse 0.3s ease-out;
+}
+
+/* Responsive para el total */
+@media (max-width: 768px) {
+    .total-amounts {
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-end;
+    }
+    
+    .total-separator {
+        display: none;
+    }
+    
+    .total-usd, .total-bs {
+        font-size: 16px;
+    }
+}
+
+/* 🔹 ANIMACIONES MEJORADAS PARA TRANSICIONES ENTRE CLIENTE Y PEDIDO */
+
+/* Keyframes para animaciones suaves */
+@keyframes slideOutLeft {
+    0% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50px) scale(0.95);
+    }
+}
+
+@keyframes slideInFromRight {
+    0% {
+        opacity: 0;
+        transform: translateX(50px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeOutDown {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+}
+
+/* Clases de animación para aplicar desde JavaScript */
+.slide-out-left {
+    animation: slideOutLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.slide-in-right {
+    animation: slideInFromRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.fade-out-down {
+    animation: fadeOutDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Transiciones base para los contenedores */
+.container_cliente {
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+}
+
+.container_pedido {
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+}
+
+/* Estados de transición */
+.container_cliente.transitioning,
+.container_pedido.transitioning {
+    pointer-events: none;
+}
+
+/* Efecto de blur durante la transición */
+.container_cliente.blurred,
+.container_pedido.blurred {
+    filter: blur(2px);
+    transition: filter 0.3s ease;
+}
+
+/* Animación de entrada suave para elementos internos */
+.container_pedido .pedido-header,
+.container_pedido .resumen-cliente,
+.container_pedido .pedido-panel,
+.container_pedido .agregar-panel {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.container_pedido.show .pedido-header {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.1s;
+}
+
+.container_pedido.show .resumen-cliente {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.2s;
+}
+
+.container_pedido.show .pedido-panel {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.3s;
+}
+
+.container_pedido.show .agregar-panel {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.4s;
+}
+
+/* Animación de escala suave para botones durante transiciones */
+.container_cliente .button,
+.container_pedido .button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.container_cliente.transitioning .button,
+.container_pedido.transitioning .button {
+    transform: scale(0.95);
+    opacity: 0.7;
+}
+
+/* Animaciones suaves para tabla */
+.tabla-pedido tr {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* Header de la pedido */
+.pedido-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.pedido-header h2 {
+    margin: 0;
+    flex-grow: 1;
+    text-align: center;
+}
+
+/* Botón toggle de moneda (USD/Bs) */
+.btn-toggle-moneda {
+    margin-left: auto;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-toggle-moneda::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -40%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(120deg, rgba(255,255,255,0.6), rgba(255,255,255,0));
+    transform: skewX(-20deg);
+    transition: left 0.6s ease;
+}
+
+.btn-toggle-moneda:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.4);
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.btn-toggle-moneda:hover::before {
+    left: 140%;
+}
+
+/* Ocultar columnas según moneda seleccionada en pedido */
+.tabla-pedido.moneda-usd th.th-precio-bs,
+.tabla-pedido.moneda-usd td:nth-child(4) { /* 4ta columna = Precio (Bs) */
+    display: none;
+}
+
+.tabla-pedido.moneda-ves th.th-precio-usd,
+.tabla-pedido.moneda-ves td:nth-child(3) { /* 3ra columna = Precio ($) */
+    display: none;
+}
+
+/* Botón eliminar pedido */
+.btn-eliminar-pedido {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-eliminar-pedido:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.btn-eliminar-pedido:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.btn-eliminar-pedido svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    transition: transform 0.3s ease;
+}
+
+.btn-eliminar-pedido:hover svg {
+    transform: rotate(90deg);
+}
+
+/* Responsive para botones pequeños */
+@media (max-width: 768px) {
+    .btn-cantidad {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+    
+    .cantidad-numero {
+        min-width: 28px;
+        font-size: 12px;
+        padding: 2px 6px;
+    }
+    
+    .btn-eliminar {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+    
+    .tabla-pedido {
+        font-size: 12px;
+    }
+    
+    .tabla-pedido th, .tabla-pedido td {
+        padding: 8px 6px;
+    }
 }

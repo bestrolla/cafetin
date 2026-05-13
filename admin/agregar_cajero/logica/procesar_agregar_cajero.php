@@ -7,14 +7,27 @@ $response = ['success' => false, 'message' => 'Error desconocido.'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 1. Recibir y validar datos
-    $nombre = $_POST['nombre'] ?? null;
-    $apellido = $_POST['apellido'] ?? null;
+    $nombre = isset($_POST['nombre']) ? normalizarTextoNombre($_POST['nombre']) : null;
+    $apellido = isset($_POST['apellido']) ? normalizarTextoNombre($_POST['apellido']) : null;
     $telefono = $_POST['telefono'] ?? null;
     $usuario = $_POST['usuario'] ?? null;
     $contrasena = $_POST['contrasena'] ?? null;
+    $contrasena_confirmar = $_POST['contrasena_confirmar'] ?? null;
 
     if (!$nombre || !$apellido || !$usuario || !$contrasena) {
         $response['message'] = 'Nombre, apellido, usuario y contraseña son obligatorios.';
+        echo json_encode($response);
+        exit;
+    }
+
+    if (!$contrasena_confirmar) {
+        $response['message'] = 'Confirmar contraseña es obligatoria.';
+        echo json_encode($response);
+        exit;
+    }
+
+    if ($contrasena !== $contrasena_confirmar) {
+        $response['message'] = 'Las contraseñas no coinciden.';
         echo json_encode($response);
         exit;
     }
