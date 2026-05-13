@@ -210,8 +210,8 @@ body, html {
   transform: translateY(0) scale(0.95);
 }
 
-/* 🔹 FACTURA - MÁS COMPACTA Y MEJOR DISTRIBUIDA */
-.container_factura {
+/* 🔹 PEDIDO - MÁS COMPACTA Y MEJOR DISTRIBUIDA */
+.container_pedido {
   background: rgba(255, 255, 255, 0.9);
   padding: 20px;
   border-radius: 15px;
@@ -224,12 +224,12 @@ body, html {
   gap: 15px;
 }
 
-.container_factura h2 {
+.container_pedido h2 {
   text-align: center;
   margin-bottom: 5px;
 }
 
-.container_factura hr {
+.container_pedido hr {
   margin-bottom: 11px;
   border: none;
   border-top: 1px solid #ddd;
@@ -256,15 +256,15 @@ body, html {
   margin: 0;
 }
 
-/* Contenido de factura - más espacio */
-.factura-content {
+/* Contenido de pedido - más espacio */
+.pedido-content {
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: 25px;
   align-items: start;
 }
 
-.factura-panel, .agregar-panel {
+.pedido-panel, .agregar-panel {
   background: rgba(255, 255, 255, 0.95);
   padding: 15px;
   border-radius: 10px;
@@ -287,7 +287,7 @@ body, html {
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.tabla-factura {
+.tabla-pedido {
   width: 100%;
   border-collapse: collapse;
   background: white;
@@ -296,9 +296,10 @@ body, html {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   font-size: 12px;
   table-layout: fixed; /* Forzar ancho fijo de columnas */
+  color: #fff
 }
 
-.tabla-factura th, .tabla-factura td {
+.tabla-pedido th, .tabla-pedido td {
   padding: 8px 10px;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
@@ -307,12 +308,12 @@ body, html {
 }
 
 /* Anchos específicos para cada columna */
-.tabla-factura th:nth-child(1), .tabla-factura td:nth-child(1) { width: 20%; } /* Producto */
-.tabla-factura th:nth-child(2), .tabla-factura td:nth-child(2) { width: 20%; text-align: center; } /* Cantidad */
-.tabla-factura th:nth-child(3), .tabla-factura td:nth-child(3) { width: 12%; text-align: right; } /* Precio $ */
-.tabla-factura th:nth-child(4), .tabla-factura td:nth-child(4) { width: 12%; text-align: right; } /* Precio Bs */
-.tabla-factura th:nth-child(5), .tabla-factura td:nth-child(5) { width: 20%; text-align: right; } /* Total */
-.tabla-factura th:nth-child(6), .tabla-factura td:nth-child(6) { width: 16%; text-align: center; } /* Eliminar */
+.tabla-pedido th:nth-child(1), .tabla-pedido td:nth-child(1) { width: 20%; } /* Producto */
+.tabla-pedido th:nth-child(2), .tabla-pedido td:nth-child(2) { width: 20%; text-align: center; } /* Cantidad */
+.tabla-pedido th:nth-child(3), .tabla-pedido td:nth-child(3) { width: 12%; text-align: right; } /* Precio $ */
+.tabla-pedido th:nth-child(4), .tabla-pedido td:nth-child(4) { width: 12%; text-align: right; } /* Precio Bs */
+.tabla-pedido th:nth-child(5), .tabla-pedido td:nth-child(5) { width: 20%; text-align: right; } /* Total */
+.tabla-pedido th:nth-child(6), .tabla-pedido td:nth-child(6) { width: 16%; text-align: center; } /* Eliminar */
 /* Tabla productos */
 .tabla-productos {
   width: 100%;
@@ -330,7 +331,7 @@ body, html {
   border-bottom: 1px solid #e0e0e0;
 }
 
-.tabla-factura th, .tabla-productos th {
+.tabla-pedido th, .tabla-productos th {
   background-color: #007bff;
   color: #fff;
   font-weight: bold;
@@ -338,7 +339,7 @@ body, html {
   padding: 10px;
 }
 
-.tabla-factura tr:hover, .tabla-productos tr:hover {
+.tabla-pedido tr:hover, .tabla-productos tr:hover {
   background-color: #f8f9fa;
 }
 
@@ -415,35 +416,35 @@ body, html {
   transform: translateY(0) scale(0.95);
 }
 
-.factura-actions {
+.pedido-actions {
   display: flex;
   gap: 10px;
   margin-top: 15px;
 }
 
-.factura-actions .button {
+.pedido-actions .button {
   flex: 1;
   padding: 12px;
 }
 
-.factura-actions .cuenta {
+.pedido-actions .cuenta {
   background: linear-gradient(135deg, #17a2b8, #138496);
   color: white;
 }
 
-.factura-actions .cuenta:hover {
+.pedido-actions .cuenta:hover {
   background: linear-gradient(135deg, #138496, #117a8b);
   box-shadow: 
     0 8px 25px rgba(23, 162, 184, 0.4),
     0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.factura-actions .procesar {
+.pedido-actions .procesar {
   background: linear-gradient(135deg, #28a745, #20c997);
   color: white;
 }
 
-.factura-actions .procesar:hover {
+.pedido-actions .procesar:hover {
   background: linear-gradient(135deg, #20c997, #1e7e34);
   box-shadow: 
     0 8px 25px rgba(40, 167, 69, 0.4),
@@ -554,7 +555,7 @@ body, html {
   display: none !important;
 }
 
-.tabla-factura tr.selected {
+.tabla-pedido tr.selected {
   background-color: #ffe8e8;
 }
 
@@ -565,11 +566,11 @@ body, html {
     padding: 20px;
   }
   
-  .container_factura {
+  .container_pedido {
     max-width: 900px;
   }
   
-  .factura-content {
+  .pedido-content {
     grid-template-columns: 1fr 350px;
     gap: 20px;
   }
@@ -582,12 +583,12 @@ body, html {
     gap: 30px;
   }
   
-  .container_cliente, .container_factura {
+  .container_cliente, .container_pedido {
     margin-top: 20px;
     max-width: 100%;
   }
   
-  .factura-content {
+  .pedido-content {
     grid-template-columns: 1fr;
     gap: 15px;
   }
@@ -612,15 +613,15 @@ body, html {
     grid-column: 1 / -1;
   }
   
-  .cliente-actions, .factura-actions {
+  .cliente-actions, .pedido-actions {
     flex-direction: column;
   }
   
-  .tabla-factura, .tabla-productos {
+  .tabla-pedido, .tabla-productos {
     font-size: 11px;
   }
   
-  .tabla-factura th, .tabla-factura td,
+  .tabla-pedido th, .tabla-pedido td,
   .tabla-productos th, .tabla-productos td {
     padding: 6px 8px;
   }
@@ -632,16 +633,16 @@ body, html {
     gap: 15px;
   }
   
-  .container_cliente, .container_factura {
+  .container_cliente, .container_pedido {
     padding: 15px;
     margin-top: 15px;
   }
   
-  .factura-content {
+  .pedido-content {
     gap: 12px;
   }
   
-  .factura-panel, .agregar-panel {
+  .pedido-panel, .agregar-panel {
     padding: 12px;
   }
 }
@@ -691,13 +692,13 @@ body, html {
 /* Los estilos de inputs adicionales ahora se manejan desde main.css */
 
 /* Mejoras para las tablas siguiendo el patrón moderno */
-.tabla-factura, .tabla-productos {
+.tabla-pedido, .tabla-productos {
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.tabla-factura th, .tabla-productos th {
+.tabla-pedido th, .tabla-productos th {
     background: linear-gradient(135deg, #667eea, #764ba2);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
@@ -717,14 +718,14 @@ body, html {
 }
 
 /* Efectos de glassmorphism para contenedores */
-.container_cliente, .container_factura {
+.container_cliente, .container_pedido {
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.85);
 }
 
-.factura-panel, .agregar-panel {
+.pedido-panel, .agregar-panel {
     -webkit-backdrop-filter: blur(15px);
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -888,8 +889,8 @@ body, html {
 
 /* 🔹 TABLA MINIMALISTA MEJORADA */
 
-/* Tabla de factura más limpia */
-.tabla-factura {
+/* Tabla de pedido más limpia */
+.tabla-pedido {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
@@ -903,7 +904,7 @@ body, html {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.tabla-factura th {
+.tabla-pedido th {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     font-weight: 600;
@@ -915,26 +916,26 @@ body, html {
     border: none;
 }
 
-.tabla-factura th:first-child {
+.tabla-pedido th:first-child {
     border-top-left-radius: 12px;
 }
 
-.tabla-factura th:last-child {
+.tabla-pedido th:last-child {
     border-top-right-radius: 12px;
 }
 
-.tabla-factura td {
+.tabla-pedido td {
     padding: 12px 10px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     vertical-align: middle;
     color: #374151;
 }
 
-.tabla-factura tr:last-child td {
+.tabla-pedido tr:last-child td {
     border-bottom: none;
 }
 
-.tabla-factura tr:hover {
+.tabla-pedido tr:hover {
     background: rgba(102, 126, 234, 0.02);
 }
 
@@ -1034,7 +1035,7 @@ body, html {
     }
 }
 
-/* 🔹 ANIMACIONES MEJORADAS PARA TRANSICIONES ENTRE CLIENTE Y FACTURA */
+/* 🔹 ANIMACIONES MEJORADAS PARA TRANSICIONES ENTRE CLIENTE Y PEDIDO */
 
 /* Keyframes para animaciones suaves */
 @keyframes slideOutLeft {
@@ -1104,53 +1105,53 @@ body, html {
     transform-origin: center;
 }
 
-.container_factura {
+.container_pedido {
     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: center;
 }
 
 /* Estados de transición */
 .container_cliente.transitioning,
-.container_factura.transitioning {
+.container_pedido.transitioning {
     pointer-events: none;
 }
 
 /* Efecto de blur durante la transición */
 .container_cliente.blurred,
-.container_factura.blurred {
+.container_pedido.blurred {
     filter: blur(2px);
     transition: filter 0.3s ease;
 }
 
 /* Animación de entrada suave para elementos internos */
-.container_factura .factura-header,
-.container_factura .resumen-cliente,
-.container_factura .factura-panel,
-.container_factura .agregar-panel {
+.container_pedido .pedido-header,
+.container_pedido .resumen-cliente,
+.container_pedido .pedido-panel,
+.container_pedido .agregar-panel {
     opacity: 0;
     transform: translateY(20px);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.container_factura.show .factura-header {
+.container_pedido.show .pedido-header {
     opacity: 1;
     transform: translateY(0);
     transition-delay: 0.1s;
 }
 
-.container_factura.show .resumen-cliente {
+.container_pedido.show .resumen-cliente {
     opacity: 1;
     transform: translateY(0);
     transition-delay: 0.2s;
 }
 
-.container_factura.show .factura-panel {
+.container_pedido.show .pedido-panel {
     opacity: 1;
     transform: translateY(0);
     transition-delay: 0.3s;
 }
 
-.container_factura.show .agregar-panel {
+.container_pedido.show .agregar-panel {
     opacity: 1;
     transform: translateY(0);
     transition-delay: 0.4s;
@@ -1158,30 +1159,30 @@ body, html {
 
 /* Animación de escala suave para botones durante transiciones */
 .container_cliente .button,
-.container_factura .button {
+.container_pedido .button {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .container_cliente.transitioning .button,
-.container_factura.transitioning .button {
+.container_pedido.transitioning .button {
     transform: scale(0.95);
     opacity: 0.7;
 }
 
 /* Animaciones suaves para tabla */
-.tabla-factura tr {
+.tabla-pedido tr {
     animation: fadeInUp 0.3s ease-out;
 }
 
-/* Header de la factura */
-.factura-header {
+/* Header de la pedido */
+.pedido-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 10px;
 }
 
-.factura-header h2 {
+.pedido-header h2 {
     margin: 0;
     flex-grow: 1;
     text-align: center;
@@ -1226,19 +1227,19 @@ body, html {
     left: 140%;
 }
 
-/* Ocultar columnas según moneda seleccionada en factura */
-.tabla-factura.moneda-usd th.th-precio-bs,
-.tabla-factura.moneda-usd td:nth-child(4) { /* 4ta columna = Precio (Bs) */
+/* Ocultar columnas según moneda seleccionada en pedido */
+.tabla-pedido.moneda-usd th.th-precio-bs,
+.tabla-pedido.moneda-usd td:nth-child(4) { /* 4ta columna = Precio (Bs) */
     display: none;
 }
 
-.tabla-factura.moneda-ves th.th-precio-usd,
-.tabla-factura.moneda-ves td:nth-child(3) { /* 3ra columna = Precio ($) */
+.tabla-pedido.moneda-ves th.th-precio-usd,
+.tabla-pedido.moneda-ves td:nth-child(3) { /* 3ra columna = Precio ($) */
     display: none;
 }
 
-/* Botón eliminar factura */
-.btn-eliminar-factura {
+/* Botón eliminar pedido */
+.btn-eliminar-pedido {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1256,23 +1257,25 @@ body, html {
     overflow: hidden;
 }
 
-.btn-eliminar-factura:hover {
+.btn-eliminar-pedido:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
     background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
 }
 
-.btn-eliminar-factura:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+.btn-eliminar-pedido:active {
+    transform: translateY(0) scale(0.98);
 }
 
-.btn-eliminar-factura svg {
-    transition: transform 0.2s ease;
+.btn-eliminar-pedido svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    transition: transform 0.3s ease;
 }
 
-.btn-eliminar-factura:hover svg {
-    transform: rotate(5deg) scale(1.05);
+.btn-eliminar-pedido:hover svg {
+    transform: rotate(90deg);
 }
 
 /* Responsive para botones pequeños */
@@ -1294,11 +1297,11 @@ body, html {
         font-size: 11px;
     }
     
-    .tabla-factura {
+    .tabla-pedido {
         font-size: 12px;
     }
     
-    .tabla-factura th, .tabla-factura td {
+    .tabla-pedido th, .tabla-pedido td {
         padding: 8px 6px;
     }
 }

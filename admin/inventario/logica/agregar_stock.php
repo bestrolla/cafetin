@@ -15,6 +15,8 @@ try {
     $id = isset($_POST['id_producto']) ? (int)$_POST['id_producto'] : 0;
     $cajasAgregar = isset($_POST['cajas_agregar']) ? (int)$_POST['cajas_agregar'] : 0;
     $sueltasAgregar = isset($_POST['unidades_sueltas_agregar']) ? (int)$_POST['unidades_sueltas_agregar'] : 0;
+    $precioCostoUnitarioNuevo = isset($_POST['precio_costo_unitario_nuevo']) ? (float)$_POST['precio_costo_unitario_nuevo'] : null;
+    $precioVentaNuevo = isset($_POST['precio_venta_nuevo']) ? (float)$_POST['precio_venta_nuevo'] : null;
     $observacion = isset($_POST['observacion']) ? trim($_POST['observacion']) : null;
 
     if ($id <= 0) throw new Exception('ID de producto inválido');
@@ -59,12 +61,31 @@ try {
     $nuevoTotal = (int)$prod['cantidad_total'] + $unidadesAgregadasTotal;
     $nuevasCajas = intdiv($nuevoTotal, $unidPorCaja);
 
-    $stmtUp = $conexion->prepare("UPDATE inventario SET cantidad_total = :total, caja_produc = :cajas WHERE id_producto = :id");
-    $stmtUp->execute([
+    $sqlUp = "UPDATE inventario SET cantidad_total = :total, caja_produc = :cajas";
+    $paramsUp = [
         ':total' => $nuevoTotal,
         ':cajas' => $nuevasCajas,
         ':id' => $id
-    ]);
+    ];
+
+    // Actualizar precios si se enviaron
+    $precioVentaHistorial = (float)$prod['precio_venta'];
+    
+    if ($precioCostoUnitarioNuevo !== null && $precioVentaNuevo !== null) {
+        // Calcular precio caja basado en el unitario
+        $precioCajaNuevo = $precioCostoUnitarioNuevo * $unidPorCaja;
+        
+        $sqlUp .= ", precio_caja = :precio_caja, precio_venta = :precio_venta, precio_produc = :precio_produc";
+        $paramsUp[':precio_caja'] = $precioCajaNuevo;
+        $paramsUp[':precio_venta'] = $precioVentaNuevo;
+        $paramsUp[':precio_produc'] = $precioCostoUnitarioNuevo;
+        
+        $precioVentaHistorial = $precioVentaNuevo;
+    }
+
+    $sqlUp .= " WHERE id_producto = :id";
+    $stmtUp = $conexion->prepare($sqlUp);
+    $stmtUp->execute($paramsUp);
 
     // Obtener tasa de cambio actual
     $tasa = 36.00; // valor por defecto
@@ -81,7 +102,7 @@ try {
     // (Tabla ya asegurada antes de la transacción)
 
     // Registrar historial con snapshot de precios
-    $precioVentaUSD = (float)$prod['precio_venta'];
+    $precioVentaUSD = $precioVentaHistorial;
     $precioVentaBS = $precioVentaUSD * $tasa;
 
     $stmtH = $conexion->prepare("INSERT INTO historial_producto 

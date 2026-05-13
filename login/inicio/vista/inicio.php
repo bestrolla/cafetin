@@ -17,7 +17,7 @@ $csrf = csrfEnsureToken();
 
   <div class="login-form">
   <form action="../logica/procesar_login.php" method="POST">
-    <h2>Iniciar Sesion</h2>
+    <h2>Iniciar Sesión</h2>
      <hr>
     <div class="inputBox">
       <input type="text" name="usuario" required>
@@ -55,7 +55,7 @@ $csrf = csrfEnsureToken();
       <!-- <a href="#">Registrate</a> -->
     </div>
     
-    <input class="button" type="submit" value="Iniciar Sesion">
+    <input class="button" type="submit" value="Iniciar Sesión">
   </form>
 
   </div>

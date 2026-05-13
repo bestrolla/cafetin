@@ -79,9 +79,9 @@ section header .logo img {
   
     <nav>
       <ul>
-        <li><a href="<?php echo appUrl('/cajero/lobby/vista/lobby.php'); ?>">lobby</a></li>
-        <li><a href="<?php echo appUrl('/cajero/cuentas/vista/cuentas.php'); ?>">cuentas</a></li>
-        <li><a href="<?php echo appUrl('/cajero/configuracion/vista/configuracion.php'); ?>">configuracion</a></li>
+        <li><a href="<?php echo appUrl('/cajero/lobby/vista/lobby.php'); ?>">Lobby</a></li>
+        <li><a href="<?php echo appUrl('/cajero/cuentas/vista/cuentas.php'); ?>">Cuentas</a></li>
+        <li><a href="<?php echo appUrl('/cajero/configuracion/vista/configuracion.php'); ?>">Configuración</a></li>
         <li><a href="<?php echo appUrl('/acces/logout.php'); ?>">Cerrar Sesión</a></li>
       </ul>
     </nav>

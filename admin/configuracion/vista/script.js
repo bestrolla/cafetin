@@ -26,18 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Funciones para tabs
-function showTab(tabName) {
-    // Ocultar todos los tabs
+function showTab(tabName, btn) {
     const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach(tab => tab.classList.remove('active'));
-    
-    // Remover clase active de todos los botones
     const tabButtons = document.querySelectorAll('.tab-button');
     tabButtons.forEach(button => button.classList.remove('active'));
-    
-    // Mostrar el tab seleccionado
     document.getElementById(tabName).classList.add('active');
-    event.target.classList.add('active');
+    if (btn && btn.classList) btn.classList.add('active');
 }
 
 async function manejarImportacionClientes(e) {
@@ -128,11 +123,13 @@ function actualizarInterfaz() {
     if (configuraciones.moneda_principal) {
         document.getElementById('moneda-principal').value = configuraciones.moneda_principal;
     }
-    if (configuraciones.iva_porcentaje) {
-        document.getElementById('iva-porcentaje').value = configuraciones.iva_porcentaje;
+    const elIva = document.getElementById('iva-porcentaje');
+    if (elIva && configuraciones.iva_porcentaje) {
+        elIva.value = configuraciones.iva_porcentaje;
     }
-    if (configuraciones.descuento_maximo) {
-        document.getElementById('descuento-maximo').value = configuraciones.descuento_maximo;
+    const elDesc = document.getElementById('descuento-maximo');
+    if (elDesc && configuraciones.descuento_maximo) {
+        elDesc.value = configuraciones.descuento_maximo;
     }
     if (configuraciones.inventario_umbral_bajo) {
         document.getElementById('inventario-umbral-bajo').value = configuraciones.inventario_umbral_bajo;
@@ -142,11 +139,13 @@ function actualizarInterfaz() {
             umbralInput.value = 50;
         }
     }
-    if (configuraciones.backup_automatico) {
-        document.getElementById('backup-automatico').checked = configuraciones.backup_automatico === 'true';
+    const elBack = document.getElementById('backup-automatico');
+    if (elBack && configuraciones.backup_automatico) {
+        elBack.checked = configuraciones.backup_automatico === 'true';
     }
-    if (configuraciones.notificaciones_email) {
-        document.getElementById('notificaciones-email').checked = configuraciones.notificaciones_email === 'true';
+    const elNotifEmail = document.getElementById('notificaciones-email');
+    if (elNotifEmail && configuraciones.notificaciones_email) {
+        elNotifEmail.checked = configuraciones.notificaciones_email === 'true';
     }
     // Líneas de gráfico: máximo y paso
     const gridMaxEl = document.getElementById('grafico-grid-max');
@@ -244,11 +243,7 @@ async function guardarConfiguracionSistema(e) {
     
     const configuracionSistema = {
         moneda_principal: document.getElementById('moneda-principal').value,
-        iva_porcentaje: document.getElementById('iva-porcentaje').value,
-        descuento_maximo: document.getElementById('descuento-maximo').value,
         inventario_umbral_bajo: document.getElementById('inventario-umbral-bajo').value || '50',
-        backup_automatico: document.getElementById('backup-automatico').checked ? 'true' : 'false',
-        notificaciones_email: document.getElementById('notificaciones-email').checked ? 'true' : 'false',
         grafico_grid_max: (function(){
             const v = parseInt(document.getElementById('grafico-grid-max').value,10);
             return (isNaN(v) || v < 1) ? '100' : String(v);
@@ -267,6 +262,14 @@ async function guardarConfiguracionSistema(e) {
         })(),
         incluir_dias_sin_ventas: document.getElementById('incluir-dias-sin-ventas').checked ? 'true' : 'false'
     };
+    const elIva = document.getElementById('iva-porcentaje');
+    if (elIva) configuracionSistema.iva_porcentaje = elIva.value;
+    const elDesc = document.getElementById('descuento-maximo');
+    if (elDesc) configuracionSistema.descuento_maximo = elDesc.value;
+    const elBack = document.getElementById('backup-automatico');
+    if (elBack) configuracionSistema.backup_automatico = elBack.checked ? 'true' : 'false';
+    const elNotifEmail = document.getElementById('notificaciones-email');
+    if (elNotifEmail) configuracionSistema.notificaciones_email = elNotifEmail.checked ? 'true' : 'false';
     
     await guardarConfiguraciones(configuracionSistema, 'Configuración de sistema guardada correctamente');
 }
@@ -344,26 +347,72 @@ function formatearFecha(fecha) {
 
 
 function mostrarAlerta(mensaje, tipo) {
-    // Remover alertas existentes
-    const alertasExistentes = document.querySelectorAll('.alert');
+    // Remover solo notificaciones tipo toast previas
+    const alertasExistentes = document.querySelectorAll('.toast-config');
     alertasExistentes.forEach(alerta => alerta.remove());
     
-    // Crear nueva alerta
+    // Crear nueva alerta en esquina superior derecha
     const alerta = document.createElement('div');
-    alerta.className = `alert alert-${tipo}`;
+    alerta.className = `toast-config alert alert-${tipo}`;
     alerta.textContent = mensaje;
+    alerta.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        left: auto;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 12000;
+        max-width: min(340px, calc(100vw - 40px));
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        animation: toastSlideIn 0.25s ease;
+    `;
+
+    switch (tipo) {
+        case 'success':
+            alerta.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            break;
+        case 'error':
+            alerta.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+            break;
+        case 'warning':
+            alerta.style.background = 'linear-gradient(135deg, #f39c12, #e67e22)';
+            break;
+        default:
+            alerta.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+            break;
+    }
     
-    // Insertar al inicio del contenido
-    const contentWrapper = document.querySelector('.content-wrapper');
-    contentWrapper.insertBefore(alerta, contentWrapper.firstChild);
+    // Agregar al DOM
+    document.body.appendChild(alerta);
     
-    // Auto-remover después de 5 segundos
+    // Auto-remover después de 4 segundos
     setTimeout(() => {
         if (alerta.parentNode) {
-            alerta.remove();
+            alerta.style.animation = 'toastSlideOut 0.25s ease';
+            setTimeout(() => {
+                if (alerta.parentNode) {
+                    alerta.remove();
+                }
+            }, 250);
         }
-    }, 5000);
+    }, 4000);
 }
+
+const toastStyle = document.createElement('style');
+toastStyle.textContent = `
+    @keyframes toastSlideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes toastSlideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(toastStyle);
 
 function cerrarModal() {
     document.getElementById('modal-confirmacion').style.display = 'none';

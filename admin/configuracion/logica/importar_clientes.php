@@ -108,10 +108,10 @@ try {
         }
 
         $cedula = $data['cedula'] ?? '';
-        $nombre = $data['nombre'] ?? '';
-        $apellido = $data['apellido'] ?? '';
+        $nombre = normalizarTextoNombre($data['nombre'] ?? '');
+        $apellido = normalizarTextoNombre($data['apellido'] ?? '');
         $telefono = $data['telefono'] ?? '';
-        $alias = $data['alias'] ?? '';
+        $alias = normalizarTextoNombre($data['alias'] ?? '');
         $deuda_dolares_raw = $data['deuda_dolares'] ?? '';
         $deuda_bolivares_raw = $data['deuda_bolivares'] ?? '';
         $deuda_total_raw = $data['deuda_total'] ?? '';

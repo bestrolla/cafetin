@@ -37,10 +37,10 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
       </div>
     </div>
 
-    <!-- 💰 FACTURA -->
-    <div id="container-factura" class="container_factura hidden">
-      <div class="factura-header">
-        <button id="btn-eliminar-factura" class="btn-eliminar-factura" onclick="eliminarFacturaCompleta()">
+    <!-- 💰 PEDIDO -->
+    <div id="container-pedido" class="container_pedido hidden">
+      <div class="pedido-header">
+        <button id="btn-eliminar-pedido" class="btn-eliminar-pedido" onclick="eliminarPedidoCompleto()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 6h18"></path>
             <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
@@ -48,9 +48,9 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
             <line x1="10" y1="11" x2="10" y2="17"></line>
             <line x1="14" y1="11" x2="14" y2="17"></line>
           </svg>
-          Eliminar Factura
+          Eliminar Pedido
         </button>
-        <h2>Factura</h2>
+        <h2>Pedido</h2>
         <button id="btn-toggle-moneda" class="btn-toggle-moneda" type="button" aria-label="Cambiar entre USD y Bs">USD</button>
       </div>
       <hr>
@@ -59,11 +59,11 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
         <p id="resumen-cliente">Ninguno</p>
       </div>
 
-      <div class="factura-content">
-        <!-- 🧾 Factura actual -->
-        <div class="factura-panel">
+      <div class="pedido-content">
+        <!-- 🧾 Pedido actual -->
+        <div class="pedido-panel">
           <h3>Productos agregados</h3>
-            <table class="tabla-factura">
+            <table class="tabla-pedido">
               <thead>
                 <tr>
                   <th>Producto</th>
@@ -74,7 +74,7 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
                   <th>Eliminar</th>
                 </tr>
               </thead>
-            <tbody id="tabla-factura-body">
+            <tbody id="tabla-pedido-body">
               <!-- Filas dinámicas -->
             </tbody>
           </table>
@@ -83,9 +83,9 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
             <h3 id="total-text">Total: $0.00 | Bs. 0.00</h3>
           </div>
 
-          <div class="factura-actions">
+          <div class="pedido-actions">
             <button id="btn-ver-cuenta" class="button cuenta" type="button" aria-label="Agregar productos a cuenta del cliente">Agregar a cuenta</button>
-            <button id="btn-pagar" class="button procesar" type="button" aria-label="Procesar pago de la factura">Pagar</button>
+            <button id="btn-pagar" class="button procesar" type="button" aria-label="Procesar pago del pedido">Pagar</button>
           </div>
         </div>
 
@@ -123,7 +123,7 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
                         echo "<td>$" . htmlspecialchars(number_format($producto['precio_venta'], 2)) . "</td>";
                         $stock = (int)($producto['cantidad_total'] ?? 0);
                         echo "<td>" . ($stock <= 0 ? 'Vacío' : htmlspecialchars($stock)) . "</td>";
-                        echo "<td><button class=\"btn-agregar-producto modern-btn" . ($stock <= 0 ? " disabled" : "") . "\" data-id=\"" . htmlspecialchars($producto['id_producto']) . "\" data-nombre=\"" . htmlspecialchars($producto['nombre_produc']) . "\" data-precio=\"" . htmlspecialchars($producto['precio_venta']) . "\" data-stock=\"" . htmlspecialchars($stock) . "\" aria-label=\"Agregar " . htmlspecialchars($producto['nombre_produc']) . " a la factura\">Agregar</button></td>";
+                        echo "<td><button class=\"btn-agregar-producto modern-btn" . ($stock <= 0 ? " disabled" : "") . "\" data-id=\"" . htmlspecialchars($producto['id_producto']) . "\" data-nombre=\"" . htmlspecialchars($producto['nombre_produc']) . "\" data-precio=\"" . htmlspecialchars($producto['precio_venta']) . "\" data-stock=\"" . htmlspecialchars($stock) . "\" aria-label=\"Agregar " . htmlspecialchars($producto['nombre_produc']) . " al pedido\">Agregar</button></td>";
                         echo "</tr>";
                     }
                 } else {

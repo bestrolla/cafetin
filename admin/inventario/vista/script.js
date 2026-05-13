@@ -480,6 +480,14 @@ document.addEventListener('DOMContentLoaded', function () {
             <input type="number" name="unidades_sueltas_agregar" min="0" step="1" value="0" required />
           </div>
           <div class="form-group">
+            <label>Actualizar Costo Unitario (USD)</label>
+            <input type="number" name="precio_costo_unitario_nuevo" min="0" step="0.01" value="${parseFloat(producto.precio_produc||0).toFixed(2)}" required />
+          </div>
+          <div class="form-group">
+            <label>Actualizar Precio Pedido (USD)</label>
+            <input type="number" name="precio_venta_nuevo" min="0" step="0.01" value="${parseFloat(producto.precio_venta||0).toFixed(2)}" required />
+          </div>
+          <div class="form-group">
             <label>Observación (opcional)</label>
             <textarea name="observacion" rows="3" maxlength="255" placeholder="Ej: Llegada semanal proveedor X" style="resize:none; height:80px; min-height:80px; max-height:80px; width:100%; overflow:auto;"></textarea>
           </div>

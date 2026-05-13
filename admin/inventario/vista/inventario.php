@@ -48,7 +48,7 @@ protegerPagina(['admin']);
                         <input type="number" id="precio_caja" name="precio_caja" min="0" step="0.01">
                     </div>
                     <div>
-                        <label for="precio_venta">Precio de Venta:</label>
+                        <label for="precio_venta">Precio de Pedido:</label>
                         <input type="number" id="precio_venta" name="precio_venta" min="0" step="0.01" required>
                     </div>
                     <div>
@@ -84,14 +84,14 @@ protegerPagina(['admin']);
                     </div>
                 </div>
 
-                <table id="tabla-inventario" class="tabla-factura">
+                <table id="tabla-inventario" class="tabla-pedido">
                     <thead>
                         <tr>
                             <th>Nombre</th>
                             <th>Unidades Totales</th>
                             <th>Cajas</th>
                             <th>Precio Producto</th>
-                            <th>Precio de Venta</th>
+                            <th>Precio de Pedido</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
@@ -147,7 +147,7 @@ protegerPagina(['admin']);
                     </div>
                     
                     <div class="form-group">
-                        <label for="edit-precio-venta">Precio de Venta</label>
+                        <label for="edit-precio-venta">Precio de Pedido</label>
                         <input type="number" id="edit-precio-venta" name="precio_venta" step="0.01" min="0" required placeholder="0.00">
                     </div>
                     

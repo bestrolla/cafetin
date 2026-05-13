@@ -219,7 +219,7 @@ function actualizarCabeceraVentas() {
             <th>Clientes</th>
             <th>Cantidad total</th>
             <th>Total</th>
-            <th>Última venta</th>
+            <th>Último pedido</th>
             <th>Acción</th>
         `;
     } else {
@@ -698,30 +698,10 @@ function initGraficosControls() {
 
     cargarProductosGrafico();
 
-    // Cargar configuraciones para gráficos (días laborales e incluir días sin ventas)
-    (async () => {
-        try {
-            const resp = await fetch('../logica/obtener_configuraciones.php');
-            const data = await resp.json();
-            if (data && data.success && data.configuraciones) {
-                const cfg = data.configuraciones;
-                const diasStr = cfg.dias_laborales || '1,2,3,4,5';
-                const diasArr = diasStr.split(',').map(x => parseInt(x,10)).filter(x => x>=1 && x<=7);
-                window.__graficoDiasLaborales = diasArr;
-                window.__graficoIncluirSinVentas = (cfg.incluir_dias_sin_ventas || 'true') === 'true';
-                window.__graficoGridMax = parseInt(cfg.grafico_grid_max, 10);
-                if (isNaN(window.__graficoGridMax) || window.__graficoGridMax < 1) window.__graficoGridMax = 100;
-                window.__graficoGridStep = parseInt(cfg.grafico_grid_step, 10);
-                if (isNaN(window.__graficoGridStep) || window.__graficoGridStep < 1) window.__graficoGridStep = 10;
-            }
-        } catch(err) {
-            console.warn('No se pudieron cargar configuraciones del sistema para gráficos:', err);
-            window.__graficoDiasLaborales = [1,2,3,4,5];
-            window.__graficoIncluirSinVentas = true;
-            window.__graficoGridMax = 100;
-            window.__graficoGridStep = 10;
-        }
-    })();
+    // Cargar configuraciones para gráficos y forzar repintado al terminar
+    window.__graficoConfigPromise = cargarConfiguracionGrafico().then(() => {
+        actualizarGrafico();
+    });
 
     // Actualizar el gráfico automáticamente cuando cambie el periodo, la fecha o el producto
     if (periodoEl) {
@@ -753,6 +733,33 @@ function initGraficosControls() {
         if (productoEl) productoEl.value = '';
         limpiarGrafico();
     });
+}
+
+async function cargarConfiguracionGrafico() {
+    try {
+        // Reutiliza el mismo endpoint de Configuración de Admin
+        const resp = await fetch('../../configuracion/logica/obtener_configuraciones.php');
+        const data = await resp.json();
+        if (data && data.success && data.configuraciones) {
+            const cfg = data.configuraciones;
+            const diasStr = cfg.dias_laborales || '1,2,3,4,5';
+            const diasArr = diasStr.split(',').map(x => parseInt(x,10)).filter(x => x>=1 && x<=7);
+            window.__graficoDiasLaborales = diasArr.length ? diasArr : [1,2,3,4,5];
+            window.__graficoIncluirSinVentas = (cfg.incluir_dias_sin_ventas || 'true') === 'true';
+            window.__graficoGridMax = parseInt(cfg.grafico_grid_max, 10);
+            if (isNaN(window.__graficoGridMax) || window.__graficoGridMax < 1) window.__graficoGridMax = 100;
+            window.__graficoGridStep = parseInt(cfg.grafico_grid_step, 10);
+            if (isNaN(window.__graficoGridStep) || window.__graficoGridStep < 1) window.__graficoGridStep = 10;
+            return;
+        }
+    } catch(err) {
+        console.warn('No se pudieron cargar configuraciones del sistema para gráficos:', err);
+    }
+    // Fallback seguro para no dejar valores indefinidos
+    window.__graficoDiasLaborales = [1,2,3,4,5];
+    window.__graficoIncluirSinVentas = true;
+    window.__graficoGridMax = 100;
+    window.__graficoGridStep = 10;
 }
 
 async function cargarProductosGrafico() {
@@ -793,6 +800,12 @@ function limpiarGrafico() {
 
 async function actualizarGrafico() {
     try {
+        if (window.__graficoConfigPromise) {
+            await window.__graficoConfigPromise;
+        } else {
+            await cargarConfiguracionGrafico();
+        }
+
         const periodo = document.getElementById('grafico_periodo')?.value || 'dia';
         const fechaBase = document.getElementById('grafico_fecha')?.value || '';
         const producto = document.getElementById('grafico_producto')?.value || '';
@@ -832,7 +845,9 @@ async function actualizarGrafico() {
         // Adaptar a respuesta del backend existente
         let adapted = (data.labels && data.series) ? { labels: data.labels, datasets: { cantidad: data.series }, period: periodo } : { ...data, period: periodo };
 
-        // Completar días sin ventas en periodo diario (llenar con 0) — siempre incluir el día seleccionado
+        // Completar días en periodo diario:
+        // - Laborables: con ventas reales (o 0 según configuración)
+        // - No laborables: siempre visibles, en 0 (se dibujan en gris y pequeños)
         if (periodo === 'dia' && adapted && Array.isArray(adapted.labels) && Array.isArray(adapted.datasets?.cantidad)) {
             const rango = calcularRangoPorPeriodo(periodo, fechaBase);
             const pad = n => String(n).padStart(2, '0');
@@ -840,6 +855,10 @@ async function actualizarGrafico() {
             const startDate = new Date(rango.start + 'T00:00:00');
             const endDate = new Date(rango.end + 'T00:00:00');
             const mapCant = new Map();
+            const incluirSinVentas = (window.__graficoIncluirSinVentas !== false);
+            const diasLaborales = Array.isArray(window.__graficoDiasLaborales) && window.__graficoDiasLaborales.length
+                ? window.__graficoDiasLaborales
+                : [1,2,3,4,5];
             adapted.labels.forEach((lbl, i) => {
                 mapCant.set(lbl, Number(adapted.datasets.cantidad[i]) || 0);
             });
@@ -847,8 +866,17 @@ async function actualizarGrafico() {
             const fullValues = [];
             for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                 const ymd = toYMD(d);
+                const dow = d.getDay(); // 0=Domingo..6=Sabado
+                const dia17 = (dow === 0 ? 7 : dow); // 1=Lunes..7=Domingo
+                const esLaborable = diasLaborales.includes(dia17);
+                // Si no se incluyen días sin ventas, solo omitir laborables sin datos.
+                // Los no laborables siempre se muestran como referencia visual.
+                if (esLaborable && !incluirSinVentas && !mapCant.has(ymd)) {
+                    continue;
+                }
                 fullLabels.push(ymd);
-                fullValues.push(mapCant.has(ymd) ? mapCant.get(ymd) : 0);
+                // En no laborables forzar 0 para que no "cuenten" datos
+                fullValues.push(esLaborable ? (mapCant.has(ymd) ? mapCant.get(ymd) : 0) : 0);
             }
             adapted = { labels: fullLabels, datasets: { cantidad: fullValues }, period: periodo };
         }
@@ -1088,15 +1116,28 @@ function renderBarChart(data) {
 
     labels.forEach((lbl, idx) => {
         const val = Number(valores[idx]) || 0;
+        let esNoLaborableDia = false;
+        try {
+            if (data.period === 'dia') {
+                const dow = new Date(lbl + 'T00:00:00').getDay(); // 0=Domingo..6=Sabado
+                const dia17 = (dow === 0 ? 7 : dow); // 1=Lunes..7=Domingo
+                if (window.__graficoDiasLaborales && Array.isArray(window.__graficoDiasLaborales)) {
+                    esNoLaborableDia = !window.__graficoDiasLaborales.includes(dia17);
+                }
+            }
+        } catch(_) {}
         const alturaPct = Math.round((val / maxVal) * 100);
         const barra = document.createElement('div');
-        if (alturaPct <= 0) {
+        if (esNoLaborableDia) {
+            // Marcador visual mínimo para no laborables
+            barra.style.height = '4px';
+        } else if (alturaPct <= 0) {
             // Asegurar visibilidad para días con 0 ventas
             barra.style.height = '2px';
         } else {
             barra.style.height = alturaPct + '%';
         }
-        barra.style.width = barWidth + 'px';
+        barra.style.width = (esNoLaborableDia ? Math.max(2, Math.floor(barWidth * 0.6)) : barWidth) + 'px';
         // Color por día laborable/no laborable si hay configuración cargada (solo periodo 'dia')
         let color = '#4C8BF5';
         try {
@@ -1121,17 +1162,21 @@ function renderBarChart(data) {
             const unidades = (val === 1) ? 'unidad' : 'unidades';
             if (period === 'dia') {
                 const esHoy = (lbl === hoyStr);
-                tooltip = (val > 0)
-                    ? `Día ${lbl} — Ventas: ${val} ${unidades}`
-                    : `Día ${lbl} — Sin ventas`;
+                if (esNoLaborableDia) {
+                    tooltip = `Día ${lbl} — No laborable`;
+                } else {
+                    tooltip = (val > 0)
+                        ? `Día ${lbl} — Pedidos: ${val} ${unidades}`
+                        : `Día ${lbl} — Sin pedidos`;
+                }
                 if (esHoy) tooltip += ' — Hoy';
             } else if (period === 'semana') {
                 const str = String(lbl);
                 const isoYear = str.slice(0,4);
                 const isoWeek = str.slice(4);
                 tooltip = (val > 0)
-                    ? `Semana ${isoWeek} de ${isoYear} — Ventas: ${val} ${unidades}`
-                    : `Semana ${isoWeek} de ${isoYear} — Sin ventas`;
+                    ? `Semana ${isoWeek} de ${isoYear} — Pedidos: ${val} ${unidades}`
+                    : `Semana ${isoWeek} de ${isoYear} — Sin pedidos`;
                 const esSemanaActual = (lbl === semanaActualLbl);
                 if (esSemanaActual) tooltip += ' — Semana actual';
             } else if (period === 'mes') {
@@ -1139,14 +1184,14 @@ function renderBarChart(data) {
                 const nombres = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
                 const nombreMes = nombres[(parseInt(m,10)-1) || 0] || m;
                 tooltip = (val > 0)
-                    ? `Mes ${nombreMes} ${y} — Ventas: ${val} ${unidades}`
-                    : `Mes ${nombreMes} ${y} — Sin ventas`;
+                    ? `Mes ${nombreMes} ${y} — Pedidos: ${val} ${unidades}`
+                    : `Mes ${nombreMes} ${y} — Sin pedidos`;
                 const esMesActual = (lbl === mesActualLbl);
                 if (esMesActual) tooltip += ' — Mes actual';
             } else if (period === 'anio') {
                 tooltip = (val > 0)
-                    ? `Año ${lbl} — Ventas: ${val} ${unidades}`
-                    : `Año ${lbl} — Sin ventas`;
+                    ? `Año ${lbl} — Pedidos: ${val} ${unidades}`
+                    : `Año ${lbl} — Sin pedidos`;
             }
         } catch(_) {}
         barra.title = tooltip;
@@ -1288,7 +1333,7 @@ function mostrarModalDetalle(data) {
                     <span class="deuda-info-value">${data.cliente || 'N/A'}</span>
                 </div>
                 <div class="deuda-info-item">
-                    <span class="deuda-info-label">Fecha de Factura</span>
+                    <span class="deuda-info-label">Fecha del Pedido</span>
                     <span class="deuda-info-value">${data.fecha_factura || 'N/A'}</span>
                 </div>
                 <div class="deuda-info-item">
@@ -1396,8 +1441,8 @@ function mostrarModalDetalleVenta(data) {
 
     body.innerHTML = `
         <div class="venta-section">
-            <h3>Información de la Venta</h3>
-            <p><strong>ID Venta:</strong> ${data.id_venta}</p>
+            <h3>Información del Pedido</h3>
+            <p><strong>ID Pedido:</strong> ${data.id_venta}</p>
             <p><strong>Cliente:</strong> ${data.cliente || ''}</p>
             <p><strong>Cajero:</strong> ${cajeroFull || ''}</p>
             <p><strong>Fecha/Hora:</strong> ${fechaStr}</p>
@@ -1502,7 +1547,7 @@ function mostrarModalDetalleProducto(payload) {
                     <th>Cantidad total</th>
                     <th>Total (USD)</th>
                     <th>Equivalente (Bs)</th>
-                    <th>Última venta</th>
+                    <th>Último pedido</th>
                 </tr>
             </thead>
             <tbody>

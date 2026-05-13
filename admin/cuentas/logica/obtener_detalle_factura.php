@@ -6,7 +6,7 @@ require_once '../../../BBDD/BBDD.php';
 // Verificar que el usuario sea administrador
 if (!esAdmin()) {
     echo json_encode([
-        'error' => 'Acceso denegado. Solo administradores pueden ver los detalles de facturas.'
+        'error' => 'Acceso denegado. Solo administradores pueden ver los detalles de pedidos.'
     ]);
     exit;
 }

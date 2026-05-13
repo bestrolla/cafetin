@@ -8,10 +8,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $id_cliente = $data['id_cliente'] ?? null;
     $cedula = trim($data['cedula'] ?? '');
-    $nombre = trim($data['nombre'] ?? '');
-    $apellido = trim($data['apellido'] ?? '');
+    $nombre = normalizarTextoNombre($data['nombre'] ?? '');
+    $apellido = normalizarTextoNombre($data['apellido'] ?? '');
     $telefono = trim($data['telefono'] ?? '');
-    $alias = trim($data['alias'] ?? '');
+    $alias = normalizarTextoNombre($data['alias'] ?? '');
 
     try {
         // Asegurar rol cliente

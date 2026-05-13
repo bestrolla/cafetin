@@ -5,6 +5,24 @@ document.addEventListener('DOMContentLoaded', function() {
     configurarEventos();
 });
 
+// Funciones para tabs
+function showTab(tabId, buttonEl) {
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(tab => tab.classList.remove('active'));
+
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => button.classList.remove('active'));
+
+    const currentTab = document.getElementById(tabId);
+    if (currentTab) currentTab.classList.add('active');
+    if (buttonEl) buttonEl.classList.add('active');
+
+    // Cargar preguntas de seguridad solo cuando el tab de seguridad está activo
+    if (tabId === 'tab-seguridad') {
+        cargarPreguntasSeguridadCajero();
+    }
+}
+
 // Cargar datos iniciales
 function cargarDatosIniciales() {
     cargarTasaActual();

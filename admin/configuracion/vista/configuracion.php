@@ -25,12 +25,12 @@ protegerPagina(['admin']);
             
             <!-- Tabs de configuración -->
             <div class="tabs">
-                <button class="tab-button active" onclick="showTab('tasa')">Tasa del Día</button>
-                <button class="tab-button" onclick="showTab('empresa')">Datos Empresa</button>
-                <button class="tab-button" onclick="showTab('sistema')">Sistema</button>
-                <button class="tab-button" onclick="showTab('seguridad')">Seguridad</button>
-                <button class="tab-button" onclick="showTab('historial')">Historial</button>
-                <button class="tab-button" onclick="showTab('importar')">Importar Clientes</button>
+                <button type="button" class="tab-button active" onclick="showTab('tasa', this)">Tasa del Día</button>
+                <button type="button" class="tab-button" onclick="showTab('empresa', this)">Datos Empresa</button>
+                <button type="button" class="tab-button" onclick="showTab('sistema', this)">Sistema</button>
+                <button type="button" class="tab-button" onclick="showTab('seguridad', this)">Seguridad</button>
+                <button type="button" class="tab-button" onclick="showTab('historial', this)">Historial</button>
+                <button type="button" class="tab-button" onclick="showTab('importar', this)">Importar Clientes</button>
             </div>
 
             <!-- Tab Tasa del Día -->
@@ -107,34 +107,35 @@ protegerPagina(['admin']);
                                     <option value="USD">Dólares (USD)</option>
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <!-- <div class="form-group">
                                 <label for="iva-porcentaje">IVA (%):</label>
                                 <input type="number" id="iva-porcentaje" step="0.01" min="0" max="100">
-                            </div>
+                            </div> -->
                         </div>
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label for="descuento-maximo">Descuento Máximo (%):</label>
                             <input type="number" id="descuento-maximo" step="0.01" min="0" max="100">
-                        </div>
+                        </div> -->
                         <div class="form-group">
                             <label for="inventario-umbral-bajo">Umbral de inventario bajo (unidades):</label>
                             <input type="number" id="inventario-umbral-bajo" step="1" min="0" placeholder="50">
-                            <small>Se mostrará alerta cuando el stock sea menor o igual al umbral.</small>
+                            <!-- <small>Se mostrará alerta cuando el stock sea menor o igual al umbral.</small> -->
                         </div>
-                        <div class="form-group checkbox-group">
+                        <!-- <div class="form-group checkbox-group">
                             <label>
                                 <input type="checkbox" id="backup-automatico">
                                 Realizar backup automático
                             </label>
-                        </div>
-                        <div class="form-group checkbox-group">
+                        </div> -->
+                        <!-- <div class="form-group checkbox-group">
                             <label>
                                 <input type="checkbox" id="notificaciones-email">
                                 Enviar notificaciones por email
                             </label>
-                        </div>
+                        </div> -->
                         <hr>
                         <div class="form-group">
+                            <br>
                             <label class="config-subtitle">Días laborales</label>
                             <div class="day-chips">
                                 <label class="day-chip">
@@ -173,7 +174,7 @@ protegerPagina(['admin']);
                             <div class="form-group checkbox-group">
                                 <label>
                                     <input type="checkbox" id="incluir-dias-sin-ventas">
-                                    Incluir días sin ventas en los gráficos
+                                    Incluir días sin pedidos en los gráficos
                                 </label>
                             </div>
                             <div class="form-row">
@@ -272,11 +273,11 @@ protegerPagina(['admin']);
                             <label for="archivo-clientes">Archivo CSV</label>
                             <input type="file" id="archivo-clientes" name="archivo" accept=".csv" required>
                         <div class="help-text" style="margin-top:8px; line-height:1.4;">
-                            <div><strong>Obligatorias:</strong> cedula, nombre, apellido, telefono, alias</div>
+                            <div><strong>Obligatorias:</strong> cédula, nombre, apellido, teléfono, alias</div>
                             <div style="margin-top:6px;"><strong>Opcionales de deuda:</strong></div>
                             <ul style="margin:6px 0 0 18px;">
-                                <li>deuda en dolares</li>
-                                <li>deuda en bolivares</li>
+                                <li>deuda en dólares</li>
+                                <li>deuda en bolívares</li>
                                 <li>deuda total</li>
                             </ul>
                             <div style="margin-top:6px;"><strong>Variantes reconocidas:</strong></div>

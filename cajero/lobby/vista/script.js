@@ -16,10 +16,10 @@ const elementos = {
     btnRegistrar: document.getElementById('btn-registrar'),
     btnSiguiente: document.getElementById('btn-siguiente'),
     
-    // Factura
-    containerFactura: document.getElementById('container-factura'),
+    // Pedido
+    containerPedido: document.getElementById('container-pedido'),
     resumenCliente: document.getElementById('resumen-cliente'),
-    tablaFacturaBody: document.getElementById('tabla-factura-body'),
+    tablaPedidoBody: document.getElementById('tabla-pedido-body'),
     totalText: document.getElementById('total-text'),
     btnVerCuenta: document.getElementById('btn-ver-cuenta'),
     btnPagar: document.getElementById('btn-pagar'),
@@ -96,7 +96,7 @@ function configurarEventListeners() {
             if (e.target.classList.contains('btn-agregar-producto')) {
                 e.preventDefault();
                 animarBoton(e.target);
-                agregarProductoAFactura(e.target);
+                agregarProductoAPedido(e.target);
             }
         });
     }
@@ -110,7 +110,7 @@ function configurarEventListeners() {
         elementos.btnSiguiente.addEventListener('click', continuarConCliente);
     }
     
-    // Event listeners para los botones de la factura
+    // Event listeners para los botones del pedido
     if (elementos.btnVerCuenta) {
         elementos.btnVerCuenta.addEventListener('click', agregarACuenta);
     }
@@ -128,7 +128,7 @@ function configurarEventListeners() {
     if (elementos.productosBody) {
         elementos.productosBody.addEventListener('click', function(e) {
             if (e.target.classList.contains('btn-agregar-producto')) {
-                agregarProductoAFactura(e.target);
+                agregarProductoAPedido(e.target);
             }
         });
     }
@@ -539,8 +539,8 @@ function debounce(func, wait) {
     };
 }
 
-// Array para almacenar los productos de la factura
-let productosFactura = [];
+// Array para almacenar los productos del pedido
+let productosPedido = [];
 // Moneda actual para visualización: 'USD' o 'VES'
 let monedaActual = 'USD';
 // Tasa de cambio única (USD -> Bs)
@@ -562,8 +562,8 @@ async function cargarTasaDesdeConfiguracionCajeroLobby() {
                 localStorage.setItem('tasaCambio', tasa.toString());
                 tasaCambio = tasa; // sincronizar variable local
                 try { aplicarMonedaEnUI(); } catch(_) {}
-                try { actualizarTablaFactura(); } catch(_) {}
-                try { calcularTotalFactura(); } catch(_) {}
+                try { actualizarTablaPedido(); } catch(_) {}
+                try { calcularTotalPedido(); } catch(_) {}
                 return; // éxito
             }
         }
@@ -574,8 +574,8 @@ async function cargarTasaDesdeConfiguracionCajeroLobby() {
     }
 }
 
-function agregarProductoAFactura(boton) {
-    console.log('Agregando producto a la factura...');
+function agregarProductoAPedido(boton) {
+    console.log('Agregando producto al pedido...');
     
     // Prevenir doble clic deshabilitando temporalmente el botón
     if (boton.disabled) return;
@@ -625,8 +625,8 @@ function agregarProductoAFactura(boton) {
         cantidad: cantidadSeleccionada
     };
     
-    // Verificar si el producto ya está en la factura (buscar por ID)
-    const productoExistente = productosFactura.find(p => p.id === producto.id);
+    // Verificar si el producto ya está en el pedido (buscar por ID)
+    const productoExistente = productosPedido.find(p => p.id === producto.id);
     
     if (productoExistente) {
         const max = Number.isFinite(productoExistente.stock) ? productoExistente.stock : (Number.isFinite(stockDisponible) ? stockDisponible : 999);
@@ -643,19 +643,19 @@ function agregarProductoAFactura(boton) {
             producto.cantidad = stockDisponible;
             mostrarAlerta('info', `Cantidad ajustada al stock máximo (${stockDisponible})`);
         }
-        productosFactura.push(producto);
+        productosPedido.push(producto);
     }
     
-    console.log('Array de productos actualizado:', productosFactura);
+    console.log('Array de productos actualizado:', productosPedido);
     
-    // Actualizar la tabla de la factura
-    actualizarTablaFactura();
+    // Actualizar la tabla del pedido
+    actualizarTablaPedido();
     
     // Calcular y mostrar el total
-    calcularTotalFactura();
+    calcularTotalPedido();
     
     // Mostrar mensaje de éxito
-    mostrarAlerta('success', `Producto "${producto.nombre}" agregado a la factura`);
+    mostrarAlerta('success', `Producto "${producto.nombre}" agregado al pedido`);
     
     // Rehabilitar el botón después de un breve delay
     setTimeout(() => {
@@ -701,14 +701,14 @@ function registrarCliente() {
             clienteSeleccionadoId = data.id_cliente || clienteSeleccionadoId || null;
             mostrarAlerta('success', data.message);
             // NO limpiar formulario para mantener los datos del cliente registrado
-            // Los datos se mantendrán para mostrarlos en la factura
+            // Los datos se mantendrán para mostrarlos en el pedido
             
-            // Continuar a la sección de factura inmediatamente
+            // Continuar a la sección de pedido inmediatamente
             setTimeout(() => {
                 // Primero actualizar el resumen del cliente mientras los campos están visibles
                 actualizarResumenCliente();
-                // Luego mostrar la factura
-                mostrarSeccionFacturaConAnimacion();
+                // Luego mostrar el pedido
+                mostrarSeccionPedidoConAnimacion();
                 // Finalmente ocultar el panel del cliente
                 ocultarPanelClienteConAnimacion();
             }, 1500);
@@ -748,7 +748,7 @@ function continuarConCliente() {
     }
     // Actualizar resumen del cliente antes de transicionar
     actualizarResumenCliente();
-    mostrarSeccionFacturaConAnimacion();
+    mostrarSeccionPedidoConAnimacion();
     ocultarPanelClienteConAnimacion();
 }
 
@@ -800,32 +800,32 @@ function ocultarPanelClienteConAnimacion() {
     }
 }
 
-function mostrarSeccionFacturaConAnimacion() {
-    if (elementos.containerFactura) {
+function mostrarSeccionPedidoConAnimacion() {
+    if (elementos.containerPedido) {
         // NO actualizar resumen aquí ya que se hace antes de llamar esta función
         
         // Mostrar el contenedor
-        elementos.containerFactura.style.display = 'flex';
-        elementos.containerFactura.classList.remove('hidden');
-        elementos.containerFactura.classList.add('transitioning');
+        elementos.containerPedido.style.display = 'flex';
+        elementos.containerPedido.classList.remove('hidden');
+        elementos.containerPedido.classList.add('transitioning');
         
         // Pequeño delay para asegurar que el display se aplique
         setTimeout(() => {
             // Aplicar animación de entrada
-            elementos.containerFactura.classList.add('slide-in-right');
+            elementos.containerPedido.classList.add('slide-in-right');
             
             // Después de un breve delay, mostrar elementos internos
             setTimeout(() => {
-                elementos.containerFactura.classList.add('show');
+                elementos.containerPedido.classList.add('show');
             }, 200);
             
             // Limpiar clases después de la animación
             setTimeout(() => {
-                elementos.containerFactura.classList.remove('slide-in-right', 'transitioning');
+                elementos.containerPedido.classList.remove('slide-in-right', 'transitioning');
             }, 600);
             
-            // Scroll suave a la factura
-            elementos.containerFactura.scrollIntoView({ 
+            // Scroll suave a la pedido
+            elementos.containerPedido.scrollIntoView({ 
                 behavior: 'smooth', 
                 block: 'start' 
             });
@@ -833,24 +833,24 @@ function mostrarSeccionFacturaConAnimacion() {
     }
 }
 
-// Actualizar la tabla de la factura
-function actualizarTablaFactura() {
-    console.log('Actualizando tabla de factura...');
-    console.log('Productos en factura:', productosFactura);
+// Actualizar la tabla del pedido
+function actualizarTablaPedido() {
+    console.log('Actualizando tabla de pedido...');
+    console.log('Productos en pedido:', productosPedido);
     
-    if (!elementos.tablaFacturaBody) {
-        console.error('Elemento tablaFacturaBody no encontrado');
+    if (!elementos.tablaPedidoBody) {
+        console.error('Elemento tablaPedidoBody no encontrado');
         return;
     }
     
     // Limpiar la tabla
-    elementos.tablaFacturaBody.innerHTML = '';
+    elementos.tablaPedidoBody.innerHTML = '';
     
-    if (productosFactura.length === 0) {
-        elementos.tablaFacturaBody.innerHTML = `
+    if (productosPedido.length === 0) {
+        elementos.tablaPedidoBody.innerHTML = `
             <tr>
                 <td colspan="6" class="text-center text-gray-500">
-                    No hay productos en la factura
+                    No hay productos en el pedido
                 </td>
             </tr>
         `;
@@ -858,7 +858,7 @@ function actualizarTablaFactura() {
     }
     
     // Agregar cada producto a la tabla
-    productosFactura.forEach((producto, index) => {
+    productosPedido.forEach((producto, index) => {
         console.log(`Procesando producto ${index}:`, producto);
         
         const subtotalUSD = producto.precio * producto.cantidad;
@@ -894,29 +894,29 @@ function actualizarTablaFactura() {
             <td>Bs. ${(producto.precio * tasaCambio).toFixed(2)}</td>
             <td>${monedaActual === 'USD' ? `$${subtotalUSD.toFixed(2)}` : `Bs ${subtotalBs.toFixed(2)}`}</td>
             <td>
-                <button onclick="eliminarProductoFactura(${index})" 
-                        class="btn-eliminar">
+                <button onclick="eliminarProductoPedido(${index})" 
+                        class="btn-eliminar-pedido">
                     Eliminar
                 </button>
             </td>
         `;
-        elementos.tablaFacturaBody.appendChild(fila);
+        elementos.tablaPedidoBody.appendChild(fila);
     });
     
     console.log('Tabla actualizada');
 
     // Aplicar clase de moneda a la tabla para ocultar columnas
-    const tabla = document.querySelector('.tabla-factura');
+    const tabla = document.querySelector('.tabla-pedido');
     if (tabla) {
         tabla.classList.toggle('moneda-usd', monedaActual === 'USD');
         tabla.classList.toggle('moneda-ves', monedaActual !== 'USD');
     }
 }
 
-// Cambiar cantidad de un producto en la factura
+// Cambiar cantidad de un producto en el pedido
 function cambiarCantidadProducto(index, cambio) {
-    if (index < 0 || index >= productosFactura.length) return;
-    const prod = productosFactura[index];
+    if (index < 0 || index >= productosPedido.length) return;
+    const prod = productosPedido[index];
     const max = Number.isFinite(prod.stock) ? prod.stock : 999;
     const nueva = (prod.cantidad || 0) + cambio;
     if (cambio > 0 && nueva > max) {
@@ -927,35 +927,35 @@ function cambiarCantidadProducto(index, cambio) {
     }
     
     // Si la cantidad llega a 0 o menos, eliminar el producto
-    if (productosFactura[index].cantidad <= 0) {
-        productosFactura.splice(index, 1);
+    if (productosPedido[index].cantidad <= 0) {
+        productosPedido.splice(index, 1);
     }
     
     // Actualizar la tabla y el total
-    actualizarTablaFactura();
-    calcularTotalFactura();
+    actualizarTablaPedido();
+    calcularTotalPedido();
 }
 
-// Eliminar producto de la factura
-function eliminarProductoFactura(index) {
-    if (index < 0 || index >= productosFactura.length) return;
+// Eliminar producto del pedido
+function eliminarProductoPedido(index) {
+    if (index < 0 || index >= productosPedido.length) return;
     
-    const producto = productosFactura[index];
-    productosFactura.splice(index, 1);
+    const producto = productosPedido[index];
+    productosPedido.splice(index, 1);
     
     // Actualizar la tabla y el total
-    actualizarTablaFactura();
-    calcularTotalFactura();
+    actualizarTablaPedido();
+    calcularTotalPedido();
     
-    mostrarAlerta('info', `Producto "${producto.nombre}" eliminado de la factura`);
+    mostrarAlerta('info', `Producto "${producto.nombre}" eliminado del pedido`);
 }
 
-// Calcular y mostrar el total de la factura
-function calcularTotalFactura() {
-    console.log('Calculando total de factura...');
-    console.log('Productos en factura:', productosFactura);
+// Calcular y mostrar el total del pedido
+function calcularTotalPedido() {
+    console.log('Calculando total del pedido...');
+    console.log('Productos en pedido:', productosPedido);
     
-    const totalUSD = productosFactura.reduce((sum, producto) => {
+    const totalUSD = productosPedido.reduce((sum, producto) => {
         console.log(`Producto: ${producto.nombre}, Precio: ${producto.precio}, Cantidad: ${producto.cantidad}`);
         return sum + (producto.precio * producto.cantidad);
     }, 0);
@@ -996,8 +996,8 @@ function toggleMoneda() {
         btn.textContent = monedaActual === 'USD' ? 'USD' : 'Bs';
     }
     aplicarMonedaEnUI();
-    actualizarTablaFactura();
-    calcularTotalFactura();
+    actualizarTablaPedido();
+    calcularTotalPedido();
     // Refrescar la tabla de productos según la moneda actual
     try {
         const termino = elementos.busquedaProducto?.value?.trim();
@@ -1021,8 +1021,8 @@ function aplicarMonedaEnUI() {
     if (btn) {
         btn.textContent = monedaActual === 'USD' ? 'USD' : 'Bs';
     }
-    // Clase en tabla de factura para ocultar columnas
-    const tabla = document.querySelector('.tabla-factura');
+    // Clase en tabla de pedido para ocultar columnas
+    const tabla = document.querySelector('.tabla-pedido');
     if (tabla) {
         tabla.classList.toggle('moneda-usd', monedaActual === 'USD');
         tabla.classList.toggle('moneda-ves', monedaActual !== 'USD');
@@ -1157,7 +1157,7 @@ function actualizarTablaProductos(productos) {
                         data-nombre="${producto.nombre_produc}" 
                         data-precio="${producto.precio_venta}" 
                         data-stock="${Number.isFinite(stockNum) ? stockNum : 0}" ${Number.isFinite(stockNum) && stockNum <= 0 ? 'disabled' : ''}
-                        aria-label="Agregar ${producto.nombre_produc} a la factura">
+                        aria-label="Agregar ${producto.nombre_produc} al pedido">
                     Agregar
                 </button>
             </td>
@@ -1440,7 +1440,7 @@ function inicializarAnimaciones() {
             border-color: #dc3545 !important;
         }
         
-        .container_factura {
+        .container_pedido {
             transition: all 0.5s ease;
         }
         
@@ -1729,26 +1729,26 @@ function actualizarCantidadManual(index, nuevaCantidad) {
     // Validar que la cantidad sea válida
     if (isNaN(cantidad) || cantidad < 1) {
         mostrarAlerta('error', 'La cantidad debe ser un número mayor a 0');
-        actualizarTablaFactura(); // Restaurar valor anterior
+        actualizarTablaPedido(); // Restaurar valor anterior
         return;
     }
     
-    const max = Number.isFinite(productosFactura[index]?.stock) ? productosFactura[index].stock : 999;
+    const max = Number.isFinite(productosPedido[index]?.stock) ? productosPedido[index].stock : 999;
     if (cantidad > max) {
-        productosFactura[index].cantidad = max;
-        actualizarTablaFactura();
+        productosPedido[index].cantidad = max;
+        actualizarTablaPedido();
         mostrarAlerta('info', `Cantidad ajustada al stock máximo (${max})`);
-        calcularTotalFactura();
+        calcularTotalPedido();
         return;
     }
     
     // Actualizar la cantidad del producto
-    productosFactura[index].cantidad = cantidad;
+    productosPedido[index].cantidad = cantidad;
     
     // Actualizar subtotal de la fila en tiempo real sin re-renderizar toda la tabla
-    if (elementos.tablaFacturaBody && elementos.tablaFacturaBody.children[index]) {
-        const fila = elementos.tablaFacturaBody.children[index];
-        const subtotalUSD = productosFactura[index].precio * cantidad;
+    if (elementos.tablaPedidoBody && elementos.tablaPedidoBody.children[index]) {
+        const fila = elementos.tablaPedidoBody.children[index];
+        const subtotalUSD = productosPedido[index].precio * cantidad;
         const subtotalBs = subtotalUSD * tasaCambio;
         const subtotalCol = fila.children && fila.children[4];
         if (subtotalCol) {
@@ -1758,9 +1758,9 @@ function actualizarCantidadManual(index, nuevaCantidad) {
         }
     }
     // Recalcular totales generales
-    calcularTotalFactura();
+    calcularTotalPedido();
     
-    console.log(`Cantidad actualizada manualmente: ${cantidad} para producto ${productosFactura[index].nombre}`);
+    console.log(`Cantidad actualizada manualmente: ${cantidad} para producto ${productosPedido[index].nombre}`);
 }
 
 // Función para validar el input de cantidad
@@ -1787,20 +1787,20 @@ function validarCantidadInput(input) {
     }
 }
 
-// Función para eliminar factura completa y regresar al cliente (sin confirmación)
-function eliminarFacturaCompleta() {
+// Función para eliminar pedido completo y regresar al cliente (sin confirmación)
+function eliminarPedidoCompleto() {
         // Limpiar array de productos
-        productosFactura = [];
+        productosPedido = [];
         
         // Actualizar tabla
-        actualizarTablaFactura();
+        actualizarTablaPedido();
         
         // Recalcular totales
-        calcularTotalFactura();
+        calcularTotalPedido();
         
-        // Ocultar sección factura
-        const containerFactura = elementos.containerFactura;
-        containerFactura.classList.add('hidden');
+        // Ocultar sección pedido
+        const containerPedido = elementos.containerPedido;
+        containerPedido.classList.add('hidden');
         
         // Mostrar sección cliente
         const containerCliente = elementos.containerCliente;
@@ -1826,7 +1826,7 @@ function eliminarFacturaCompleta() {
         // Mostrar mensaje de confirmación
         // mostrarAlerta('success', 'Regresando a selección de cliente. Puedes agregar un nuevo cliente o buscar uno existente.');
         
-        console.log('Factura eliminada completamente');
+        console.log('Pedido eliminado completamente');
         
         // Recargar la página
         window.location.reload();
@@ -1853,20 +1853,20 @@ function mostrarPanelClienteConAnimacion() {
     }
 }
 
-function ocultarSeccionFacturaConAnimacion() {
-    if (elementos.containerFactura) {
+function ocultarSeccionPedidoConAnimacion() {
+    if (elementos.containerPedido) {
         // Agregar clase de transición
-        elementos.containerFactura.classList.add('transitioning');
-        elementos.containerFactura.classList.remove('show');
+        elementos.containerPedido.classList.add('transitioning');
+        elementos.containerPedido.classList.remove('show');
         
         // Aplicar animación de salida
-        elementos.containerFactura.classList.add('fade-out-down');
+        elementos.containerPedido.classList.add('fade-out-down');
         
         // Después de la animación, ocultar completamente
         setTimeout(() => {
-            elementos.containerFactura.style.display = 'none';
-            elementos.containerFactura.classList.remove('fade-out-down', 'transitioning');
-            elementos.containerFactura.classList.add('hidden');
+            elementos.containerPedido.style.display = 'none';
+            elementos.containerPedido.classList.remove('fade-out-down', 'transitioning');
+            elementos.containerPedido.classList.add('hidden');
         }, 200);
     }
 }
@@ -1875,9 +1875,9 @@ function ocultarSeccionFacturaConAnimacion() {
 async function agregarACuenta() {
     console.log('Agregando productos a cuenta del cliente...');
     
-    // Validar que hay productos en la factura
-    if (productosFactura.length === 0) {
-        mostrarAlerta('error', 'No hay productos en la factura para agregar a cuenta');
+    // Validar que hay productos en el pedido
+    if (productosPedido.length === 0) {
+        mostrarAlerta('error', 'No hay productos en el pedido para agregar a cuenta');
         return;
     }
     
@@ -1896,10 +1896,10 @@ async function agregarACuenta() {
     if (!confirmado) return;
     
     // Preparar datos para enviar
-    const datosFactura = {
+    const datosPedido = {
         tipo: 'credito',
         cliente_id: clienteId,
-        productos: productosFactura.map(producto => ({
+        productos: productosPedido.map(producto => ({
             id: producto.id,
             nombre: producto.nombre,
             cantidad: producto.cantidad,
@@ -1910,7 +1910,7 @@ async function agregarACuenta() {
         total_bolivares: calcularTotalBolivares()
     };
     
-    console.log('Datos a enviar:', datosFactura);
+    console.log('Datos a enviar:', datosPedido);
     
     // Deshabilitar botón mientras se procesa
     elementos.btnVerCuenta.disabled = true;
@@ -1922,7 +1922,7 @@ async function agregarACuenta() {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(datosFactura)
+        body: JSON.stringify(datosPedido)
     })
     .then(response => response.json())
     .then(data => {
@@ -1931,9 +1931,9 @@ async function agregarACuenta() {
         if (data.success) {
             mostrarAlerta('success', `Productos agregados a cuenta exitosamente. Número de crédito: ${data.numero_factura}`);
             
-            // Limpiar factura después de agregar a cuenta
+            // Limpiar pedido después de agregar a cuenta
             setTimeout(() => {
-                limpiarFacturaCompleta();
+                limpiarPedidoCompleto();
             }, 500);
         } else {
             mostrarAlerta('error', data.message || 'Error al agregar productos a cuenta');
@@ -1951,11 +1951,11 @@ async function agregarACuenta() {
 }
 
 async function procesarPago() {
-    console.log('Procesando pago de la factura...');
+    console.log('Procesando pago del pedido...');
     
-    // Validar que hay productos en la factura
-    if (productosFactura.length === 0) {
-        mostrarAlerta('error', 'No hay productos en la factura para procesar el pago');
+    // Validar que hay productos en el pedido
+    if (productosPedido.length === 0) {
+        mostrarAlerta('error', 'No hay productos en el pedido para procesar el pago');
         return;
     }
     
@@ -1975,10 +1975,10 @@ async function procesarPago() {
     if (!confirmado) return;
     
     // Preparar datos para enviar
-    const datosFactura = {
+    const datosPedido = {
         tipo: 'contado',
         cliente_id: clienteId,
-        productos: productosFactura.map(producto => ({
+        productos: productosPedido.map(producto => ({
             id: producto.id,
             nombre: producto.nombre,
             cantidad: producto.cantidad,
@@ -1989,7 +1989,7 @@ async function procesarPago() {
         total_bolivares: calcularTotalBolivares()
     };
     
-    console.log('Datos a enviar:', datosFactura);
+    console.log('Datos a enviar:', datosPedido);
     
     // Deshabilitar botón mientras se procesa
     elementos.btnPagar.disabled = true;
@@ -2001,18 +2001,18 @@ async function procesarPago() {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(datosFactura)
+        body: JSON.stringify(datosPedido)
     })
     .then(response => response.json())
     .then(data => {
         console.log('Respuesta del servidor:', data);
         
         if (data.success) {
-            mostrarAlerta('success', `Pago procesado exitosamente. Número de factura: ${data.numero_factura}`);
+            mostrarAlerta('success', `Pago procesado exitosamente. Número de pedido: ${data.numero_factura}`);
             
-            // Limpiar factura después del pago
+            // Limpiar pedido después del pago
             setTimeout(() => {
-                limpiarFacturaCompleta();
+                limpiarPedidoCompleto();
             }, 500);
         } else {
             mostrarAlerta('error', data.message || 'Error al procesar el pago');
@@ -2048,7 +2048,7 @@ function obtenerClienteId() {
 
 // Función auxiliar para calcular total en dólares
 function calcularTotalDolares() {
-    return productosFactura.reduce((total, producto) => {
+    return productosPedido.reduce((total, producto) => {
         return total + (producto.precio * producto.cantidad);
     }, 0);
 }
@@ -2059,19 +2059,19 @@ function calcularTotalBolivares() {
     return totalDolares * tasaCambio; // Tasa de cambio única
 }
 
-// Función para limpiar la factura completa después de procesar
-function limpiarFacturaCompleta() {
+// Función para limpiar el pedido completo después de procesar
+function limpiarPedidoCompleto() {
     // Limpiar array de productos
-    productosFactura = [];
+    productosPedido = [];
     
     // Actualizar tabla
-    actualizarTablaFactura();
+    actualizarTablaPedido();
     
     // Recalcular totales
-    calcularTotalFactura();
+    calcularTotalPedido();
     
     // Regresar a la selección de cliente
-    eliminarFacturaCompleta();
+    eliminarPedidoCompleto();
 }
 
 // ... existing code ...

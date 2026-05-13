@@ -10,7 +10,7 @@ protegerPagina(['cajero']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Facturas</title>
+    <title>Gestión de Pedidos</title>
     <link rel="stylesheet" href="../../../acces/css/main.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -19,7 +19,7 @@ protegerPagina(['cajero']);
     <div class="container">
         <div class="accounts-container">
             <div class="accounts-header">
-                <h1>Gestión de Facturas</h1>
+                <h1>Gestión de Pedidos</h1>
                 <button id="btnToggleMonedaCuentas" type="button" class="btn-toggle-moneda">Moneda: USD</button>
             </div>
 
@@ -45,15 +45,15 @@ protegerPagina(['cajero']);
                 <button id="btn-limpiar-filtros" class="btn btn-secondary">Limpiar Filtros</button>
             </div>
 
-            <!-- Resumen de facturas -->
+            <!-- Resumen de pedidos -->
             <div class="summary-cards">
                 <div class="summary-card">
-                    <h3>Total Facturas</h3>
+                    <h3>Total Pedidos</h3>
                     <div class="amount" id="totalCuentas">0</div>
                     <div class="label">Registros</div>
                 </div>
                 <div class="summary-card">
-                    <h3>Facturas Pendientes</h3>
+                    <h3>Pedidos Pendientes</h3>
                     <div class="amount" id="cuentasPendientes">0</div>
                     <div class="label">Activas</div>
                 </div>
@@ -74,7 +74,7 @@ protegerPagina(['cajero']);
                     <thead>
                         <tr>
                             <th>Nombre</th>
-                            <th>Cantidad de facturas</th>
+                            <th>Cantidad de pedidos</th>
                             <th>Total a deber</th>
                             <th>Abonado</th>
                             <th>Debiendo</th>
@@ -83,18 +83,18 @@ protegerPagina(['cajero']);
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Filas de facturas se insertarán aquí -->
+                        <!-- Filas de pedidos se insertarán aquí -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Modal para ver detalle de factura -->
+    <!-- Modal para ver detalle de pedido -->
     <div id="modalDetalle" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Detalle de Factura</h2>
+                <h2>Detalle de Pedido</h2>
                 <button id="btnToggleMonedaCajeroDetalle" type="button" class="btn-toggle-moneda">Moneda: USD</button>
                 <span class="close" onclick="cerrarModalDetalle()">&times;</span>
             </div>
@@ -115,9 +115,9 @@ protegerPagina(['cajero']);
             <div class="modal-body">
                 <form id="formAbono">
                     <div class="form-group" style="display:none;">
-                        <label for="fechaFacturaAbono">Factura / Fecha:</label>
+                        <label for="fechaFacturaAbono">Pedido / Fecha:</label>
                         <select id="fechaFacturaAbono">
-                            <option value="">Seleccione una factura...</option>
+                            <option value="">Seleccione un pedido...</option>
                         </select>
                     </div>
                     <div class="form-group">

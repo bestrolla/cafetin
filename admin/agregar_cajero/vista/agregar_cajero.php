@@ -25,23 +25,23 @@ protegerPagina(['admin']);
                 <!-- Columna 1: Datos Personales -->
                 <div class="form-column">
                     <h2>Datos Personales</h2>
-                    <label for="nombre">Nombre:</label>
+                    <label for="nombre">Nombre: <span style="color:#e53935;">*</span></label>
                     <input type="text" id="nombre" name="nombre" required>
 
-                    <label for="apellido">Apellido:</label>
+                    <label for="apellido">Apellido: <span style="color:#e53935;">*</span></label>
                     <input type="text" id="apellido" name="apellido" required>
 
-                    <label for="telefono">Teléfono:</label>
-                    <input type="text" id="telefono" name="telefono">
+                    <label for="telefono">Teléfono: <span style="color:#e53935;">*</span></label>
+                    <input type="text" id="telefono" name="telefono" required>
                 </div>
 
                 <!-- Columna 2: Datos de Usuario -->
                 <div class="form-column">
                     <h2>Datos de Acceso</h2>
-                    <label for="usuario">Nombre de Usuario:</label>
+                    <label for="usuario">Nombre de Usuario: <span style="color:#e53935;">*</span></label>
                     <input type="text" id="usuario" name="usuario" required>
 
-                    <label for="contrasena">Contraseña:</label>
+                    <label for="contrasena">Contraseña: <span style="color:#e53935;">*</span></label>
                     <div class="input-wrapper">
                         <input type="password" id="contrasena" name="contrasena" required aria-describedby="password-hint">
                         <span class="toggle-password" onclick="toggleAgregarCajeroPassword(this)" aria-label="Mostrar u ocultar contraseña" title="Mostrar/Ocultar">
@@ -56,7 +56,7 @@ protegerPagina(['admin']);
                           </svg>
                         </span>
                     </div>
-                    <label for="contrasena_confirmar">Confirmar Contraseña:</label>
+                    <label for="contrasena_confirmar">Confirmar Contraseña: <span style="color:#e53935;">*</span></label>
                     <div class="input-wrapper">
                         <input type="password" id="contrasena_confirmar" name="contrasena_confirmar" required aria-describedby="password-hint">
                         <span class="toggle-password" onclick="toggleAgregarCajeroPasswordConfirm(this)" aria-label="Mostrar u ocultar contraseña" title="Mostrar/Ocultar">

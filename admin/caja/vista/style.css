@@ -607,6 +607,54 @@ tbody tr:last-child td {
     color: #dc3545;
 }
 
+.grafico-leyenda {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #555;
+    background: #f8f9fa;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.leyenda-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin: 8px 0 6px;
+}
+
+.leyenda-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #444;
+}
+
+.leyenda-marca {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.leyenda-marca-laboral {
+    background: #4C8BF5;
+}
+
+.leyenda-marca-no-laboral {
+    background: #9aa5b1;
+}
+
+.leyenda-marca-actual {
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 11px solid #FFB300;
+    border-radius: 0;
+}
+
 .detalle-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));

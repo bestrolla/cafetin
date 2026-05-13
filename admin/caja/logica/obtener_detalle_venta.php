@@ -38,7 +38,7 @@ try {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$row) {
-        echo json_encode(['error' => 'Venta no encontrada']);
+        echo json_encode(['error' => 'Pedido no encontrado']);
         exit;
     }
 

@@ -55,6 +55,22 @@ class Conexion {
     }
 }
 
+function normalizarTextoNombre($texto) {
+    $texto = trim((string)$texto);
+    if ($texto === '') {
+        return $texto;
+    }
+
+    // Unificar espacios internos
+    $texto = preg_replace('/\s+/u', ' ', $texto);
+
+    if (function_exists('mb_convert_case')) {
+        return mb_convert_case($texto, MB_CASE_TITLE, 'UTF-8');
+    }
+
+    return ucwords(strtolower($texto));
+}
+
 function sqliteTransformMysqlDump($sql) {
     $sql = str_replace("\r", "\n", $sql);
     $sql = preg_replace('/\/\*![\s\S]*?\*\//i', '', $sql);

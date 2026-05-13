@@ -10,7 +10,7 @@ protegerPagina(['admin']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caja - Reporte de Ventas y Deudas</title>
+    <title>Caja - Reporte de Pedidos y Deudas</title>
     <link rel="stylesheet" href="../../../acces/css/main.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -29,7 +29,7 @@ protegerPagina(['admin']);
                 <div class="tabs">
                     <button class="tab-button active" data-tab="ventas">
                         <span class="tab-icon">💰</span>
-                        Ventas
+                        Pedidos
                     </button>
                     <button class="tab-button" data-tab="deudas">
                         <span class="tab-icon">📋</span>
@@ -61,7 +61,7 @@ protegerPagina(['admin']);
                     <label for="ventas_modo">Modo:</label>
                     <select id="ventas_modo">
                         <option value="producto">Por producto</option>
-                        <option value="venta">Por venta</option>
+                        <option value="venta">Por pedido</option>
                     </select>
                     <label for="ventas_ventana">Ventana:</label>
                     <select id="ventas_ventana">
@@ -112,8 +112,8 @@ protegerPagina(['admin']);
                         </select>
                         <label for="deudas_orden" style="margin-left:8px;">Orden:</label>
                         <select id="deudas_orden">
-                            <option value="mas">Quien debe más</option>
-                            <option value="menos">Quien debe menos</option>
+                            <option value="mas">Quién debe más</option>
+                            <option value="menos">Quién debe menos</option>
                         </select>
                     </div>
                     <div style="display:flex; gap:8px; margin-top:8px;">
@@ -125,7 +125,7 @@ protegerPagina(['admin']);
                     <table id="tabla-deudas">
                         <thead>
                             <tr>
-                                <th>ID Factura</th>
+                                <th>ID Pedido</th>
                                 <th>Cliente</th>
                                 <th>Fecha</th>
                                 <th>Productos</th>
@@ -166,16 +166,16 @@ protegerPagina(['admin']);
                 </div>
                 <div class="reportes-resumen" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
                     <div class="card">
-                        <h3>Total Vendido</h3>
+                        <h3>Total Pedidos</h3>
                         <div><strong>USD:</strong> <span id="reporte-total-usd">$0.00</span></div>
                         <div><strong>Bs:</strong> <span id="reporte-total-bs">Bs 0.00</span></div>
                     </div>
                     <div class="card">
-                        <h3>Más Vendido</h3>
+                        <h3>Más Pedido</h3>
                         <div id="reporte-top">—</div>
                     </div>
                     <div class="card">
-                        <h3>Menos Vendido</h3>
+                        <h3>Menos Pedido</h3>
                         <div id="reporte-bottom">—</div>
                     </div>
                 </div>
@@ -223,13 +223,31 @@ protegerPagina(['admin']);
                 <div id="grafico_contenedor" style="margin-top:16px;">
                     <div id="grafico_resumen" class="card" style="margin-bottom:12px;">
                         <h3>Resumen</h3>
-                        <div><strong>Total unidades vendidas:</strong> <span id="grafico_total_unidades">0</span></div>
+                        <div><strong>Total unidades pedidas:</strong> <span id="grafico_total_unidades">0</span></div>
                     </div>
                     <div id="grafico_barras" style="display:flex; align-items:flex-end; gap:8px; height:260px; padding:12px; border:1px solid #ddd; border-radius:8px; overflow-x:auto;">
                         <!-- Barras del gráfico se renderizan aquí -->
                     </div>
                     <div id="grafico_etiquetas" style="display:flex; gap:8px; justify-content:flex-start; align-items:center; margin-top:8px; font-size:12px; color:#555; overflow-x:auto;">
                         <!-- Etiquetas del eje X -->
+                    </div>
+                    <div id="grafico_leyenda" class="grafico-leyenda">
+                        <p><strong>Leyenda del gráfico</strong></p>
+                        <div class="leyenda-items">
+                            <span class="leyenda-item">
+                                <span class="leyenda-marca leyenda-marca-laboral"></span>
+                                Día laborable con pedidos
+                            </span>
+                            <span class="leyenda-item">
+                                <span class="leyenda-marca leyenda-marca-no-laboral"></span>
+                                Día no laborable (vista diaria)
+                            </span>
+                            <span class="leyenda-item">
+                                <span class="leyenda-marca leyenda-marca-actual"></span>
+                                Periodo actual resaltado
+                            </span>
+                        </div>
+                        <small>Cada barra representa unidades pedidas en el periodo seleccionado.</small>
                     </div>
                 </div>
             </div>
@@ -256,7 +274,7 @@ protegerPagina(['admin']);
     <div id="modal-detalle-venta" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Detalle de Venta</h2>
+                <h2>Detalle de Pedido</h2>
                 <span class="close" onclick="cerrarModalVenta()">&times;</span>
             </div>
             <div class="modal-body">

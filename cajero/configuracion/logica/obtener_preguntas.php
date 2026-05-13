@@ -32,16 +32,16 @@ try {
     }
 
     // Obtener selección actual del usuario para marcar sus preguntas elegidas
-    $usuario = obtenerUsuarioActual();
+    // $usuario = obtenerUsuarioActual(); // Comentado para depuración
     $selecciones = [];
-    if ($usuario && isset($usuario['id'])) {
-        $stmtSel = $conexion->prepare('SELECT id_pregunta FROM respuestas WHERE id_usuario = :id_usuario ORDER BY id_pregunta ASC LIMIT 3');
-        $stmtSel->execute([':id_usuario' => $usuario['id']]);
-        $rows = $stmtSel->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($rows as $r) {
-            $selecciones[] = ['id_pregunta' => $r['id_pregunta']];
-        }
-    }
+    // if ($usuario && isset($usuario['id'])) { // Comentado para depuración
+    //     $stmtSel = $conexion->prepare('SELECT id_pregunta FROM respuestas WHERE id_usuario = :id_usuario ORDER BY id_pregunta ASC LIMIT 3');
+    //     $stmtSel->execute([':id_usuario' => $usuario['id']]);
+    //     $rows = $stmtSel->fetchAll(PDO::FETCH_ASSOC);
+    //     foreach ($rows as $r) {
+    //         $selecciones[] = ['id_pregunta' => $r['id_pregunta']];
+    //     }
+    // }
 
     echo json_encode(['success' => true, 'preguntas' => $preguntas, 'selecciones' => $selecciones]);
 } catch (Exception $e) {

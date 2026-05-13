@@ -48,7 +48,7 @@ function cargarCuentas() {
         .then(data => {
             if (data.error) {
                 console.error('Error:', data.error);
-                mostrarMensaje('Error al cargar las facturas: ' + data.error, 'error');
+                mostrarMensaje('Error al cargar los pedidos: ' + data.error, 'error');
                 return;
             }
             
@@ -59,7 +59,7 @@ function cargarCuentas() {
         })
         .catch(error => {
             console.error('Error:', error);
-            mostrarMensaje('Error al cargar las facturas', 'error');
+            mostrarMensaje('Error al cargar los pedidos', 'error');
         });
 }
 
@@ -86,7 +86,7 @@ function mostrarCuentas() {
     tbody.innerHTML = '';
 
     if (facturasFiltradas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay facturas registradas</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay pedidos registrados</td></tr>';
         return;
     }
 
@@ -102,7 +102,7 @@ function mostrarCuentas() {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${factura.cliente}</td>
-            <td>${(factura.cantidad_facturas ?? factura.total_productos)} factura(s)</td>
+            <td>${(factura.cantidad_facturas ?? factura.total_productos)} pedido(s)</td>
             <td>${formatMonto(factura.total_factura)}</td>
             <td>${formatMonto(factura.total_abonado)}</td>
             <td>${formatMonto(saldo)}</td>
@@ -267,7 +267,7 @@ function verDetalleFactura(idCliente, fechaFactura) {
         })
         .catch(error => {
             console.error('Error:', error);
-            mostrarMensaje('Error al cargar el detalle de la factura', 'error');
+            mostrarMensaje('Error al cargar el detalle del pedido', 'error');
         });
 }
 
@@ -297,7 +297,7 @@ function mostrarModalHistorial(historial) {
 
     let contenido = '';
     if (!historial || historial.length === 0) {
-        contenido = '<p class="text-center">Sin historial de facturas pendientes.</p>';
+        contenido = '<p class="text-center">Sin historial de pedidos pendientes.</p>';
     } else {
         historial.forEach(h => {
             let productosHtml = '';
@@ -331,9 +331,9 @@ function mostrarModalHistorial(historial) {
                         </table>
                     </div>
                     <div class="row text-center">
-                        <div class="col-md-4"><strong>Total (${monedaLabel}):</strong> ${formatMonto(h.total_factura)}</div>
-                        <div class="col-md-4"><strong>Abonado (${monedaLabel}):</strong> ${formatMonto(h.total_abonado)}</div>
-                        <div class="col-md-4"><strong>Pendiente (${monedaLabel}):</strong> ${formatMonto(h.saldo_pendiente)}</div>
+                        <div class="col-md-4"><strong>Total Pedido (${monedaLabel}):</strong> ${formatMonto(h.total_factura)}</div>
+                        <div class="col-md-4"><strong>Total Abonado (${monedaLabel}):</strong> ${formatMonto(h.total_abonado)}</div>
+                        <div class="col-md-4"><strong>Saldo Pendiente (${monedaLabel}):</strong> ${formatMonto(h.saldo_pendiente)}</div>
                     </div>
                 </div>
             `;
@@ -342,7 +342,7 @@ function mostrarModalHistorial(historial) {
 
     modalBody.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5>Historial de Facturas por Fecha</h5>
+            <h5>Historial de Pedidos por Fecha</h5>
         </div>
         ${contenido}
     `;
@@ -438,7 +438,7 @@ function mostrarModalDetalle(data) {
                     <strong>Cliente:</strong> ${data.resumen.cliente}
                 </div>
                 <div class="col-md-6">
-                    <strong>Fecha Factura:</strong> ${data.resumen.fecha_factura}
+                    <strong>Fecha Pedido:</strong> ${data.resumen.fecha_factura}
                 </div>
             </div>
         </div>
@@ -472,7 +472,7 @@ function mostrarModalDetalle(data) {
             <div class="row">
                 <div class="col-md-4">
                     <div class="summary-card text-center" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
-                        <h6>Total Factura (${(localStorage.getItem('monedaActual')||'USD')==='USD' ? 'USD' : 'Bs'})</h6>
+                        <h6>Total Pedido (${(localStorage.getItem('monedaActual')||'USD')==='USD' ? 'USD' : 'Bs'})</h6>
                         <h4>${((localStorage.getItem('monedaActual')||'USD')==='USD' ? `$${parseFloat(data.resumen.total_factura).toFixed(2)}` : `Bs ${(parseFloat(data.resumen.total_factura)*(parseFloat(localStorage.getItem('tasaCambio'))||36)).toFixed(2)}`)}</h4>
                     </div>
                 </div>
@@ -693,11 +693,11 @@ function mostrarModalDetalleCombinado(data, historial) {
         </div>`;
 
     const facturasHtml = `
-        <div class="p-2">
-            <h4>Facturas por fecha</h4>
+        <div class="mt-4">
+            <h4>Pedidos por fecha</h4>
             ${Array.isArray(historial) && historial.length ? `
                 <div class="table-responsive">
-                    <table class="table table-sm table-bordered">
+                    <table class="table table-bordered table-sm">
                         <thead>
                             <tr>
                                 <th>Fecha</th>
@@ -718,7 +718,7 @@ function mostrarModalDetalleCombinado(data, historial) {
                         </tbody>
                     </table>
                 </div>
-            ` : '<p>No hay facturas registradas.</p>'}
+            ` : '<p>No hay pedidos registrados.</p>'}
         </div>`;
 
     body.innerHTML = resumenHtml + facturasHtml;
@@ -738,7 +738,7 @@ function abrirModalAbonoCliente(idCliente, nombreCliente) {
             if (creditos.error) { mostrarMensaje(creditos.error, 'error'); return; }
             document.getElementById('clienteAbono').value = nombreCliente;
             const select = document.getElementById('fechaFacturaAbono');
-            select.innerHTML = '<option value="">Seleccione una factura...</option>';
+            select.innerHTML = '<option value="">Seleccione un pedido...</option>';
             creditos.forEach(c => {
                 const opt = document.createElement('option');
                 opt.value = c.id_credito;

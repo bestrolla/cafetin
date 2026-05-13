@@ -83,7 +83,7 @@ section header .logo img {
         <li><a href="../../caja/vista/caja.php">Caja</a></li>
         <li><a href="../../cuentas/vista/cuentas.php">Cuentas</a></li>
         <li><a href="../../agregar_cajero/vista/agregar_cajero.php">Agregar Cajero</a></li>
-        <li><a href="../../configuracion/vista/configuracion.php">Configuracion</a></li>
+        <li><a href="../../configuracion/vista/configuracion.php">Configuración</a></li>
         <li><a href="../../../acces/logout.php">Cerrar Sesión</a></li>
       </ul>
     </nav>

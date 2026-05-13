@@ -7,8 +7,8 @@ $response = ['success' => false, 'message' => 'Error desconocido.'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 1. Recibir y validar datos
-    $nombre = $_POST['nombre'] ?? null;
-    $apellido = $_POST['apellido'] ?? null;
+    $nombre = isset($_POST['nombre']) ? normalizarTextoNombre($_POST['nombre']) : null;
+    $apellido = isset($_POST['apellido']) ? normalizarTextoNombre($_POST['apellido']) : null;
     $telefono = $_POST['telefono'] ?? null;
     $usuario = $_POST['usuario'] ?? null;
     $contrasena = $_POST['contrasena'] ?? null;
