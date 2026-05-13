@@ -78,9 +78,10 @@ section header .logo img {
     <h2>Bienvenido Cajero</h2>
     <nav>
       <ul>
-        <li><a href="#">Inicio</a></li>
-        <li><a href="#">Perfil</a></li>
-        <li><a href="#">Cerrar Sesión</a></li>
+        <li><a href="/cafetin/cajero/lobby/vista/lobby.php">Lobby</a></li>
+        <li><a href="/cafetin/cajero/cuentas/vista/cuentas.php">Cuentas</a></li>
+        <li><a href="/cafetin/cajero/configuracion/vista/configuracion.php">Configuración</a></li>
+        <li><a href="/cafetin/login/inicio/vista/inicio.php">Cerrar Sesión</a></li>
       </ul>
     </nav>
     <div class="logo">
@@ -89,3 +90,32 @@ section header .logo img {
   </header>
   <button id="show-header-tab">Mostrar menú</button>
 </section>
+<script>
+const header = document.getElementById('header-cajero');
+const logo = document.getElementById('logo-cajero');
+const tab = document.getElementById('show-header-tab');
+
+// Mostrar header al hacer clic en la pestaña
+tab.addEventListener('click', function(e) {
+    header.classList.remove('header-hidden');
+    tab.style.display = 'none';
+    e.stopPropagation();
+});
+
+// Ocultar header al hacer clic en el logo
+logo.addEventListener('click', function(e) {
+    header.classList.add('header-hidden');
+    tab.style.display = 'block';
+    e.stopPropagation();
+});
+
+// Ocultar header al hacer clic fuera del header
+document.addEventListener('click', function(e) {
+    if (!header.classList.contains('header-hidden')) {
+        if (!header.contains(e.target)) {
+            header.classList.add('header-hidden');
+            tab.style.display = 'block';
+        }
+    }
+});
+</script>
