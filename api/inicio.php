@@ -1,4 +1,6 @@
 <?php
-// Carga el archivo real sin redirigir
-require __DIR__ . '/../login/inicio/vista/inicio.php';
-?>
+// Define la raíz del proyecto
+define('ROOT_PATH', dirname(__DIR__));
+
+// Ahora incluye el archivo principal
+require ROOT_PATH . '/login/inicio/vista/inicio.php';
