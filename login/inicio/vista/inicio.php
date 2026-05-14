@@ -9,8 +9,9 @@ $csrf = csrfEnsureToken();
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CDC | login</title>
-  <link rel="stylesheet" href="../../../acces/css/main.css">
-  <link rel="stylesheet" href="style.css">
+  <!-- ✅ Desde cualquier página funciona -->
+<link rel="stylesheet" href="/acces/css/main.css">
+<link rel="stylesheet" href="/login/inicio/vista/style.css">
 </head>
 <body>
   <section class="container">
