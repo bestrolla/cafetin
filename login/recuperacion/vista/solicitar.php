@@ -1,6 +1,6 @@
 <?php
-require_once '../../../acces/security_headers.php';
-require_once '../../../acces/csrf.php';
+require_once __DIR__ . '../../../acces/security_headers.php';
+require_once __DIR__ . '../../../acces/csrf.php';
 $csrf = csrfEnsureToken();
 ?>
 <!DOCTYPE html>
@@ -9,8 +9,8 @@ $csrf = csrfEnsureToken();
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recuperación de contraseña</title>
-  <link rel="stylesheet" href="../../../acces/css/main.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/acces/css/main.css">
+  <link rel="stylesheet" href="/login/recuperacion/vista/style.css">
   
 </head>
 <body>
@@ -51,7 +51,7 @@ $csrf = csrfEnsureToken();
       </form>
     </div>
   </section>
-  <?php require_once '../../../acces/footer/footer.php'; ?>
+  <?php require_once __DIR__ . '/../../../acces/footer/footer.php'; ?>
   <script>
     (function(){
       const usuarioInput = document.getElementById('usuario');
