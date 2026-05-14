@@ -62,7 +62,7 @@ $csrf = csrfEnsureToken();
   </section>
 
   <?php
-  require_once '../../../acces/footer/footer.php';
+ require __DIR__ . '/../../../acces/footer/footer.php';
   
   
   
