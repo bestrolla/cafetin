@@ -3,4 +3,5 @@
 chdir(__DIR__ . '/..');
 
 // Ahora incluye tu archivo original sin modificar nada
-require 'login/inicio/vista/inicio.php';
+
+require __DIR__ . '/../login/inicio/vista/inicio.php';
