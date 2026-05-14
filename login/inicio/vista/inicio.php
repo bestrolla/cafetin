@@ -52,7 +52,7 @@ $csrf = csrfEnsureToken();
     </div>
 
     <div class="links">
-      <a href="../../recuperacion/vista/solicitar.php">¿Olvidaste tu contraseña?</a>
+      <a href="/login/recuperacion/vista/solicitar.php">¿Olvidaste tu contraseña?</a>
       <!-- <a href="#">Registrate</a> -->
     </div>
     
