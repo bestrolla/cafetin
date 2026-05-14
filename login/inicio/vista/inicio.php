@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../../../acces/security_headers.php';
-require_once __DIR__ . '/../../../acces/csrf.php';
+require_once  '/../../../acces/security_headers.php';
+require_once  '/../../../acces/csrf.php';
 $csrf = csrfEnsureToken();
 ?>
 <!DOCTYPE html>

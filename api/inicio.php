@@ -1,6 +1,6 @@
 <?php
-// Define la raíz del proyecto
-define('ROOT_PATH', dirname(__DIR__));
+// Esto soluciona TODAS las rutas relativas de una vez
+chdir(__DIR__ . '/..');
 
-// Ahora incluye el archivo principal
-require ROOT_PATH . '/login/inicio/vista/inicio.php';
+// Ahora incluye tu archivo original sin modificar nada
+require 'login/inicio/vista/inicio.php';
