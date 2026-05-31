@@ -35,7 +35,7 @@ class Conexion {
             $this->port = $port ?: '3306';
             $this->dbname = 'ezyro_42064276_cafetin';
             $this->username = 'ezyro_42064276';
-            $this->password = $pass !== false ? $pass : '';
+            $this->password = $pass !== false ? $pass : 'angel0109$';
         } else {
             $this->host = '127.0.0.1';
             $this->port = $port ?: '3306';
