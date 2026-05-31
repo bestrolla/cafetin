@@ -57,7 +57,8 @@ function cafetinPrepararSqliteEnRuta(string $rutaDestino): void {
         try {
             $pdo = new PDO('sqlite:' . $rutaDestino);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $necesitaCopia = !cafetinSqliteTablaExiste($pdo, 'ventas');
+            $usuarios = (int) $pdo->query('SELECT COUNT(*) FROM usuario')->fetchColumn();
+            $necesitaCopia = !cafetinSqliteTablaExiste($pdo, 'ventas') || $usuarios === 0;
         } catch (Exception $e) {
             $necesitaCopia = true;
         }

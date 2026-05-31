@@ -41,7 +41,14 @@ Tras el primer arranque con SQLite se crea o actualiza:
 
 - Las sesiones PHP se guardan en `/tmp`; en entorno serverless pueden no persistir entre todas las peticiones si hay muchas instancias. Si el login “se pierde”, considera un host con PHP tradicional (WAMP, Railway, Render).
 - La base SQLite en `/tmp` se reinicia si la instancia serverless es nueva; para datos permanentes usa MySQL gestionado o despliega en un VPS.
-- La base de datos es el archivo **`BBDD/cafetin.sql`** (SQLite con todas tus tablas). En Vercel se copia una vez a `/tmp/cafetin.db` (solo lectura en el repo). Asegúrate de que `cafetin.sql` esté en Git y subido al despliegue.
+- La base de datos es el archivo **`BBDD/cafetin.sql`** (SQLite con todas tus tablas y usuarios). En Vercel se copia a `/tmp/cafetin.db`.
+- En **WAMP** tus datos reales están en **MySQL** (`cafetin`). Si cambias usuarios o productos en MySQL, vuelve a exportar antes de desplegar:
+
+```bash
+php BBDD/sincronizar_mysql_a_sqlite.php
+```
+
+Eso actualiza `cafetin.sql` con los 14 usuarios (y el resto de tablas). Sube `cafetin.sql` a Git y redespliega en Vercel.
 
 ## Probar en local (sin Vercel)
 
