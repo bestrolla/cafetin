@@ -14,7 +14,7 @@ class Conexion {
     private $conexion;
 
     public function __construct() {
-        $this->sqlite_path = __DIR__ . '/cafetin.db';
+        $this->sqlite_path = __DIR__ . '/cafetin.sql';
     }
 
     public function conectar() {
@@ -52,6 +52,10 @@ class Conexion {
 
     public function desconectar() {
         $this->conexion = null;
+    }
+
+    public function getSqlitePath(): string {
+        return $this->sqlite_path;
     }
 }
 
@@ -169,104 +173,37 @@ function sqliteImportFromMysqlDump($conexion, $dumpPath) {
     }
 }
 
-function cafetinPrepararSqliteVercel($rutaDestino) {
-    if (!is_string($rutaDestino) || $rutaDestino === '') {
-        return;
-    }
-    $dir = dirname($rutaDestino);
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0755, true);
-    }
-    if (file_exists($rutaDestino)) {
-        return;
-    }
-    $origen = __DIR__ . '/cafetin.db';
-    if (file_exists($origen)) {
-        @copy($origen, $rutaDestino);
-    }
-}
+require_once __DIR__ . '/sqlite_bootstrap.php';
 
 // Mantener compatibilidad con código existente que usa $conexion directamente
 try {
     require_once __DIR__ . '/../acces/vercel_env.php';
     $conexionObj = new Conexion();
-    if (isset($_ENV['CAFETIN_DB_DRIVER']) && $_ENV['CAFETIN_DB_DRIVER'] === 'sqlite') {
-        $ruta = isset($_ENV['CAFETIN_SQLITE_PATH']) && $_ENV['CAFETIN_SQLITE_PATH']
-            ? $_ENV['CAFETIN_SQLITE_PATH']
-            : null;
-        if ($ruta && isVercelRuntime()) {
-            cafetinPrepararSqliteVercel($ruta);
+
+    $usarSqlite = (isset($_ENV['CAFETIN_DB_DRIVER']) && $_ENV['CAFETIN_DB_DRIVER'] === 'sqlite')
+        || isVercelRuntime();
+
+    if ($usarSqlite) {
+        $sqliteRuta = cafetinResolverRutaSqlite();
+        if ($sqliteRuta !== cafetinRutaSemillaSqlite()) {
+            cafetinPrepararSqliteEnRuta($sqliteRuta);
         }
-        $conexionObj->usarSqlite($ruta);
-    } elseif (isVercelRuntime()) {
-        $ruta = '/tmp/cafetin.db';
-        cafetinPrepararSqliteVercel($ruta);
-        $conexionObj->usarSqlite($ruta);
+        $conexionObj->usarSqlite($sqliteRuta);
     }
+
     try {
         $conexion = $conexionObj->conectar();
     } catch (Exception $e) {
-        if (extension_loaded('pdo_sqlite')) {
-            $ruta = (isset($_ENV['CAFETIN_SQLITE_PATH']) && $_ENV['CAFETIN_SQLITE_PATH']) ? $_ENV['CAFETIN_SQLITE_PATH'] : (__DIR__ . '/cafetin.db');
-            $conexionObj->usarSqlite($ruta);
+        if (extension_loaded('pdo_sqlite') && $usarSqlite) {
+            $sqliteRuta = cafetinResolverRutaSqlite();
+            cafetinPrepararSqliteEnRuta($sqliteRuta);
+            $conexionObj->usarSqlite($sqliteRuta);
             $conexion = $conexionObj->conectar();
         } else {
             throw $e;
         }
     }
-    $driverActual = $conexion->getAttribute(PDO::ATTR_DRIVER_NAME);
-    if ($driverActual === 'sqlite') {
-        $dump = __DIR__ . '/cafetin.sql';
-        if (file_exists($dump)) {
-            $t = $conexion->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='usuario'")->fetchColumn();
-            $c = 0;
-            if ($t) { $c = (int)$conexion->query("SELECT COUNT(1) FROM usuario")->fetchColumn(); }
-            if (!$t || $c === 0) { sqliteImportFromMysqlDump($conexion, $dump); }
-        }
-        $t = $conexion->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='usuario'")->fetchColumn();
-        if (!$t) {
-            $conexion->exec("CREATE TABLE IF NOT EXISTS rol (id_rol INTEGER PRIMARY KEY AUTOINCREMENT, nombre_rol TEXT NOT NULL UNIQUE)");
-            $conexion->exec("CREATE TABLE IF NOT EXISTS persona (id_persona INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL, apellido TEXT NOT NULL, cedula TEXT, telefono TEXT)");
-            $conexion->exec("CREATE TABLE IF NOT EXISTS usuario (id_usuario INTEGER PRIMARY KEY AUTOINCREMENT, id_persona INTEGER NOT NULL, id_rol INTEGER NOT NULL, usuario TEXT NOT NULL UNIQUE, contrasena TEXT NOT NULL, estado INTEGER NOT NULL DEFAULT 1, FOREIGN KEY(id_persona) REFERENCES persona(id_persona), FOREIGN KEY(id_rol) REFERENCES rol(id_rol))");
-            $conexion->exec("INSERT OR IGNORE INTO rol (nombre_rol) VALUES ('admin'), ('cajero'), ('cliente')");
-        }
-        $stmtAdmin = $conexion->prepare("SELECT id_usuario FROM usuario WHERE usuario = :u LIMIT 1");
-        $stmtAdmin->execute([':u' => 'admin']);
-        $rowAdmin = $stmtAdmin->fetch(PDO::FETCH_ASSOC);
-        if ($rowAdmin && isset($rowAdmin['id_usuario'])) {
-            $hash = password_hash('Admin123$', PASSWORD_DEFAULT);
-            $upd = $conexion->prepare("UPDATE usuario SET contrasena = :h WHERE id_usuario = :id");
-            $upd->execute([':h' => $hash, ':id' => (int)$rowAdmin['id_usuario']]);
-        } else {
-            $idRolAdmin = (int)$conexion->query("SELECT id_rol FROM rol WHERE nombre_rol = 'admin' LIMIT 1")->fetchColumn();
-            if ($idRolAdmin > 0) {
-                $conexion->beginTransaction();
-                $stmtP = $conexion->prepare("INSERT INTO persona (nombre, apellido, cedula, telefono) VALUES (:n,:a,:c,:t)");
-                $stmtP->execute([':n' => 'Administrador', ':a' => 'Sistema', ':c' => '0', ':t' => '0000000000']);
-                $idPersona = (int)$conexion->lastInsertId();
-                $hash = password_hash('Admin123$', PASSWORD_DEFAULT);
-                $stmtU = $conexion->prepare("INSERT INTO usuario (id_persona, usuario, contrasena, id_rol) VALUES (:idp, :u, :h, :r)");
-                $stmtU->execute([':idp' => $idPersona, ':u' => 'admin', ':h' => $hash, ':r' => $idRolAdmin]);
-                $idUsuario = (int)$conexion->lastInsertId();
-                $tAdmin = $conexion->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='admin'")->fetchColumn();
-                if (!$tAdmin) {
-                    $conexion->exec("CREATE TABLE IF NOT EXISTS admin (id_admin INTEGER PRIMARY KEY AUTOINCREMENT, id_usuario INTEGER NOT NULL)");
-                }
-                $stmtA = $conexion->prepare("INSERT INTO admin (id_usuario) VALUES (:id)");
-                $stmtA->execute([':id' => $idUsuario]);
-                $conexion->commit();
-            }
-        }
-    } else {
-        $stmtAdmin = $conexion->prepare("SELECT id_usuario FROM usuario WHERE usuario = :u LIMIT 1");
-        $stmtAdmin->execute([':u' => 'admin']);
-        $rowAdmin = $stmtAdmin->fetch(PDO::FETCH_ASSOC);
-        if ($rowAdmin && isset($rowAdmin['id_usuario'])) {
-            $hash = password_hash('Admin123$', PASSWORD_DEFAULT);
-            $upd = $conexion->prepare("UPDATE usuario SET contrasena = :h WHERE id_usuario = :id");
-            $upd->execute([':h' => $hash, ':id' => (int)$rowAdmin['id_usuario']]);
-        }
-    }
+
 } catch (Exception $e) {
     echo $e->getMessage();
     exit;
