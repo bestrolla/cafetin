@@ -12,12 +12,30 @@ class Conexion {
     private $conexion;
 
     public function __construct() {
-        $this->host = getenv('MYSQL_HOST') ?: 'sql103.infinityfree.com';
-        $this->port = getenv('MYSQL_PORT') ?: '3306';
-        $this->dbname = getenv('MYSQL_DATABASE') ?: 'if0_41909456_cafetin';
-        $this->username = getenv('MYSQL_USER') ?: 'if0_41909456';
-        $pass = getenv('MYSQL_PASSWORD');
+        $this->host = $this->getEnvVar('MYSQL_HOST') ?: 'sql103.infinityfree.com';
+        $this->port = $this->getEnvVar('MYSQL_PORT') ?: '3306';
+        $this->dbname = $this->getEnvVar('MYSQL_DATABASE') ?: 'if0_41909456_cafetin';
+        $this->username = $this->getEnvVar('MYSQL_USER') ?: 'if0_41909456';
+        $pass = $this->getEnvVar('MYSQL_PASSWORD');
         $this->password = $pass !== false ? $pass : 'udWAvVG9sN';
+    }
+
+    private function getEnvVar(string $name, $default = false) {
+        $value = getenv($name);
+        if ($value !== false) {
+            return $value;
+        }
+        if (isset($_ENV[$name])) {
+            return $_ENV[$name];
+        }
+        if (isset($_SERVER[$name])) {
+            return $_SERVER[$name];
+        }
+        return $default;
+    }
+
+    public static function getConnection(): PDO {
+        return (new self())->conectar();
     }
 
     public function conectar() {
