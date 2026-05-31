@@ -1,6 +1,6 @@
 <?php
 // Incluir sistema de control de acceso
-require_once '../../../acces/auth_check.php';
+require_once __DIR__ . '/../../../acces/auth_check.php';
 
 // Proteger página - solo cajeros
 protegerPagina(['cajero']);
@@ -15,7 +15,7 @@ protegerPagina(['cajero']);
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <?php include '../../../acces/nav_cajero/nav_cajero.php'; ?>
+    <?php include __DIR__ . '/../../../acces/nav_cajero/nav_cajero.php'; ?>
     
     <div class="container">
         <div class="content-wrapper">

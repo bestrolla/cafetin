@@ -1,6 +1,6 @@
 <?php
-require_once '../../../acces/auth_check.php';
-require_once '../../../BBDD/BBDD.php';
+require_once __DIR__ . '/../../../acces/auth_check.php';
+require_once __DIR__ . '/../../../BBDD/BBDD.php';
 
 if (!esAdmin()) {
     echo json_encode([

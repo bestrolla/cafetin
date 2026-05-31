@@ -1,6 +1,6 @@
 <?php
 // Incluir sistema de control de acceso
-require_once '../../../acces/auth_check.php';
+require_once __DIR__ . '/../../../acces/auth_check.php';
 
 // Proteger página - solo administradores
 protegerPagina(['admin']);
@@ -15,7 +15,7 @@ protegerPagina(['admin']);
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <?php include '../../../acces/nav_admin/nav_admin.php'; ?>
+    <?php include __DIR__ . '/../../../acces/nav_admin/nav_admin.php'; ?>
     
     <!-- Notificaciones globales se gestionan desde nav_admin -->
     

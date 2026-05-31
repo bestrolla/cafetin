@@ -5,8 +5,12 @@
 declare(strict_types=1);
 
 $root = dirname(__DIR__);
-chdir($root);
 
+if (!defined('CAFETIN_ROOT')) {
+    define('CAFETIN_ROOT', $root);
+}
+
+require_once $root . '/acces/bootstrap.php';
 require_once $root . '/acces/vercel_env.php';
 
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);

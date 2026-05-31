@@ -4,7 +4,7 @@
  */
 
 // Incluir sistema de control de acceso
-require_once 'auth_check.php';
+require_once __DIR__ . '/auth_check.php';
 
 // Destruir la sesión
 destruirSesion();

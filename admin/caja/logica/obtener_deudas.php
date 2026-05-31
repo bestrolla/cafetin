@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 
-require_once '../../../BBDD/BBDD.php';
+require_once __DIR__ . '/../../../BBDD/BBDD.php';
 
 try {
     $driver = $conexion->getAttribute(PDO::ATTR_DRIVER_NAME);

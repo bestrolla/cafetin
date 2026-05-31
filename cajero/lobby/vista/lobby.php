@@ -1,6 +1,6 @@
 <?php
 // Incluir sistema de control de acceso
-require_once '../../../acces/auth_check.php';
+require_once __DIR__ . '/../../../acces/auth_check.php';
 
 // Proteger página - solo cajeros
 protegerPagina(['cajero']);
@@ -16,7 +16,7 @@ protegerPagina(['cajero']);
 </head>
 <body>
 <?php
-require_once '../../../acces/nav_cajero/nav_cajero.php';
+require_once __DIR__ . '/../../../acces/nav_cajero/nav_cajero.php';
 ?>
 <section class="main">
   <div class="container">
@@ -107,7 +107,7 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
               <tbody id="productos-body">
                 <?php
                 // Incluir el archivo de conexión
-                require_once '../../../BBDD/BBDD.php';
+                require_once __DIR__ . '/../../../BBDD/BBDD.php';
 
                 // Consulta para obtener los productos activos del inventario
                 $sql = "SELECT id_producto, nombre_produc, precio_venta, cantidad_total FROM inventario WHERE activo = TRUE ORDER BY nombre_produc ASC";
@@ -141,7 +141,7 @@ require_once '../../../acces/nav_cajero/nav_cajero.php';
 </section>
 
 <?php
-require_once '../../../acces/footer/footer.php';
+require_once __DIR__ . '/../../../acces/footer/footer.php';
 ?>
 <script src="script.js"></script>
 </body>

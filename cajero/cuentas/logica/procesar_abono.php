@@ -1,6 +1,6 @@
 <?php
 // Incluir sistema de control de acceso
-require_once '../../../acces/auth_check.php';
+require_once __DIR__ . '/../../../acces/auth_check.php';
 
 // Verificar que el usuario sea cajero
 if (!esCajero()) {

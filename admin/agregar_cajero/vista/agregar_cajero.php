@@ -1,6 +1,6 @@
 <?php
 // Incluir sistema de control de acceso
-require_once '../../../acces/auth_check.php';
+require_once __DIR__ . '/../../../acces/auth_check.php';
 
 // Proteger página - solo administradores
 protegerPagina(['admin']);
@@ -15,7 +15,7 @@ protegerPagina(['admin']);
     <link rel="stylesheet" href="../../../acces/css/main.css">
 </head>
 <body>
-    <?php require_once '../../../acces/nav_admin/nav_admin.php'; ?>
+    <?php require_once __DIR__ . '/../../../acces/nav_admin/nav_admin.php'; ?>
 
     <main class="container">
         <form id="form-agregar-cajero" method="POST">
@@ -81,7 +81,7 @@ protegerPagina(['admin']);
         </form>
     </main>
 
-    <?php require_once '../../../acces/footer/footer.php'; ?>
+    <?php require_once __DIR__ . '/../../../acces/footer/footer.php'; ?>
     <script src="script.js"></script>
 </body>
 </html>

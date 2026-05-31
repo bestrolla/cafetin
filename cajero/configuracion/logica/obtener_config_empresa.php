@@ -1,7 +1,7 @@
 <?php
-require_once '../../../acces/auth_check.php';
+require_once __DIR__ . '/../../../acces/auth_check.php';
 initSessionIfNeeded();
-require_once '../../../BBDD/BBDD.php';
+require_once __DIR__ . '/../../../BBDD/BBDD.php';
 
 header('Content-Type: application/json');
 
