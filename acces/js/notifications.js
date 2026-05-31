@@ -1,3 +1,17 @@
+// Ensure fetch sends cookies by default (helps AJAX auth across the app)
+(function(){
+  if (typeof window.fetch === 'function') {
+    const _fetch = window.fetch.bind(window);
+    window.fetch = function(url, opts) {
+      opts = opts || {};
+      if (!('credentials' in opts)) {
+        opts.credentials = 'same-origin';
+      }
+      return _fetch(url, opts);
+    };
+  }
+})();
+
 // Global Inventory Notifications
 (function() {
   const BASE = (typeof window !== 'undefined' && window.__APP_BASE) ? window.__APP_BASE : '';
