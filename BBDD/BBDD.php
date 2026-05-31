@@ -30,7 +30,7 @@ class Conexion {
             $this->dbname = $dbname ?: 'cafetin';
             $this->username = $username ?: 'root';
             $this->password = $pass !== false ? $pass : '';
-        } elseif ($isVercel || $useRemoteDb) {
+        } elseif ($useRemoteDb) {
             $this->host = 'sql103.infinityfree.com';
             $this->port = $port ?: '3306';
             $this->dbname = 'if0_41909456_cafetin';
