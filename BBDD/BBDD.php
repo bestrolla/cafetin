@@ -5,39 +5,37 @@
 
 class Conexion {
     private $host;
-    // private $port;
+    private $port;
     private $dbname;
     private $username;
     private $password;
     private $conexion;
 
     public function __construct() {
-        $isVercel = false;
         if (!function_exists('isVercelRuntime')) {
             require_once __DIR__ . '/../acces/vercel_env.php';
         }
         $isVercel = isVercelRuntime();
 
         $host = $this->getEnvVar('MYSQL_HOST');
-        // $port = $this->getEnvVar('MYSQL_PORT');
+        $port = $this->getEnvVar('MYSQL_PORT');
         $dbname = $this->getEnvVar('MYSQL_DATABASE');
         $username = $this->getEnvVar('MYSQL_USER');
         $pass = $this->getEnvVar('MYSQL_PASSWORD');
 
         if ($isVercel) {
             $this->host = $host ?: 'sql103.infinityfree.com';
-            // $this->port = $port ?: '3306';
+            $this->port = $port ?: '3306';
             $this->dbname = $dbname ?: 'if0_41909456_cafetin';
             $this->username = $username ?: 'if0_41909456';
             $this->password = $pass !== false ? $pass : 'udWAvVG9sN';
-        } 
-        // else {
-        //     $this->host = $host ?: '127.0.0.1';
-        //     $this->port = $port ?: '3306';
-        //     $this->dbname = $dbname ?: 'cafetin';
-        //     $this->username = $username ?: 'root';
-        //     $this->password = $pass !== false ? $pass : '';
-        // }
+        } else {
+            $this->host = $host ?: '127.0.0.1';
+            $this->port = $port ?: '3306';
+            $this->dbname = $dbname ?: 'cafetin';
+            $this->username = $username ?: 'root';
+            $this->password = $pass !== false ? $pass : '';
+        }
     }
 
     private function getEnvVar(string $name, $default = false) {
@@ -86,13 +84,4 @@ function normalizarTextoNombre($texto) {
         return mb_convert_case($texto, MB_CASE_TITLE, 'UTF-8');
     }
     return ucwords(strtolower($texto));
-}
-
-try {
-    require_once __DIR__ . '/../acces/vercel_env.php';
-    $conexionObj = new Conexion();
-    $conexion = $conexionObj->conectar();
-} catch (Exception $e) {
-    echo $e->getMessage();
-    exit;
 }
