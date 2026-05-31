@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const base = window.APP_BASE || '';
             fetch(base + '/login/inicio/logica/procesar_login.php', {
                 method: 'POST',
+                credentials: 'same-origin',
                 body: formData
             })
             .then(response => response.json())
