@@ -169,14 +169,39 @@ function sqliteImportFromMysqlDump($conexion, $dumpPath) {
     }
 }
 
+function cafetinPrepararSqliteVercel($rutaDestino) {
+    if (!is_string($rutaDestino) || $rutaDestino === '') {
+        return;
+    }
+    $dir = dirname($rutaDestino);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0755, true);
+    }
+    if (file_exists($rutaDestino)) {
+        return;
+    }
+    $origen = __DIR__ . '/cafetin.db';
+    if (file_exists($origen)) {
+        @copy($origen, $rutaDestino);
+    }
+}
+
 // Mantener compatibilidad con código existente que usa $conexion directamente
 try {
+    require_once __DIR__ . '/../acces/vercel_env.php';
     $conexionObj = new Conexion();
-    if (isset($_ENV['CAFETIN_DB_DRIVER'])) {
-        if ($_ENV['CAFETIN_DB_DRIVER'] === 'sqlite') {
-            $ruta = isset($_ENV['CAFETIN_SQLITE_PATH']) ? $_ENV['CAFETIN_SQLITE_PATH'] : null;
-            $conexionObj->usarSqlite($ruta);
+    if (isset($_ENV['CAFETIN_DB_DRIVER']) && $_ENV['CAFETIN_DB_DRIVER'] === 'sqlite') {
+        $ruta = isset($_ENV['CAFETIN_SQLITE_PATH']) && $_ENV['CAFETIN_SQLITE_PATH']
+            ? $_ENV['CAFETIN_SQLITE_PATH']
+            : null;
+        if ($ruta && isVercelRuntime()) {
+            cafetinPrepararSqliteVercel($ruta);
         }
+        $conexionObj->usarSqlite($ruta);
+    } elseif (isVercelRuntime()) {
+        $ruta = '/tmp/cafetin.db';
+        cafetinPrepararSqliteVercel($ruta);
+        $conexionObj->usarSqlite($ruta);
     }
     try {
         $conexion = $conexionObj->conectar();

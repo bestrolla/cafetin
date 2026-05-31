@@ -54,7 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const formData = new FormData(this);
 
-            fetch('../logica/procesar_login.php', {
+            const base = window.APP_BASE || '';
+            fetch(base + '/login/inicio/logica/procesar_login.php', {
                 method: 'POST',
                 body: formData
             })
@@ -62,10 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.success) {
                     // Redirección basada en el rol
+                    const base = window.APP_BASE || '';
                     if (data.role === 'admin') {
-                        window.location.href = '../../../admin/inventario/vista/inventario.php';
+                        window.location.href = base + '/admin/inventario/vista/inventario.php';
                     } else if (data.role === 'cajero') {
-                        window.location.href = '../../../cajero/lobby/vista/lobby.php';
+                        window.location.href = base + '/cajero/lobby/vista/lobby.php';
                     } else {
                         // Rol no reconocido, redirigir a una página por defecto o mostrar error
                         mostrarError('Rol de usuario no reconocido.');

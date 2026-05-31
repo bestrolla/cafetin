@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ .  '../../../acces/auth_check.php';
+require_once __DIR__ . '/../../../acces/auth_check.php';
 // Asegurar inicialización segura de sesión
 initSessionIfNeeded();
 

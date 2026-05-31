@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '../../../acces/security_headers.php';
-require_once __DIR__ . '../../../acces/csrf.php';
+require_once __DIR__ . '/../../../acces/security_headers.php';
+require_once __DIR__ . '/../../../acces/csrf.php';
 $csrf = csrfEnsureToken();
 ?>
 <!DOCTYPE html>
@@ -9,14 +9,14 @@ $csrf = csrfEnsureToken();
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recuperación de contraseña</title>
-  <link rel="stylesheet" href="/acces/css/main.css">
-  <link rel="stylesheet" href="/login/recuperacion/vista/style.css">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars(appUrl('/acces/css/main.css'), ENT_QUOTES, 'UTF-8'); ?>">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars(appUrl('/login/recuperacion/vista/style.css'), ENT_QUOTES, 'UTF-8'); ?>">
   
 </head>
 <body>
   <section class="container">
     <div class="login-form recuperacion">
-      <form id="form-solicitar" action="../logica/solicitar_reset.php" method="POST">
+      <form id="form-solicitar" action="<?php echo htmlspecialchars(appUrl('/login/recuperacion/logica/solicitar_reset.php'), ENT_QUOTES, 'UTF-8'); ?>" method="POST">
         <h2>Recuperación de contraseña</h2>
         <hr>
         <p class="subtitle">Ingresa tu usuario, elige una de tus preguntas de seguridad guardadas y respóndela.</p>
@@ -38,7 +38,7 @@ $csrf = csrfEnsureToken();
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8'); ?>">
         <input class="button" type="submit" value="Siguiente">
         <div class="links">
-          <a href="../../inicio/vista/inicio.php">Volver al inicio</a>
+          <a href="<?php echo htmlspecialchars(appUrl('/login/inicio/vista/inicio.php'), ENT_QUOTES, 'UTF-8'); ?>">Volver al inicio</a>
           <!-- <a href="../../inicio/vista/inicio.php">Iniciar sesión</a> -->
         </div>
         <?php if (isset($_GET['error'])): ?>
@@ -70,7 +70,7 @@ $csrf = csrfEnsureToken();
         }
         timeout = setTimeout(async () => {
           try {
-            const res = await fetch('../logica/obtener_pregunta_usuario.php', {
+            const res = await fetch('<?php echo htmlspecialchars(appUrl('/login/recuperacion/logica/obtener_pregunta_usuario.php'), ENT_QUOTES, 'UTF-8'); ?>', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

@@ -1,7 +1,3 @@
 <?php
-// Esto soluciona TODAS las rutas relativas de una vez
-chdir(__DIR__ . '/..');
-
-// Ahora incluye tu archivo original sin modificar nada
-
-require __DIR__ . '/../login/inicio/vista/inicio.php';
+$_SERVER['REQUEST_URI'] = '/login/inicio/vista/inicio.php';
+require __DIR__ . '/index.php';

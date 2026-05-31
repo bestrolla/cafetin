@@ -5,9 +5,14 @@ if (ob_get_level() === 0) { ob_start(); }
  * Verifica si el usuario tiene una sesión válida y los permisos necesarios
  */
 
+require_once __DIR__ . '/vercel_env.php';
+
 // Inicialización segura de sesión
 function initSessionIfNeeded() {
     if (session_status() === PHP_SESSION_NONE) {
+        if (isVercelRuntime() && is_dir('/tmp') && is_writable('/tmp')) {
+            ini_set('session.save_path', '/tmp');
+        }
         $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
         // Configurar parámetros de la cookie de sesión
         session_set_cookie_params([
@@ -161,11 +166,18 @@ function esAdminOCajero() {
     return verificarRol(['admin', 'cajero']);
 }
 function appBasePath() {
-    $doc = rtrim(str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
-    $root = rtrim(str_replace('\\', '/', realpath(__DIR__ . '/..')), '/');
+    if (isVercelRuntime()) {
+        return '';
+    }
+    $doc = rtrim(str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: ''), '/');
+    $root = rtrim(str_replace('\\', '/', realpath(__DIR__ . '/..') ?: ''), '/');
     if ($doc && $root && strpos($root, $doc) === 0) {
         $base = substr($root, strlen($doc));
-        return $base ?: '';
+        return $base === false ? '' : ($base ?: '');
+    }
+    $script = $_SERVER['SCRIPT_NAME'] ?? '';
+    if (preg_match('#^/([^/]+)/#', $script, $m) && $m[1] !== 'login' && $m[1] !== 'admin' && $m[1] !== 'cajero' && $m[1] !== 'acces' && $m[1] !== 'api') {
+        return '/' . $m[1];
     }
     return '';
 }

@@ -10,14 +10,14 @@ $csrf = csrfEnsureToken();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CDC | login</title>
   <!-- ✅ Desde cualquier página funciona -->
-<link rel="stylesheet" href="/acces/css/main.css">
-<link rel="stylesheet" href="/login/inicio/vista/style.css">
+<link rel="stylesheet" href="<?php echo htmlspecialchars(appUrl('/acces/css/main.css'), ENT_QUOTES, 'UTF-8'); ?>">
+<link rel="stylesheet" href="<?php echo htmlspecialchars(appUrl('/login/inicio/vista/style.css'), ENT_QUOTES, 'UTF-8'); ?>">
 </head>
 <body>
   <section class="container">
 
   <div class="login-form">
-  <form action="../logica/procesar_login.php" method="POST">
+  <form action="<?php echo htmlspecialchars(appUrl('/login/inicio/logica/procesar_login.php'), ENT_QUOTES, 'UTF-8'); ?>" method="POST">
     <h2>Iniciar Sesión</h2>
      <hr>
     <div class="inputBox">
@@ -52,7 +52,7 @@ $csrf = csrfEnsureToken();
     </div>
 
     <div class="links">
-      <a href="/login/recuperacion/vista/solicitar.php">¿Olvidaste tu contraseña?</a>
+      <a href="<?php echo htmlspecialchars(appUrl('/login/recuperacion/vista/solicitar.php'), ENT_QUOTES, 'UTF-8'); ?>">¿Olvidaste tu contraseña?</a>
       <!-- <a href="#">Registrate</a> -->
     </div>
     
@@ -69,6 +69,7 @@ $csrf = csrfEnsureToken();
   
   ?>
  
-  <script src="script.js"></script>
+  <script src="<?php echo htmlspecialchars(appUrl('/login/inicio/vista/script.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
+  <script>window.APP_BASE = <?php echo json_encode(appBasePath(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;</script>
 </body>
 </html>

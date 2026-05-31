@@ -79,16 +79,16 @@ section header .logo img {
     
     <nav>
       <ul>
-        <li><a href="../../inventario/vista/inventario.php">Inventario</a></li>
-        <li><a href="../../caja/vista/caja.php">Caja</a></li>
-        <li><a href="../../cuentas/vista/cuentas.php">Cuentas</a></li>
-        <li><a href="../../agregar_cajero/vista/agregar_cajero.php">Agregar Cajero</a></li>
-        <li><a href="../../configuracion/vista/configuracion.php">Configuración</a></li>
-        <li><a href="../../../acces/logout.php">Cerrar Sesión</a></li>
+        <li><a href="<?php echo appUrl('/admin/inventario/vista/inventario.php'); ?>">Inventario</a></li>
+        <li><a href="<?php echo appUrl('/admin/caja/vista/caja.php'); ?>">Caja</a></li>
+        <li><a href="<?php echo appUrl('/admin/cuentas/vista/cuentas.php'); ?>">Cuentas</a></li>
+        <li><a href="<?php echo appUrl('/admin/agregar_cajero/vista/agregar_cajero.php'); ?>">Agregar Cajero</a></li>
+        <li><a href="<?php echo appUrl('/admin/configuracion/vista/configuracion.php'); ?>">Configuración</a></li>
+        <li><a href="<?php echo appUrl('/acces/logout.php'); ?>">Cerrar Sesión</a></li>
       </ul>
     </nav>
     <div class="logo">
-      <img id="logo-cajero" src="../../../acces/img/logo.jpg" alt="Logo" width="100px" height="100px">
+      <img id="logo-cajero" src="<?php echo appUrl('/acces/img/logo.jpg'); ?>" alt="Logo" width="100px" height="100px">
     </div>
   </header>
   <button id="show-header-tab">Mostrar menú</button>

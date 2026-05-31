@@ -1,6 +1,6 @@
 <?php
-require_once '../../../acces/security_headers.php';
-require_once '../../../acces/csrf.php';
+require_once __DIR__ . '/../../../acces/security_headers.php';
+require_once __DIR__ . '/../../../acces/csrf.php';
 $csrf = csrfEnsureToken();
 
 $token = isset($_GET['token']) ? trim($_GET['token']) : '';
@@ -11,13 +11,13 @@ $token = isset($_GET['token']) ? trim($_GET['token']) : '';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Restablecer contraseña</title>
-  <link rel="stylesheet" href="../../../acces/css/main.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars(appUrl('/acces/css/main.css'), ENT_QUOTES, 'UTF-8'); ?>">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars(appUrl('/login/recuperacion/vista/style.css'), ENT_QUOTES, 'UTF-8'); ?>">
 </head>
 <body>
   <section class="container">
     <div class="login-form recuperacion">
-      <form action="../logica/restablecer_password.php" method="POST">
+      <form action="<?php echo htmlspecialchars(appUrl('/login/recuperacion/logica/restablecer_password.php'), ENT_QUOTES, 'UTF-8'); ?>" method="POST">
         <h2>Restablecer contraseña</h2>
         <hr>
         <div class="inputBox">
@@ -62,7 +62,7 @@ $token = isset($_GET['token']) ? trim($_GET['token']) : '';
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8'); ?>">
         <input class="button" type="submit" value="Guardar nueva contraseña">
         <div class="links">
-          <a href="../../inicio/vista/inicio.php">Volver al inicio</a>
+          <a href="<?php echo htmlspecialchars(appUrl('/login/inicio/vista/inicio.php'), ENT_QUOTES, 'UTF-8'); ?>">Volver al inicio</a>
           <!-- <a href="./solicitar.php">Solicitar otro enlace</a> -->
         </div>
         <?php if (isset($_GET['error'])): ?>
@@ -75,7 +75,7 @@ $token = isset($_GET['token']) ? trim($_GET['token']) : '';
       </form>
     </div>
   </section>
-  <?php require_once '../../../acces/footer/footer.php'; ?>
+  <?php require_once __DIR__ . '/../../../acces/footer/footer.php'; ?>
   <script>
     function togglePasswordFor(id, trigger) {
       const input = document.getElementById(id);

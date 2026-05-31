@@ -1,0 +1,4 @@
+.vscode/
+.hintrc
+BBDD/crear_admin.php
+BBDD/actualizar_fecha_factura.php
