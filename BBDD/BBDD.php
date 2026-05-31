@@ -30,11 +30,11 @@ class Conexion {
             $this->username = $username ?: 'root';
             $this->password = $pass !== false ? $pass : '';
         } else {
-            $this->host = 'sql306.ezyro.com';
+            $this->host = 'sql103.infinityfree.com';
             $this->port = $port ?: '3306';
-            $this->dbname = 'ezyro_42064276_cafetin';
-            $this->username = 'ezyro_42064276';
-            $this->password = $pass !== false ? $pass : 'angel0109$';
+            $this->dbname = 'if0_41909456_cafetin';
+            $this->username = 'if0_41909456';
+            $this->password = $pass !== false ? $pass : 'udWAvVG9sN';
         }
     }
 
