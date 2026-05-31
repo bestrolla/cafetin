@@ -14,6 +14,7 @@ Este proyecto PHP usa el runtime [vercel-php](https://github.com/vercel-communit
 |----------|--------|-------------|
 | `CAFETIN_DB_DRIVER` | `sqlite` | Base de datos en serverless (ya viene en `vercel.json`) |
 | `CAFETIN_SQLITE_PATH` | `/tmp/cafetin.db` | Ruta escribible en Vercel |
+| `CAFETIN_CSRF_SECRET` | (opcional) cadena larga aleatoria | Firma de tokens CSRF; si no se define, se genera una clave estable por despliegue |
 
 ### MySQL externo (opcional)
 
