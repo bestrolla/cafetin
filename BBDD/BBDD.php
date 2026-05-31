@@ -22,7 +22,6 @@ class Conexion {
         $dbname = $this->getEnvVar('MYSQL_DATABASE');
         $username = $this->getEnvVar('MYSQL_USER');
         $pass = $this->getEnvVar('MYSQL_PASSWORD');
-        $useRemoteDb = $this->getEnvVar('USE_REMOTE_DB') === '1' || $this->getEnvVar('USE_REMOTE_DB') === 'true';
 
         if ($host) {
             $this->host = $host;
@@ -30,18 +29,12 @@ class Conexion {
             $this->dbname = $dbname ?: 'cafetin';
             $this->username = $username ?: 'root';
             $this->password = $pass !== false ? $pass : '';
-        } elseif ($useRemoteDb) {
+        } else {
             $this->host = 'sql306.ezyro.com';
             $this->port = $port ?: '3306';
             $this->dbname = 'ezyro_42064276_cafetin';
             $this->username = 'ezyro_42064276';
             $this->password = $pass !== false ? $pass : 'angel0109$';
-        } else {
-            $this->host = '127.0.0.1';
-            $this->port = $port ?: '3306';
-            $this->dbname = 'cafetin';
-            $this->username = 'root';
-            $this->password = $pass !== false ? $pass : '';
         }
     }
 
