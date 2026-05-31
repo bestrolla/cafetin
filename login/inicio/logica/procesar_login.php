@@ -73,6 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } catch (PDOException $e) {
         $response['message'] = 'Error de base de datos: ' . $e->getMessage();
+    } catch (Exception $e) {
+        $response['message'] = 'Error de conexión: ' . $e->getMessage();
     }
 
 } else {
