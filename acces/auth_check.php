@@ -10,8 +10,21 @@ require_once __DIR__ . '/vercel_env.php';
 // Inicialización segura de sesión
 function initSessionIfNeeded() {
     if (session_status() === PHP_SESSION_NONE) {
+        // Preferir /tmp en entornos serverless con escritura
         if (isVercelRuntime() && is_dir('/tmp') && is_writable('/tmp')) {
             ini_set('session.save_path', '/tmp');
+        } else {
+            // Intentar crear un directorio tmp local dentro del proyecto para almacenar sesiones
+            if (!defined('CAFETIN_ROOT')) {
+                define('CAFETIN_ROOT', dirname(__DIR__));
+            }
+            $tmpDir = CAFETIN_ROOT . '/tmp_sessions';
+            if (!is_dir($tmpDir)) {
+                @mkdir($tmpDir, 0777, true);
+            }
+            if (is_dir($tmpDir) && is_writable($tmpDir)) {
+                ini_set('session.save_path', $tmpDir);
+            }
         }
         $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
         // Configurar parámetros de la cookie de sesión (ajustamos el path según el base path de la app)

@@ -55,4 +55,19 @@ try {
 
 echo "\n== END ==\n";
 
+// Mostrar session.save_path y listar archivos de sesión cuando sea posible
+echo "\n== session.save_path ==\n";
+$ssp = ini_get('session.save_path');
+echo "session.save_path: " . ($ssp ?: '(empty)') . "\n";
+if ($ssp && is_dir($ssp) && is_readable($ssp)) {
+    $files = scandir($ssp);
+    echo "files in session.save_path:\n";
+    foreach ($files as $f) {
+        if ($f === '.' || $f === '..') continue;
+        echo " - " . $f . "\n";
+    }
+} else {
+    echo "session.save_path not accessible or not a directory.\n";
+}
+
 // EOF
