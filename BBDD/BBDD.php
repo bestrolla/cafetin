@@ -6,10 +6,10 @@
 
 class Conexion {
     private $driver = 'mysql';
-    private $host = 'localhost';
-    private $dbname = 'cafetin';
-    private $username = 'root';
-    private $password = '';
+    private $host = 'sql103.infinityfree.com';
+    private $dbname = 'if0_41909456_cafetin';
+    private $username = 'if0_41909456';
+    private $password = 'udWAvVG9sN';
     private $sqlite_path;
     private $conexion;
 
