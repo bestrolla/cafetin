@@ -108,6 +108,7 @@ require_once __DIR__ . '/../../../acces/nav_cajero/nav_cajero.php';
                 <?php
                 // Incluir el archivo de conexión
                 require_once __DIR__ . '/../../../BBDD/BBDD.php';
+                $conexion = Conexion::getConnection();
 
                 // Consulta para obtener los productos activos del inventario
                 $sql = "SELECT id_producto, nombre_produc, precio_venta, cantidad_total FROM inventario WHERE activo = TRUE ORDER BY nombre_produc ASC";
