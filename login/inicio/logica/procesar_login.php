@@ -28,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        $conexion = Conexion::getConnection();
+
         $sql = "SELECT u.id_usuario, u.contrasena, p.nombre, p.apellido, r.nombre_rol 
                 FROM usuario u
                 INNER JOIN persona p ON u.id_persona = p.id_persona
