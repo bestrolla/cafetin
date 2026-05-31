@@ -22,18 +22,6 @@ function cafetin_persona_ensure_email_column(PDO $pdo): void
                     $pdo->exec('ALTER TABLE persona ADD COLUMN email VARCHAR(255) NULL DEFAULT NULL');
                 }
             }
-        } elseif ($driver === 'sqlite') {
-            $cols = $pdo->query('PRAGMA table_info(persona)')->fetchAll(PDO::FETCH_ASSOC);
-            $has = false;
-            foreach ($cols as $c) {
-                if (($c['name'] ?? '') === 'email') {
-                    $has = true;
-                    break;
-                }
-            }
-            if (!$has) {
-                $pdo->exec('ALTER TABLE persona ADD COLUMN email TEXT');
-            }
         }
     } catch (Throwable $e) {
         // Columna ya existe u operación no aplicable

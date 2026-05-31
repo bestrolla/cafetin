@@ -14,9 +14,5 @@
     { "handle": "filesystem" },
     { "src": "/", "dest": "/api/index.php" },
     { "src": "/(.*)", "dest": "/api/index.php" }
-  ],
-  "env": {
-    "CAFETIN_DB_DRIVER": "sqlite",
-    "CAFETIN_SQLITE_PATH": "/tmp/cafetin.db"
-  }
+  ]
 }

@@ -6,7 +6,6 @@ initSessionIfNeeded();
 require_once __DIR__ . '/../../../acces/security_headers.php';
 require_once __DIR__ . '/../../../acces/csrf.php';
 require_once __DIR__ . '/../../../BBDD/BBDD.php';
-require_once __DIR__ . '/../../../acces/password_verify.php';
 
 header('Content-Type: application/json');
 
@@ -29,19 +28,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        $sql = "SELECT u.id_usuario, u.contrasena, u.estado, p.nombre, p.apellido, r.nombre_rol 
+        $sql = "SELECT u.id_usuario, u.contrasena, p.nombre, p.apellido, r.nombre_rol 
                 FROM usuario u
-                JOIN persona p ON u.id_persona = p.id_persona
-                JOIN rol r ON u.id_rol = r.id_rol
-                WHERE LOWER(u.usuario) = LOWER(:usuario) LIMIT 1";
+                INNER JOIN persona p ON u.id_persona = p.id_persona
+                INNER JOIN rol r ON u.id_rol = r.id_rol
+                WHERE LOWER(TRIM(u.usuario)) = LOWER(TRIM(:usuario))
+                LIMIT 1";
 
         $stmt = $conexion->prepare($sql);
         $stmt->execute([':usuario' => $usuario_post]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($user && isset($user['estado']) && (int) $user['estado'] === 0) {
-            $response['message'] = 'Usuario inactivo. Contacte al administrador.';
-        } elseif ($user && cafetinVerificarContrasena($contrasena_post, (string) $user['contrasena'])) {
+        if ($user && password_verify($contrasena_post, $user['contrasena'])) {
             // Regenerar ID de sesión al autenticarse para mitigar fijación de sesión
             session_regenerate_id(true);
             // Contraseña correcta, iniciar sesión

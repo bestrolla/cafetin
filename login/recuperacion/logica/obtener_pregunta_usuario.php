@@ -34,7 +34,7 @@ try {
                                 FROM usuario u
                                 JOIN respuestas r ON r.id_usuario = u.id_usuario
                                 JOIN preguntas p ON p.id_pregunta = r.id_pregunta
-                                WHERE u.usuario = :usuario
+                                WHERE LOWER(TRIM(u.usuario)) = LOWER(TRIM(:usuario))
                                 ORDER BY r.id_pregunta ASC
                                 LIMIT 3');
     $stmt->execute([':usuario' => $usuario]);

@@ -20,14 +20,4 @@ if (isVercelRuntime()) {
     if (is_dir('/tmp') && is_writable('/tmp')) {
         ini_set('session.save_path', '/tmp');
     }
-
-    if (!getenv('CAFETIN_DB_DRIVER')) {
-        putenv('CAFETIN_DB_DRIVER=sqlite');
-        $_ENV['CAFETIN_DB_DRIVER'] = 'sqlite';
-    }
-
-    if (!getenv('CAFETIN_SQLITE_PATH')) {
-        putenv('CAFETIN_SQLITE_PATH=/tmp/cafetin.db');
-        $_ENV['CAFETIN_SQLITE_PATH'] = '/tmp/cafetin.db';
-    }
 }

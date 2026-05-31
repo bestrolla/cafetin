@@ -30,22 +30,10 @@ try {
   // Usar PDO del sistema
   $conexion = (new Conexion())->conectar();
 
-  // Asegurar tabla de resets
-  $conexion->exec("CREATE TABLE IF NOT EXISTS password_reset (
-    id_reset INT NOT NULL AUTO_INCREMENT,
-    id_usuario INT NOT NULL,
-    token VARCHAR(64) NOT NULL UNIQUE,
-    expiracion DATETIME NOT NULL,
-    usado TINYINT(1) DEFAULT 0,
-    creado TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_reset),
-    KEY id_usuario (id_usuario)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4");
-
   // Buscar usuario por nombre
   $stmt = $conexion->prepare("SELECT u.id_usuario
                               FROM usuario u
-                              WHERE u.usuario = :usuario
+                              WHERE LOWER(TRIM(u.usuario)) = LOWER(TRIM(:usuario))
                               LIMIT 1");
   $stmt->execute([':usuario' => $usuario]);
   $row = $stmt->fetch(PDO::FETCH_ASSOC);

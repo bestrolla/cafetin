@@ -33,19 +33,6 @@ try {
         throw new Exception('Debe seleccionar un método de pago válido');
     }
     
-    $driver = $conexion->getAttribute(PDO::ATTR_DRIVER_NAME);
-    if ($driver === 'sqlite') {
-        $exists = $conexion->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='abonos'")->fetchColumn();
-        if (!$exists) {
-            $conexion->exec("CREATE TABLE IF NOT EXISTS abonos (id_abono INTEGER PRIMARY KEY AUTOINCREMENT, id_credito INTEGER NOT NULL, monto REAL NOT NULL, metodo_pago TEXT DEFAULT 'efectivo', observaciones TEXT, fecha_abono TEXT DEFAULT CURRENT_TIMESTAMP)");
-        }
-    } else {
-        $result = $conexion->query("SHOW TABLES LIKE 'abonos'");
-        if ($result->rowCount() == 0) {
-            $conexion->exec("CREATE TABLE abonos (id_abono INT AUTO_INCREMENT PRIMARY KEY, id_credito INT NOT NULL, monto DECIMAL(10,2) NOT NULL, metodo_pago VARCHAR(50) DEFAULT 'efectivo', observaciones TEXT, fecha_abono TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
-        }
-    }
-
     $conexion->beginTransaction();
     
     // Verificar que el crédito existe y obtener información

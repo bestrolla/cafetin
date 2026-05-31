@@ -24,8 +24,7 @@ try {
         exit;
     }
 
-    $driver = $conexion->getAttribute(PDO::ATTR_DRIVER_NAME);
-    $clienteExpr = $driver === 'sqlite' ? "(p.nombre || ' ' || p.apellido) as cliente" : "CONCAT(p.nombre, ' ', p.apellido) as cliente";
+    $clienteExpr = "CONCAT(p.nombre, ' ', p.apellido) AS cliente";
     $sql = "SELECT c.id_credito, i.nombre_produc as producto, c.cantidad, c.total as subtotal, DATE(c.fecha_cre) as fecha_compra, TIME(c.fecha_cre) as hora_compra, c.fecha_cre, " . $clienteExpr . " FROM credito c INNER JOIN cliente cl ON c.id_cliente = cl.id_cliente INNER JOIN usuario u ON cl.id_usuario = u.id_usuario INNER JOIN persona p ON u.id_persona = p.id_persona INNER JOIN inventario i ON c.id_producto = i.id_producto WHERE c.id_cliente = :id_cliente AND DATE(c.fecha_cre) = :fecha_factura AND c.estado IN ('pendiente', 'parcial') ORDER BY c.fecha_cre ASC, TIME(c.fecha_cre) ASC";
 
     $stmt = $conexion->prepare($sql);
