@@ -60,8 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 credentials: 'same-origin',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('X-Session-Id header:', response.headers.get('X-Session-Id'));
+                return response.json();
+            })
             .then(data => {
+                console.log('document.cookie after login:', document.cookie);
                 if (data.success) {
                     // Redirección basada en el rol
                     const base = window.APP_BASE || '';

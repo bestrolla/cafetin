@@ -14,10 +14,17 @@ function initSessionIfNeeded() {
             ini_set('session.save_path', '/tmp');
         }
         $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
-        // Configurar parámetros de la cookie de sesión
+        // Configurar parámetros de la cookie de sesión (ajustamos el path según el base path de la app)
+        $cookiePath = '/';
+        if (function_exists('appBasePath')) {
+            $bp = appBasePath();
+            if ($bp !== '' && $bp !== '/') {
+                $cookiePath = $bp;
+            }
+        }
         session_set_cookie_params([
             'lifetime' => 0,
-            'path' => '/',
+            'path' => $cookiePath,
             'domain' => '',
             'secure' => $isHttps,
             'httponly' => true,

@@ -65,6 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $response['success'] = true;
             $response['message'] = 'Inicio de sesión exitoso.';
             $response['role'] = $user['nombre_rol'];
+            // Exponer ID de sesión en encabezado y en respuesta para depuración (temporal)
+            header('X-Session-Id: ' . session_id());
+            $response['session_id'] = session_id();
 
         } else {
             // Usuario no encontrado o contraseña incorrecta
