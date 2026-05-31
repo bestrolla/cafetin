@@ -31,11 +31,11 @@ class Conexion {
             $this->username = $username ?: 'root';
             $this->password = $pass !== false ? $pass : '';
         } elseif ($useRemoteDb) {
-            $this->host = 'sql103.infinityfree.com';
+            $this->host = 'sql306.ezyro.com';
             $this->port = $port ?: '3306';
-            $this->dbname = 'if0_41909456_cafetin';
-            $this->username = 'if0_41909456';
-            $this->password = $pass !== false ? $pass : 'udWAvVG9sN';
+            $this->dbname = 'ezyro_42064276_cafetin';
+            $this->username = 'ezyro_42064276';
+            $this->password = $pass !== false ? $pass : '';
         } else {
             $this->host = '127.0.0.1';
             $this->port = $port ?: '3306';
