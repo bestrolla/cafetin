@@ -2,6 +2,7 @@
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../../../BBDD/BBDD.php';
+$conexion = Conexion::getConnection();
 
 try {
     // Obtener parámetros

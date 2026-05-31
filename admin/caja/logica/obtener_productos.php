@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../BBDD/BBDD.php';
+$conexion = Conexion::getConnection();
 header('Content-Type: application/json');
 
 try {

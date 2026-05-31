@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../../acces/auth_check.php';
 require_once __DIR__ . '/../../../BBDD/BBDD.php';
+$conexion = Conexion::getConnection();
 
 if (!esAdmin()) {
     echo json_encode(['error' => 'Acceso denegado']);

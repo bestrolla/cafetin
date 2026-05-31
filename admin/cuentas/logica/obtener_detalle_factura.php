@@ -2,6 +2,7 @@
 // Incluir sistema de control de acceso
 require_once __DIR__ . '/../../../acces/auth_check.php';
 require_once __DIR__ . '/../../../BBDD/BBDD.php';
+$conexion = Conexion::getConnection();
 
 // Verificar que el usuario sea administrador
 if (!esAdmin()) {
