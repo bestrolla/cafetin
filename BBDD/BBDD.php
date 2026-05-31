@@ -12,12 +12,12 @@ class Conexion {
     private $conexion;
 
     public function __construct() {
-        $this->host = getenv('MYSQL_HOST') ?: '127.0.0.1';
+        $this->host = getenv('MYSQL_HOST') ?: 'sql103.infinityfree.com';
         $this->port = getenv('MYSQL_PORT') ?: '3306';
-        $this->dbname = getenv('MYSQL_DATABASE') ?: 'cafetin';
-        $this->username = getenv('MYSQL_USER') ?: 'root';
+        $this->dbname = getenv('MYSQL_DATABASE') ?: 'if0_41909456_cafetin';
+        $this->username = getenv('MYSQL_USER') ?: 'if0_41909456';
         $pass = getenv('MYSQL_PASSWORD');
-        $this->password = $pass !== false ? $pass : '';
+        $this->password = $pass !== false ? $pass : 'udWAvVG9sN';
     }
 
     public function conectar() {
