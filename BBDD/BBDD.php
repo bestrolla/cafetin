@@ -23,18 +23,29 @@ class Conexion {
         $username = $this->getEnvVar('MYSQL_USER');
         $pass = $this->getEnvVar('MYSQL_PASSWORD');
 
-        if ($isVercel) {
-            $this->host = $host ?: 'sql103.infinityfree.com';
-            $this->port = $port ?: '3306';
-            $this->dbname = $dbname ?: 'if0_41909456_cafetin';
-            $this->username = $username ?: 'if0_41909456';
-            $this->password = $pass !== false ? $pass : 'udWAvVG9sN';
-        } else {
-            $this->host = $host ?: '127.0.0.1';
+        if ($host) {
+            $this->host = $host;
             $this->port = $port ?: '3306';
             $this->dbname = $dbname ?: 'cafetin';
             $this->username = $username ?: 'root';
             $this->password = $pass !== false ? $pass : '';
+        } else {
+            $requestHost = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
+            $isRemoteWeb = $requestHost !== '' && !preg_match('/^(localhost|127\.0\.0\.1)(:\d+)?$/', $requestHost);
+
+            if ($isVercel || $isRemoteWeb) {
+                $this->host = 'sql103.infinityfree.com';
+                $this->port = $port ?: '3306';
+                $this->dbname = 'if0_41909456_cafetin';
+                $this->username = 'if0_41909456';
+                $this->password = $pass !== false ? $pass : 'udWAvVG9sN';
+            } else {
+                $this->host = '127.0.0.1';
+                $this->port = $port ?: '3306';
+                $this->dbname = 'cafetin';
+                $this->username = 'root';
+                $this->password = $pass !== false ? $pass : '';
+            }
         }
     }
 
