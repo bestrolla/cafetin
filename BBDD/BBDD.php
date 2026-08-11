@@ -30,11 +30,11 @@ class Conexion {
             $this->username = $username ?: 'root';
             $this->password = $pass !== false ? $pass : '';
         } else {
-            $this->host = 'bqiqjpkdjbyiypnbzkxt-mysql.services.clever-cloud.com';
+            $this->host = 'server036.workserverdc.com';
             $this->port = $port ?: '3306';
-            $this->dbname = 'bqiqjpkdjbyiypnbzkxt';
-            $this->username = 'ugaf9cvztkj9cfyc';
-            $this->password = $pass !== false ? $pass : 'jQ9Cw2yF42ZNz6PXfPGO';
+            $this->dbname = 'bibliotecamr_cafetin';
+            $this->username = 'bibliotecamr';
+            $this->password = $pass !== false ? $pass : '3qdpqsxlm8y5t0lr';
         }
     }
 
