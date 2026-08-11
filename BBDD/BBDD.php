@@ -33,7 +33,7 @@ class Conexion {
             $this->host = 'server036.workserverdc.com';
             $this->port = $port ?: '3306';
             $this->dbname = 'bibliotecamr_cafetin';
-            $this->username = 'bibliotecamr_angel';
+            $this->username = 'bibliotecamr';
             $this->password = $pass !== false ? $pass : 'Isis0109$';
         }
     }
