@@ -34,7 +34,7 @@ class Conexion {
             $this->port = $port ?: '3306';
             $this->dbname = 'bibliotecamr_cafetin';
             $this->username = 'bibliotecamr';
-            $this->password = $pass !== false ? $pass : 'Isis0109$';
+            $this->password = $pass !== false ? $pass : '3qdpqsxlm8y5t0lr';
         }
     }
 
