@@ -33,7 +33,7 @@ class Conexion {
             $this->host = '38.92.48.98';
             $this->port = $port ?: '3306';
             $this->dbname = 'bibliotecamr_cafetin';
-            $this->username = 'bibliotecamr';
+            $this->username = 'bibliotecamr_admin';
             $this->password = $pass !== false ? $pass : '3qdpqsxlm8y5t0lr';
         }
     }
